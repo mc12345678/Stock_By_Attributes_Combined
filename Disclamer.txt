@@ -1,0 +1,10 @@
+See the GNU General Public License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+No representation is made with respect to use or suitability for your website. 
+Installing any addons to your site has a direct effect on your site's PCI compliance. 
+You must self-certify all addons you install, in addition to all other customisations you make to your site. 
+Use at your own risk!

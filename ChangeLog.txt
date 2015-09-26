@@ -1,0 +1,118 @@
+Updates from 1.5.3 to 1.5.4
+Note, most files have been touched, this is not a comprehensive listing, it is intended for general information.
+
+admin\ajax
+-- Folder removed, files relocated.
+
+admin\includes\classes\products_with_attributes_stock.php
+-- Update for bug related to a zero value entry
+-- Update to correct 'Class' IDs
+	stockAttributesHeadingStockId
+	stockAttributesHeadingSKUTitleId
+	stockAttributesCellDelete
+	stockAttributesCellEdit
+
+admin\includes\languages\dutch\products_with_attributes_stock.php
+admin\includes\languages\english\products_with_attributes_stock.php
+admin\includes\languages\french\products_with_attributes_stock.php
+-- Added defines
+	define('TEXT_IMAGE_NONEXISTENT', 'No Picture Available');
+
+admin\orders.php
+-- Files updated with changes from Zen Cart 1.5.3.
+
+admin\products_with_attributes_stock.php
+-- Updated to support relocated ajax files.
+
+admin\products_with_attributes_stock_ajax.js
+-- Moved file from admin\ajax folder, minor comments clean-up.
+
+admin\stock_by_attr_install.php
+-- Bug fix changed order of alterSBAtableCustomid() and alterSBAtabeSort().
+-- Addition of new select options.
+-- Changed the default settings for the 'Configuration -> Stock' SBA Options.
+-- Updated on-screen help.
+-- Change folder for Export and Import, now used the 'admin\backups' folder.
+
+admin\invoice.php
+admin\orders.php
+admin\packingslip.php
+-- Custom ID display correction
+
+--New
+admin/attributes_controller.php
+admin/options_name_manager.php
+admin/options_values_manager.php
+
+--Updated
+admin/invoice.php
+admin/orders.php
+admin/packingslip.php
+admin/products_with_attributes_stock.php
+admin/stock_by_attr_install.php
+admin/includes/classes/products_with_attributes_stock.php
+admin/includes/extra_datafiles/products_with_attributes_stock.php
+admin/includes/functions/general.php
+
+----------------------------------------------
+
+--New
+includes/auto_loaders/config.products_with_attributes_stock.php
+includes/classes/observers/class.products_with_attributes_stock.php
+includes/extra_cart_actions/stock_by_attributes.php
+includes/modules/pages/checkout_success/header_php_sba.php
+
+--Updated
+includes/classes/order.php
+includes/extra_datafiles/products_with_attributes_stock_database_tables.php
+includes/functions/extra_functions/products_with_attributes.php
+includes/functions/functions_lookups.php
+includes/modules/pages/checkout_shipping/header_php.php
+includes/modules/pages/shopping_cart/header_php.php
+includes/modules/YOUR_TEMPLATE/attributes.php
+inludes/templates/YOUR_TEMPLATE/templates/tpl_shopping_cart_default.php
+
+includes\functions\extra_functions\products_with_attributes.php
+-- Added new feature to change image displayed when the selection is changed "in a Select List (drop-down)".
+
+includes\modules\pages\shopping_cart\header_php.php
+-- Updated when 'customid' is shown.
+includes\modules\pages\checkout_success\header_php.php
+-- Updated query to add DISTINCT, corrects notification page error.
+
+includes\modules\YOUR_TEMPLATE\attributes.php
+-- Added option to display images when a selection is changed in select list. 
+-- Change to correct customid display behaviour with various option switches.
+-- Added a new option switch 'SBA_SHOW_IMAGE_ON_PRODUCT_INFO'.
+-- Moved Out of Stock label to after attribute name.
+
+includes\templates\YOUR_TEMPLATE\jscript\jquery.form.js
+includes\templates\YOUR_TEMPLATE\jscript\jquery-1.10.2.min.js
+-- Moved file from admin\ajax folder.
+
+includes\templates\YOUR_TEMPLATE\templates\tpl_account_history_info_default.php
+includes\templates\YOUR_TEMPLATE\templates\tpl_checkout_confirmation_default.php
+-- Custom ID display correction
+
+------------------------------------------
+
+Added CSS support to format the SBA Selection list.
+
+Add the following to your  stylesheet.css.
+Make changes as needed for your site.
+
+/* SBA Selection List format */
+.sbaselectlist{
+	display: inline;
+	font-size: 1em;
+	margin: 0.1em;
+}
+
+Note: This new feature relies on the use of an 'id="SBA_ProductImage"' tag added to the image box in tpl_modules_main_product_image.php
+
+Example (default template):
+document.write('<?php echo '<a href="javascript:popupWindow(\\\'' . zen_href_link(FILENAME_POPUP_IMAGE, 'pID=' . $_GET['products_id']) . '\\\')">' . zen_image(addslashes($products_image_medium), addslashes($products_name), MEDIUM_IMAGE_WIDTH, MEDIUM_IMAGE_HEIGHT,'id="SBA_ProductImage"') . '<br /><span class="imgLink">' . TEXT_CLICK_TO_ENLARGE . '</span></a>'; ?>');
+
+Example (using zen_lightbox mod)
+document.write('<?php echo '<a href="' . zen_lightbox($products_image_large, addslashes($products_name), LARGE_IMAGE_WIDTH, LARGE_IMAGE_HEIGHT) . '" rel="' . $rel . '" title="' . addslashes($products_name) . '">' . zen_image($products_image_medium, addslashes($products_name), MEDIUM_IMAGE_WIDTH, MEDIUM_IMAGE_HEIGHT,'id="SBA_ProductImage"') . '<br /><span class="imgLink">' . TEXT_CLICK_TO_ENLARGE . '</span></a>'; ?>');
+
