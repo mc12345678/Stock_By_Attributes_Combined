@@ -6,7 +6,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version GIT: $Id: Author: DrByte  Modified in v1.5.4 $
  *
-  * Stock by Attributes 1.5.5
+  * Stock by Attributes 1.5.4
  */
   require('includes/application_top.php');
 
@@ -840,7 +840,7 @@ if ($action == 'attributes_preview') {
 ?>
           </tr>
           <tr>
-            <td class="smallText" align="center" colspan="8"><?php echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_TO_CATEGORIES, '&products_filter=' . $products_filter . '&current_category_id=' . $current_category_id) . '">' . IMAGE_PRODUCTS_TO_CATEGORIES . '</a>'; ?></td>
+            <!-- Start SBA --><td class="smallText" align="center" colspan="8"><!-- End SBA --><?php echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_TO_CATEGORIES, '&products_filter=' . $products_filter . '&current_category_id=' . $current_category_id) . '">' . IMAGE_PRODUCTS_TO_CATEGORIES . '</a>'; ?></td>
           </tr>
         </table></td>
       </form></tr>
@@ -956,7 +956,7 @@ if ($action == 'attributes_preview') {
 // preview shot of attributes
 if ($action == 'attributes_preview') {
   $_GET['products_id'] = $products_filter;
-  $pInfo = new stdClass(); // Added for ZC 1.5.4 compatibility
+  $pInfo = new stdClass(); // Added for ZC 1.5.4 compatibility mc12345678
   $pInfo->products_id = $products_filter;
 
   include(DIR_WS_INCLUDES . 'attributes_preview.php');

@@ -75,11 +75,9 @@ $sql = "select count(*) as total
               $discount_amount = zen_get_discount_calc((int)$_GET['products_id']);
 
               $zv_display_select_option = 0;
-
               //loop for each option/attribute listed
               while (!$products_options_names->EOF) {
                 $products_options_array = array();
-                $options_menu_images = array();
 
                 /*
                 pov.products_options_values_id, pov.products_options_values_name,
@@ -101,11 +99,9 @@ $sql = "select count(*) as total
 
                 // Start "Stock By Attributes" SBA
                 $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_OPTIONS_SQL');
+//                echo ($_isSBA ? 'true' : 'false') . "\n";
                 // End "Stock By Attributes" SBA
-
-                $sql = $db->bindVars($sql, ':products_id:', $_GET['products_id'], 'integer');
-                $sql = $db->bindVars($sql, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
-                $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+                
                 $products_options = $db->Execute($sql);
 
                 $products_options_value_id = '';
@@ -675,4 +671,3 @@ $sql = "select count(*) as total
               //      zen_draw_hidden_field('number_of_uploads', $_GET['number_of_uploads']);
               zen_draw_hidden_field('number_of_uploads', $number_of_uploads);
             }
-

@@ -328,13 +328,26 @@ function cartProductCount($products_id){
       return null;
     }
     
-    $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:;';
-    $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
-    $isSBA = $db->Execute($isSBA_query);
+    $inSBA_query = 'SELECT * 
+                    FROM information_schema.tables
+                    WHERE table_schema = :your_db: 
+                    AND table_name = :table_name:
+                    LIMIT 1;';
+    $inSBA_query = $db->bindVars($inSBA_query, ':your_db:', DB_DATABASE, 'string');
+    $inSBA_query = $db->bindVars($inSBA_query, ':table_name:', TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'string');
+    $SBA_installed = $db->Execute($inSBA_query, false, false, 0, true);
+ 
+    if (sizeof($SBA_installed) > 0 && !$SBA_installed->EOF) {
+      $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:;';
+      $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
+      $isSBA = $db->Execute($isSBA_query);
     
-    if ($isSBA->RecordCount() > 0) {
-      return true;
-    } else {
-      return false;
+      if ($isSBA->RecordCount() > 0) {
+        return true;
+      } else {
+        return false;
+      }
     }
+
+    return false;
   }  

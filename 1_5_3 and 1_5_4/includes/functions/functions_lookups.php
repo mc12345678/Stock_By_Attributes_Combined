@@ -9,7 +9,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version GIT: $Id: Author: DrByte  Tue Jul 23 19:29:41 2013 -0400 Modified in v1.5.2 $
  * 
- * Stock by Attributes 1.5.5
+ * Stock by Attributes 1.5.4
  */
 
 /**
@@ -308,7 +308,6 @@
 */
 
   function zen_check_stock($products_id, $products_quantity, $attributes = null) {
-
 // START "Stock by Attributes"
     	$stock_left = zen_get_products_stock($products_id, $attributes) - $products_quantity;
 // END "Stock by Attributes"

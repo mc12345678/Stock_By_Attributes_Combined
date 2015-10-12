@@ -6,7 +6,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version GIT: $Id: Author: DrByte  Jun 30 2014 Modified in v1.5.4 $
  * 
- * Stock by Attributes 1.5.5
+ * Stock by Attributes 1.5.4 15-10-12
  */
 
   require('includes/application_top.php');
@@ -385,7 +385,7 @@ function couponpopupWindow(url) {
   echo HEADING_TITLE_SEARCH_DETAIL . ' ' . zen_draw_input_field('search') . zen_hide_session_id();
   if (isset($_GET['search']) && zen_not_null($_GET['search'])) {
     $keywords = zen_db_input(zen_db_prepare_input($_GET['search']));
-    echo '<br />' . TEXT_INFO_SEARCH_DETAIL_FILTER . $keywords;
+    echo '<br/ >' . TEXT_INFO_SEARCH_DETAIL_FILTER . $keywords;
   }
 ?>
             </td>
@@ -405,7 +405,7 @@ function couponpopupWindow(url) {
   echo HEADING_TITLE_SEARCH_DETAIL_ORDERS_PRODUCTS . ' ' . zen_draw_input_field('search_orders_products') . zen_hide_session_id();
   if (isset($_GET['search_orders_products']) && zen_not_null($_GET['search_orders_products'])) {
     $keywords_orders_products = zen_db_input(zen_db_prepare_input($_GET['search_orders_products']));
-    echo '<br />' . TEXT_INFO_SEARCH_DETAIL_FILTER_ORDERS_PRODUCTS . zen_db_prepare_input($keywords_orders_products);
+    echo '<br/ >' . TEXT_INFO_SEARCH_DETAIL_FILTER_ORDERS_PRODUCTS . zen_db_prepare_input($keywords_orders_products);
   }
 ?>
             </td>
@@ -558,14 +558,14 @@ function couponpopupWindow(url) {
           </tr>
 <?php
 
-	// START "Stock by Attributes"
-	//include language file
-	include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
-	//new object from class
-	require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
-	$stock = new products_with_attributes_stock;
-	// END "Stock by Attributes"
-	
+  // START "Stock by Attributes"
+  //include language file
+    include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
+  //new object from class
+    require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
+    $stock = new products_with_attributes_stock;
+  // END "Stock by Attributes"
+  
     for ($i=0, $n=sizeof($order->products); $i<$n; $i++) {
       if (DISPLAY_PRICE_WITH_TAX_ADMIN == 'true')
       {
@@ -579,33 +579,35 @@ function couponpopupWindow(url) {
            '            <td class="dataTableContent" valign="top">' . $order->products[$i]['name'];
 
       if (isset($order->products[$i]['attributes']) && (sizeof($order->products[$i]['attributes']) > 0)) {
-  			$attributes = array(); // mc12345678 Moved to within if statement otherwise doesn't apply elsewhere.
+        $attributes = array(); // mc12345678 Moved to within if statement otherwise doesn't apply elsewhere.
         for ($j = 0, $k = sizeof($order->products[$i]['attributes']); $j < $k; $j++) {
-			// kuroi: SbA //this bit of code does not seem to be used on this page, need to see if it is dead code or used elseware!
-          	$option_name_array = explode(":", $order->products[$i]['attributes'][$j]['option']);
-          	$option_Name = $option_name_array[0];
-			// end: sbA
-			
-          	//"Stock by Attributes" add custom ID to display
-			$customid = null;
-			//test if this is to be displayed
-			if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
-				//create array for use in zen_get_customid
-				$attributes[] = $order->products[$i]['attributes'][$j]['value_id'];
-				//get custom ID
-				sort($attributes);
-				$customid = $stock->zen_get_customid($order->products[$i]['id'],$attributes);
-				//only display custom ID if exists
-				if( !empty($customid) && $j == $k-1){
-					//add name prefix (this is set in the admin language file)
-					$customid = PWA_CUSTOMID_NAME . $customid;
-				} else {
-					$customid = '';
-				}
-			}
-		  //"Stock by Attributes" add custom ID to display
-          echo '<br /><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value'])) . (zen_not_null($customid) ? ' (' . $customid . ') ' : '');
-		  // END "Stock by Attributes"
+      // kuroi: SbA //this bit of code does not seem to be used on this page, need to see if it is dead code or used elseware!
+          $option_name_array = explode(":", $order->products[$i]['attributes'][$j]['option']);
+          $option_Name = $option_name_array[0];
+      // end: sbA
+      
+            //"Stock by Attributes" add custom ID to display
+          $customid = null;
+      //test if this is to be displayed
+          if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
+        //create array for use in zen_get_customid
+            $attributes[] = $order->products[$i]['attributes'][$j]['value_id'];
+        //get custom ID
+            sort($attributes);
+            $customid = $stock->zen_get_customid($order->products[$i]['id'],$attributes);
+        //only display custom ID if exists
+            if( !empty($customid) && $j == $k-1){
+          //add name prefix (this is set in the admin language file)
+              $customid = PWA_CUSTOMID_NAME . $customid;
+            } else {
+              $customid = '';
+            }
+          }
+      // END "Stock by Attributes"
+          echo '<br /><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
+      //"Stock by Attributes" add custom ID to display
+          echo  (zen_not_null($customid) ? ' (' . $customid . ') ' : '');
+      // END "Stock by Attributes"
           if ($order->products[$i]['attributes'][$j]['price'] != '0') echo ' (' . $order->products[$i]['attributes'][$j]['prefix'] . $currencies->format($order->products[$i]['attributes'][$j]['price'] * $order->products[$i]['qty'], true, $order->info['currency'], $order->info['currency_value']) . ')';
           if ($order->products[$i]['attributes'][$j]['product_attribute_is_free'] == '1' and $order->products[$i]['product_is_free'] == '1') echo TEXT_INFO_ATTRIBUTE_FREE;
           echo '</i></small></nobr>';
@@ -954,7 +956,7 @@ if (($_GET['page'] == '' or $_GET['page'] <= 1) and $_GET['oID'] != '') {
                         echo '<a href="' . zen_href_link(FILENAME_ORDERS, '', 'NONSSL') . '">' . zen_image_button('button_reset.gif', IMAGE_RESET) . '</a>';
                         if (isset($_GET['search']) && zen_not_null($_GET['search'])) {
                           $keywords = zen_db_input(zen_db_prepare_input($_GET['search']));
-                          echo '<br />' . TEXT_INFO_SEARCH_DETAIL_FILTER . $keywords;
+                          echo '<br/ >' . TEXT_INFO_SEARCH_DETAIL_FILTER . $keywords;
                         }
                       ?>
                     </td>

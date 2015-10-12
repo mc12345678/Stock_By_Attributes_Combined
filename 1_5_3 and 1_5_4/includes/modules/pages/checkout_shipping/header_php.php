@@ -44,34 +44,34 @@
     $products = $_SESSION['cart']->get_products();
     for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 
-		// START "Stock by Attributes"
-		// Added to allow individual stock of different attributes
-	    unset($attributes);
-	    if(is_array($products[$i]['attributes'])){
-	        $inSBA_query = "select stock_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :productsid:";
-    	    $inSBA_query = $db->bindVars($inSBA_query, ':productsid:', $products[$i]['id'], 'integer');
+    // START "Stock by Attributes"
+    // Added to allow individual stock of different attributes
+      unset($attributes);
+      if(is_array($products[$i]['attributes'])){
+        $inSBA_query = "select stock_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :productsid:";
+        $inSBA_query = $db->bindVars($inSBA_query, ':productsid:', $products[$i]['id'], 'integer');
         
-        	$inSBA_result = $db->Execute($inSBA_query);
+        $inSBA_result = $db->Execute($inSBA_query);
 
-	        if (sizeof($inSBA_result) > 0 && zen_not_null($inSBA_result)) {
-    			$attributes = $products[$i]['attributes'];
-        	} else {
-		      $attributes = null; //Force normal operation if the product is not monitored by SBA.
-	        }
-	    } else {
-        	  $attributes = null;
-	    }
-	
-		  if(zen_not_null($attributes)){ // Called if the product is only in the SBA table, not just has attributes.
-	    	if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
-	    		zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
-	    		break;
-	    	} // Currently seems to Ignore possibility of mixed product/ mixed YES otherwise, change below to reference zen_get_products_stock($products[$i]['id'], $attributes)
-	    } else {
+        if (sizeof($inSBA_result) > 0 && zen_not_null($inSBA_result)) {
+          $attributes = $products[$i]['attributes'];
+        } else {
+          $attributes = null; //Force normal operation if the product is not monitored by SBA.
+        }
+      } else {
+        $attributes = null;
+      }
+  
+      if(zen_not_null($attributes)){ // Called if the product is only in the SBA table, not just has attributes.
+        if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
+          zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+          break;
+        } // Currently seems to Ignore possibility of mixed product/ mixed YES otherwise, change below to reference zen_get_products_stock($products[$i]['id'], $attributes)
+      } else {
         if (zen_check_stock($products[$i]['id'], $products[$i]['quantity']) ) {
-	      	zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
-	      	break;
-	      } else {
+          zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+          break;
+        } else {
           // extra check on stock for mixed YES
           if ( zen_get_products_stock($products[$i]['id']) - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
             zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
@@ -79,10 +79,9 @@
           }
         }
       }
-    }   
-	// END "Stock by Attributes"
+  // END "Stock by Attributes"
+    }
   }
-
 // if no shipping destination address was selected, use the customers own address as default
   if (!$_SESSION['sendto']) {
     $_SESSION['sendto'] = $_SESSION['customer_default_address_id'];

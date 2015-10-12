@@ -11,7 +11,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: tpl_shopping_cart_default.php 15881 2010-04-11 16:32:39Z wilt $
  * 
- * Updated for Stock by Attributes 1.5.3.1
+ * Updated for Stock by Attributes 1.5.3 15-10-04
  */
 ?>
 <div class="centerColumn" id="shoppingCartDefault">

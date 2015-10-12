@@ -377,7 +377,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
     
         $attributes[]=array('oid'=>$products_options_name->fields['products_options_id'],
                             'oname'=>$products_options_name->fields['products_options_name'],
-							'oimgstyle'=>$products_options_name->fields['products_options_images_style'], // rcloke
+                            'oimgstyle'=>$products_options_name->fields['products_options_images_style'], // rcloke
                             'ovals'=>$products_options_array,
                             'otype'=>$products_options_name->fields['products_options_type'],
                             'default'=>$selected);
@@ -508,7 +508,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
       }
       $out='';
       foreach ($combinations[0]['comb'] as $oid=>$ovid) {
-        $out.='{'.$ovid.':';
+        $out.='{'.zen_output_string_protected($ovid).':';
         $opts[]=$oid;
       }
       $out.='1';
@@ -523,10 +523,10 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
         $out.=str_repeat('}',sizeof($opts)-1-$i).',';
         if ($i<sizeof($opts)-1) {
           for ($j=$i; $j<sizeof($opts)-1; $j++){
-            $out.=$comb[$opts[$j]].':{';
+            $out.=zen_output_string_protected($comb[$opts[$j]]).':{';
           }
         }
-        $out.=$comb[$opts[sizeof($opts)-1]].':1';
+        $out.=zen_output_string_protected($comb[$opts[sizeof($opts)-1]]).':1';
       }
       $out.=str_repeat('}',sizeof($opts));
       

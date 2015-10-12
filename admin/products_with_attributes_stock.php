@@ -160,7 +160,6 @@ switch ($action) {
         $hidden_form .= zen_draw_hidden_field('add_edit', 'add') . "\n";
         $s_mack_noconfirm .="add_edit=add&amp;"; //s_mack:noconfirm
       }
-
     } else {
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action')), $request_type));
     }
@@ -211,7 +210,6 @@ switch ($action) {
       Allow inserting "ALL" attributes at once
      */
     if (($_POST['add_edit'] == 'add') || ($_GET['add_edit'] == 'add')) { //s_mack:noconfirm
-
       $attributes = ltrim($attributes, ','); //remove extra comma seperators
 
       if (preg_match("/\|/", $attributes) && preg_match("/\;/", $attributes)) {
@@ -256,7 +254,6 @@ switch ($action) {
             $saveResult = $stock->insertNewAttribQty($products_id, $productAttributeCombo, $strAttributes, $quantity); //can not include the $customid since it must be unique
           }
         }
-				
       } elseif (preg_match("/\;/", $attributes)) {
         //explode array on ,
         $arrTemp = preg_split("/\,/", $attributes);
@@ -341,7 +338,6 @@ switch ($action) {
           $productAttributeCombo = $products_id . '-' . str_replace(',', '-', $strAttributes);
           $saveResult = $stock->insertNewAttribQty($products_id, $productAttributeCombo, $strAttributes, $quantity); //can not include the $customid since it must be unique
         }
-				
       } else {
         //used for adding one attribute or atribute combination at a time
         $strAttributes = ltrim($attributes, ","); //remove extra , if present
@@ -349,7 +345,6 @@ switch ($action) {
         $productAttributeCombo = $products_id . '-' . str_replace(',', '-', $strAttributes);
         $saveResult = $stock->insertNewAttribQty($products_id, $productAttributeCombo, $strAttributes, $quantity, $customid, $skuTitle);
       }
-			
     } elseif (($_POST['add_edit'] == 'edit') || ($_GET['add_edit'] == 'edit')) { //s_mack:noconfirm
       $stock_id = $_POST['stock_id']; //s_mack:noconfirm
       if ($_GET['stock_id']) {
@@ -552,7 +547,6 @@ require(DIR_WS_INCLUDES . 'header.php');
       <!-- body_text_eof //-->
 
     <?php
-
 //case selection 'add', 'edit', 'delete_all', 'delete',  'confirm'
     switch ($action) {
       case 'add':
@@ -607,7 +601,6 @@ require(DIR_WS_INCLUDES . 'header.php');
             $msg = 'Only add the attributes used to control ' . PWA_QUANTITY . '.<br />Leave the other attribute groups as N/A.<br />';
           }
           echo $msg . '<p><strong>' . PWA_QUANTITY . '</strong>' . zen_draw_input_field('quantity') . '</p>' . "\n";
-
         } else {
 
           echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=add', 'post', '', true) . "\n";

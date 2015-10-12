@@ -7,7 +7,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version GIT: $Id: Author: DrByte  Tue Apr 15 15:06:16 2014 -0400 Modified in v1.5.3 $
  * 
- * Stock by Attributes 1.5.5
+ * Stock by Attributes 1.5.4
  */
 /**
  * order class
