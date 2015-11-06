@@ -476,7 +476,7 @@ class products_with_attributes_stock extends base {
     }
     
     if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM') {
-      updateNotifyOrderDuringCreateAddedAttributeLineItem(&$callingClass, $notifier, $paramsArray);
+      updateNotifyOrderDuringCreateAddedAttributeLineItem($callingClass, $notifier, $paramsArray);
     } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
 			/* First check to see if SBA is installed and if it is then look to see if a value is 
        *  supplied in the stock_id parameter (which should only be populated when a SBA tracked
