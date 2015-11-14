@@ -9,7 +9,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: functions_lookups.php 19352 2011-08-19 16:13:43Z ajeh $
  * 
- * Updated for Stock by Attributes 1.5.3.1
+ * Updated for Stock by Attributes 1.5.3.1 15-11-14 mc12345678
  */
 
 
@@ -313,9 +313,16 @@
  * @TODO naughty html in a function
 */
 
-  function zen_check_stock($products_id, $products_quantity, $attributes = null) {
+  function zen_check_stock($products_id, $products_quantity, $attributes = null, $from = 'products') {
 
 // START "Stock by Attributes"
+    if ($from == 'order' && is_array($attributes)) {
+      $tmp_attrib = array();
+      foreach ($attributes as $attrib) {
+        $tmp_attrib[$attrib['option_id']] = $attrib['value_id'];
+      }
+      $attributes = $tmp_attrib;
+    }
     	$stock_left = zen_get_products_stock($products_id, $attributes) - $products_quantity;
 // END "Stock by Attributes"
     $out_of_stock = '';

@@ -1,6 +1,6 @@
 <?php
 /*
- * Stock by Attributes 1.5.4
+ * Stock by Attributes 1.5.4 15-11-14 mc12345678
  */
 
 //What about: 'multiple_products_add_product' (Needs to be addressed though don't see at the moment why since generally unable to select multiple products each with attributes, perhaps something to consider for later, but let's get serious here at the moment as there are more routine actions to be handled properly first.), 'update_product' (Needs to be addressed), or 'cart' (does a notify action, so may need to address?)actions?
@@ -257,6 +257,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 // bof: adjust new quantity to be same as current in stock
       $chk_current_qty = zen_get_products_stock($product_id, $attributes);
       $_SESSION['cart']->flag_duplicate_msgs_set = FALSE;
+      
+      $productAttrAreSBA = zen_get_sba_stock_attribute_id($product_id, $attributes, 'products');
+      if (!zen_not_null($productAttrAreSBA)) {
+        $the_list .= PWA_COMBO_OUT_OF_STOCK . "<br />";
+        foreach ($_POST['id'] as $key2 => $value2) {
+          $the_list .= TEXT_ERROR_OPTION_FOR . '<span class="alertBlack">' . zen_options_name($key2) . '</span>' . TEXT_INVALID_SELECTION . '<span class="alertBlack">' . ($value == (int)PRODUCTS_OPTIONS_VALUES_TEXT_ID ? TEXT_INVALID_USER_INPUT : zen_values_name($value2)) . '</span>' . '<br />';
+        }
+      }
       
       if (STOCK_ALLOW_CHECKOUT == 'false' && ($cart_qty + $new_qty > $chk_current_qty)) {
           $new_qty = $chk_current_qty;

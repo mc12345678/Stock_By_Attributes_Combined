@@ -10,7 +10,7 @@
  * @property array $_stock_values The results of querying on the database for the stock remaining and other associated information.
  * @author mc12345678
  *
- * Stock by Attributes 1.5.4 mc12345678 15-08-22
+ * Stock by Attributes 1.5.4  15-11-14 mc12345678
  */
 class products_with_attributes_stock extends base {
 
@@ -259,7 +259,7 @@ class products_with_attributes_stock extends base {
     $this->_i = $i;
     $this->_productI = $productI;
 
-    $this->_stock_info = zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes']); // Sorted comma separated list of the attribute_id.
+    $this->_stock_info = zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order'); // Sorted comma separated list of the attribute_id.
 
     // START "Stock by Attributes"
     $attributeList = null;
@@ -295,7 +295,7 @@ class products_with_attributes_stock extends base {
       // mc12345678 If the has attibutes then perform the following work.
 			if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) >0){
         // mc12345678 Identify a list of attributes associated with the product
-				$stock_attributes_search = zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes']);
+				$stock_attributes_search = zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
         
 				$get_quantity_query = 'select quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
 
@@ -390,8 +390,8 @@ class products_with_attributes_stock extends base {
     }
     if ($notifier == 'NOTIFY_ORDER_PROCESSING_ATTRIBUTES_BEGIN') {
       
-//      $stock_attribute = zen_get_sba_stock_attribute(zen_get_prid($this->products[$i]['id']), $this->products[$i]['attributes']);
-//      $stock_id = zen_get_sba_stock_attribute_id(zen_get_prid($this->products[$i]['id']), $this->products[$i]['attributes']); //true; // Need to use the $stock_attribute/attributes to obtain the attribute id.
+//      $stock_attribute = zen_get_sba_stock_attribute(zen_get_prid($this->products[$i]['id']), $this->products[$i]['attributes'], 'order');
+//      $stock_id = zen_get_sba_stock_attribute_id(zen_get_prid($this->products[$i]['id']), $this->products[$i]['attributes'], 'order'); //true; // Need to use the $stock_attribute/attributes to obtain the attribute id.
     }
 
     if ($notifier == 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN'){
@@ -411,7 +411,7 @@ class products_with_attributes_stock extends base {
       /*$this->_i = $i;
       $this->_productI = $productI;
 
-      $this->_stock_info = zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes']);
+      $this->_stock_info = zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
 
       // START "Stock by Attributes"
       $attributeList = null;
@@ -437,7 +437,7 @@ class products_with_attributes_stock extends base {
         // mc12345678 If the has attibutes then perform the following work.
         if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) >0){
           // mc12345678 Identify a list of attributes associated with the product
-          $stock_attributes_search = zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes']);
+          $stock_attributes_search = zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
 
           $get_quantity_query = 'select quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
 

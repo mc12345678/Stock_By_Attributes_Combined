@@ -6,7 +6,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version GIT: $Id: Author: DrByte  Wed Nov 6 21:04:33 2013 -0500 Modified in v1.5.2 $
  * 
- * Updated for Stock by Attributes 1.5.3.1
+ * Updated for Stock by Attributes 1.5.3.1 15-11-14 mc12345678
  */
 
   require('includes/application_top.php');
@@ -601,7 +601,9 @@ function couponpopupWindow(url) {
 				}
 			}
 		  //"Stock by Attributes" add custom ID to display
-          echo '<br /><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value'])) . (zen_not_null($customid) ? ' (' . $customid . ') ' : '');
+          echo '<br /><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
+      //"Stock by Attributes" add custom ID to display
+          echo  (zen_not_null($customid) ? ' (' . $customid . ') ' : '');
 		  // END "Stock by Attributes"
           if ($order->products[$i]['attributes'][$j]['price'] != '0') echo ' (' . $order->products[$i]['attributes'][$j]['prefix'] . $currencies->format($order->products[$i]['attributes'][$j]['price'] * $order->products[$i]['qty'], true, $order->info['currency'], $order->info['currency_value']) . ')';
           if ($order->products[$i]['attributes'][$j]['product_attribute_is_free'] == '1' and $order->products[$i]['product_is_free'] == '1') echo TEXT_INFO_ATTRIBUTE_FREE;

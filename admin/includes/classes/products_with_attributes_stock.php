@@ -7,7 +7,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id:  $
  *
- * Stock by Attributes 1.5.4  mc12345678 15-08-16
+ * Stock by Attributes 1.5.4   15-11-14 mc12345678
  */
 
 if (!defined('IS_ADMIN_FLAG')) {
@@ -784,7 +784,7 @@ function nullDataEntry($fieldtoNULL){
 		  							where products_id = :products_id: 
 		  							and stock_attributes = :stock_attributes:'; 
           $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
-          $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes, 'string');
+          $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'string');
   		    $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
         }
   		}

@@ -6,7 +6,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: invoice.php 19136 2011-07-18 16:56:18Z wilt $
  * 
- * Stock by Attributes 1.5.4
+ * Stock by Attributes 1.5.4 15-11-14 mc12345678
 */
 
   require('includes/application_top.php');
@@ -179,24 +179,24 @@ function couponpopupWindow(url) {
 
       if (isset($order->products[$i]['attributes']) && (($k = sizeof($order->products[$i]['attributes'])) > 0)) {
         for ($j = 0; $j < $k; $j++) {
-
-			//"Stock by Attributes" add custom ID to display
-			$customid = null;
-			//test if this is to be displayed
-			if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
-				$attributes = array();
-				//create array for use in zen_get_customid
-				$attributes[] = $order->products[$i]['attributes'][$j]['value_id'];//value_id option_id
-				//get custom ID
-				$customid = ' ' . $stock->zen_get_customid($order->products[$i]['id'],$attributes) . ' ';
-				//only display custom ID if exists
-				if( !empty($customid) ){
-					//add name prefix (this is set in the admin language file)
-					$customid = PWA_CUSTOMID_NAME . $customid;
-				}
-			}
-		  //"Stock by Attributes" add custom ID to display
-          echo '<br><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value'])) . ' (' . $customid . ') ';
+          //"Stock by Attributes" add custom ID to display
+          $customid = null;
+          //test if this is to be displayed
+          if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
+            $attributes = array();
+            //create array for use in zen_get_customid
+            $attributes[] = $order->products[$i]['attributes'][$j]['value_id'];//value_id option_id
+            //get custom ID
+            $customid = ' ' . $stock->zen_get_customid($order->products[$i]['id'],$attributes) . ' ';
+            //only display custom ID if exists
+            if( !empty($customid) ){
+              //add name prefix (this is set in the admin language file)
+              $customid = PWA_CUSTOMID_NAME . $customid;
+            }
+          }
+          echo '<br><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
+          //"Stock by Attributes" add custom ID to display
+          echo ( STOCK_SBA_DISPLAY_CUSTOMID == 'true' ? ( $customid != '' ? ' (' . $customid . ') ' : '') : '' );
           // END "Stock by Attributes"
           if ($order->products[$i]['attributes'][$j]['price'] != '0') echo ' (' . $order->products[$i]['attributes'][$j]['prefix'] . $currencies->format($order->products[$i]['attributes'][$j]['price'] * $order->products[$i]['qty'], true, $order->info['currency'], $order->info['currency_value']) . ')';
           if ($order->products[$i]['attributes'][$j]['product_attribute_is_free'] == '1' and $order->products[$i]['product_is_free'] == '1') echo TEXT_INFO_ATTRIBUTE_FREE;

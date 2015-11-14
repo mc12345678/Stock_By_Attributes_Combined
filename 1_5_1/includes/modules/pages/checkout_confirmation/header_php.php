@@ -6,7 +6,8 @@
  * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: header_php.php 16435 2010-05-28 09:34:32Z drbyte $
+ * @version $Id: header_php.php 16435 2010-05-28 09:34:32Z drbyte $
+ * Updated 15-11-14 mc12345678
  */
 
 // This should be first line of the script:
@@ -105,7 +106,7 @@ $flagAnyOutOfStock = false;
 $stock_check = array();
 if (STOCK_CHECK == 'true') {
   for ($i=0, $n=sizeof($order->products); $i<$n; $i++) {
-    if ($stock_check[$i] = zen_check_stock($order->products[$i]['id'], $order->products[$i]['qty'], $order->products[$i]['attributes'])) {
+    if ($stock_check[$i] = zen_check_stock($order->products[$i]['id'], $order->products[$i]['qty'], $order->products[$i]['attributes'], 'order')) {
       $flagAnyOutOfStock = true;
     }
   }

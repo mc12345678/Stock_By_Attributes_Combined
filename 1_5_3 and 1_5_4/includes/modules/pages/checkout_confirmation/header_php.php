@@ -8,7 +8,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version GIT: $Id: Author: DrByte  Wed Nov 6 16:20:00 2013 -0500 Modified in v1.5.2 $
  *
- * Stock by Attributes 1.5.4
+ * Stock by Attributes 1.5.4 15-11-14 mc12345678
  */
 
 // This should be first line of the script:
@@ -107,7 +107,7 @@ $flagAnyOutOfStock = false;
 $stock_check = array();
 if (STOCK_CHECK == 'true') {
   for ($i=0, $n=sizeof($order->products); $i<$n; $i++) {
-    if ($stock_check[$i] = zen_check_stock($order->products[$i]['id'], $order->products[$i]['qty'], $order->products[$i]['attributes'])) { //mc12345678 SBA 1.5.4 2015-10-09
+    if ($stock_check[$i] = zen_check_stock($order->products[$i]['id'], $order->products[$i]['qty'], $order->products[$i]['attributes'], 'order')) { //mc12345678 SBA 1.5.4 2015-10-09
       $flagAnyOutOfStock = true;
     }
   }

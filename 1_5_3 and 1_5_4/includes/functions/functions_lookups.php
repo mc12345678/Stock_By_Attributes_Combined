@@ -9,7 +9,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version GIT: $Id: Author: DrByte  Tue Jul 23 19:29:41 2013 -0400 Modified in v1.5.2 $
  * 
- * Stock by Attributes 1.5.4
+ * Stock by Attributes 1.5.4 15-11-14 mc12345678
  */
 
 /**
@@ -164,6 +164,7 @@
     global $db;
     $products_id = zen_get_prid($products_id);
 
+   // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
     if ($products_id && (!is_array($attributes) && sizeof($attributes) <= 0)) {
       //For products without associated attributes, get product level stock quantity
       $stock_query = "select products_quantity 
@@ -307,9 +308,16 @@
  * @TODO naughty html in a function
 */
 
-  function zen_check_stock($products_id, $products_quantity, $attributes = null) {
+  function zen_check_stock($products_id, $products_quantity, $attributes = null, $from = 'products') {
 // START "Stock by Attributes"
-    	$stock_left = zen_get_products_stock($products_id, $attributes) - $products_quantity;
+    if ($from == 'order' && is_array($attributes)) {
+      $tmp_attrib = array();
+      foreach ($attributes as $attrib) {
+        $tmp_attrib[$attrib['option_id']] = $attrib['value_id'];
+      }
+      $attributes = $tmp_attrib;
+    }
+    $stock_left = zen_get_products_stock($products_id, $attributes) - $products_quantity;
 // END "Stock by Attributes"
     $out_of_stock = '';
 

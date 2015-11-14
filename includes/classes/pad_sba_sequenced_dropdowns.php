@@ -29,7 +29,7 @@
                     _build_attributes_combinations.  Only needed on method definition and causes
                     error messages on some php versions/configurations
   08/17/2015 - mc12345678: Remade to offer ZC tags around the attributes.
-  
+  11/14/2015   mc12345678 Reworked output of javascript to attempt to force sorted order.
 *******************************************************************************************
   
       QT Pro Product Attributes Display Plugin
@@ -79,6 +79,65 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 
     $out = '';
     $out2 = '';
+    $outendecode = '<script type="text/javascript">var htmlEnDeCode = (function() {
+    var charToEntityRegex,
+        entityToCharRegex,
+        charToEntity,
+        entityToChar;
+
+    function resetCharacterEntities() {
+        charToEntity = {};
+        entityToChar = {};
+        // add the default set
+        addCharacterEntities({
+            \'&amp;\'     :   \'&\',
+            \'&gt;\'      :   \'>\',
+            \'&lt;\'      :   \'<\',
+            \'&quot;\'    :   \'"\',
+            \'&#39;\'     :   "\'"
+        });
+    }
+
+    function addCharacterEntities(newEntities) {
+        var charKeys = [],
+            entityKeys = [],
+            key, echar;
+        for (key in newEntities) {
+            echar = newEntities[key];
+            entityToChar[key] = echar;
+            charToEntity[echar] = key;
+            charKeys.push(echar);
+            entityKeys.push(key);
+        }
+        charToEntityRegex = new RegExp(\'(\' + charKeys.join(\'|\') + \')\', \'g\');
+        entityToCharRegex = new RegExp(\'(\' + entityKeys.join(\'|\') + \'|&#[0-9]{1,5};\' + \')\', \'g\');
+    }
+
+    function htmlEncode(value){
+        var htmlEncodeReplaceFn = function(match, capture) {
+            return charToEntity[capture];
+        };
+
+        return (!value) ? value : String(value).replace(charToEntityRegex, htmlEncodeReplaceFn);
+    }
+
+    function htmlDecode(value) {
+        var htmlDecodeReplaceFn = function(match, capture) {
+            return (capture in entityToChar) ? entityToChar[capture] : String.fromCharCode(parseInt(capture.substr(2), 10));
+        };
+
+        return (!value) ? value : String(value).replace(entityToCharRegex, htmlDecodeReplaceFn);
+    }
+
+    resetCharacterEntities();
+
+    return {
+        htmlEncode: htmlEncode,
+        htmlDecode: htmlDecode
+    };
+})();</script>';
+    $out .= "\n" . $outendecode;
+    $out2 .= "\n" . $outendecode;
     $attributes = array();
 
     $attributes = $this->_build_attributes_array(true, true);
@@ -362,7 +421,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $attr = $attributes[$curattr];
       $out.="  var txt" . $attr['oid'] . "={";
       foreach ($attr['ovals'] as $oval) {
-        $out.=$oval['id'] . ":\"" . zen_output_string_protected($oval['text']) . "\",";
+        $out.="\"_" . $oval['id'] . "\"" . ":\"" . zen_output_string_protected($oval['text']) . "\",";
       }
       $out = substr($out, 0, strlen($out) - 1) . "};";
       $out.="\n";
@@ -422,7 +481,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.="    for (opt in stk";
         $outArray = '';
         for ($i = 0; $i <= $curattr; $i++) {
-          $outArray.="[frm['id[" . $attributes[$i]['oid'] . "]'].value]";
+          $outArray.="['_'+frm['id[" . $attributes[$i]['oid'] . "]'].value]";
         }
         $outArrayList[$curattr] = $outArray;
         $out.=$outArray;
@@ -443,7 +502,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.=$outArray;
         $out.="[opt] != \"undefined\") {\n";
         //  Add the product to the next selectable list item as it is in stock.
-        $out.="          frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length]=new Option(txt" . $attributes[$nextattr]['oid'] . "[opt]";
+        $out.="          frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length]=new Option(htmlEnDeCode.htmlDecode(txt" . $attributes[$nextattr]['oid'] . "[opt])";
         if ($curattr == sizeof($attributes) - 2) {
           if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true') {
             $out.=" + '" . PWA_STOCK_QTY . "' + stk2";
@@ -451,11 +510,11 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
             $out.="[opt]";
           }
         }
-        $out.=",opt);\n";
+        $out.=",opt.substring(1));\n";
         $out.="        } else {\n";
         if (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True') {
           //  Add the product to the next selectable list item and identify its out-of-stock status as controlled by the admin panel.  
-          $out.="          frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length]=new Option(";
+          $out.="          frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length]=new Option(htmlEnDeCode.htmlDecode(";
           if (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'None') {
             $out.="txt" . $attributes[$nextattr]['oid'] . "[opt]";
           } elseif (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'Left') {
@@ -463,7 +522,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
           } elseif (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'Right') {
             $out.="txt" . $attributes[$nextattr]['oid'] . "[opt] + '" . PWA_OUT_OF_STOCK . "'";
           }
-          $out.=",opt);\n";
+          $out.="),opt.substring(1));\n";
 		  if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == sizeof($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
             $out.="          frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length-1].disabled = true;\n";
 		  }
@@ -475,7 +534,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.="      } else {\n";
         if (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True') {
           //  Add the product to the next selectable list item and identify its out-of-stock status as controlled by the admin panel.  
-          $out.="        frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length]=new Option(";
+          $out.="        frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length]=new Option(htmlEnDeCode.htmlDecode(";
           if (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'None') {
             $out.="txt" . $attributes[$nextattr]['oid'] . "[opt]";
           } elseif (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'Left') {
@@ -483,7 +542,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
           } elseif (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'Right') {
             $out.="txt" . $attributes[$nextattr]['oid'] . "[opt] + '" . PWA_OUT_OF_STOCK . "'";
           }
-          $out.=",opt);\n";
+          $out.="),opt.substring(1));\n";
           if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == sizeof($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
             $out.="        frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length-1].disabled = true;\n";
           }
@@ -575,7 +634,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       // Check if the option is defined/has stock.
       $out.="if (typeof stk3";
       for ($k = 0; $k <= $j; $k++) {
-        $out.="[frm['id[" . $attributes[$k]['oid'] . "]'].value]";
+        $out.="[" . "'_'+"  . "frm['id[" . $attributes[$k]['oid'] . "]'].value]";
       }
       $out.=" == \"undefined\") {\n";
       $out.="    " . str_repeat("  ", $j + 1);
@@ -650,7 +709,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     $out.="//--></script>\n";
     $out.="\n";
     if (SBA_ZC_DEFAULT !== 'true') {
-      $out.="</td></tr>\n<br />"; // Removed extra: </td></tr>
+      $out.="</td></tr>\n"; // Removed extra: </td></tr>
     }
 
     return $out;
@@ -689,7 +748,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     }
     $out = '';
     foreach ($combinations[0]['comb'] as $oid => $ovid) {
-      $out.='{' . zen_output_string_protected($ovid) . ':';
+      $out.='{' . '"_' . zen_output_string_protected($ovid) . '"' . ':';
       $ovids[] = $ovid;
       $opts[] = $oid;
     }
@@ -714,10 +773,10 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $out.=str_repeat('}', sizeof($opts) - 1 - $i) . ',';
       if ($i < sizeof($opts) - 1) {
         for ($j = $i; $j < sizeof($opts) - 1; $j++) {
-          $out.=zen_output_string_protected($comb[$opts[$j]]) . ':{';
+          $out.= '"_' . zen_output_string_protected($comb[$opts[$j]]) . '"' . ':{';
         }
       }
-      $out.=zen_output_string_protected($comb[$opts[sizeof($opts) - 1]]) . ':';
+      $out.='"_' . zen_output_string_protected($comb[$opts[sizeof($opts) - 1]]) . '"' . ':';
       if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true') {
         $idvals = array();
         foreach ($comb as $ids => $idvalsadd) {
