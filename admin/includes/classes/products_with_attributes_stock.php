@@ -774,17 +774,17 @@ function nullDataEntry($fieldtoNULL){
   			$customid_query = 'select customid as products_model
 		  							from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
 		  							where products_id = :products_id: 
-		  							and stock_attributes in ( ":stock_attributes:");'; 
+		  							and stock_attributes in (:stock_attributes:);'; 
         $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
-        $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'passthru');
+        $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'string');
   		$customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
         if (!$customid->RecordCount()){ // if a customid does not exist for the combination of attributes then perhaps the attributes are individually listed.
   			  $customid_query = 'select customid as products_model
 		  							from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
 		  							where products_id = :products_id: 
-		  							and stock_attributes = :stock_attributes:'; 
+		  							and stock_attributes in (:stock_attributes:)'; 
           $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
-          $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'string');
+          $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'passthru');
   		    $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
         }
   		}
@@ -795,6 +795,15 @@ function nullDataEntry($fieldtoNULL){
 	  		//Test to see if a custom ID exists
 	  		//if there are custom IDs with the attribute, then return them.
 	  			$multiplecid = null;
+	  			//mc12345678: Alternative to the below would be to build an array of "products_model" then implode
+	  			//  the array on ', '... Both methods would require stepping through each of the
+	  			//  returned values to build the desired structure.  The below does all of the
+	  			//  implode in one swoop, though does not account for some of the individual items having
+	  			//  a customid while others do not and thus could get x, y, , w, , z as an example.
+	  			//  Either this is something identified up front, is prevented from happening at all, or
+	  			//  is controllable through some form of "switch".  The maximum flexibility of this is
+	  			//  covered by adding an if statement to the below, otherwise if going to build an array
+	  			//  to then be imploded, separate action would need to take place to eliminate the "blanks".
 	  			while(!$customid->EOF){
 	  				$multiplecid .= $customid->fields['products_model'] . ', ';
 	  				$customid->MoveNext();
