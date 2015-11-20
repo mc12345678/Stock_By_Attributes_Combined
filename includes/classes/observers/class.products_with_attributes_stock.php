@@ -229,8 +229,12 @@ class products_with_attributes_stock extends base {
     * NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED
     */
   function updateNotifyAttributesModuleAttribSelected(&$callingClass, $notifier, $paramsArray){
-    global $product_options, $selected_attribute, $moveSelectedAttribute, $disablebackorder;
+    global $products_options, $selected_attribute, $moveSelectedAttribute, $disablebackorder;
     
+    if (!$this->_isSBA) {
+      return;
+    }
+
     //move default selected attribute if attribute is out of stock and check out is not allowed
     if ($moveSelectedAttribute == true && (STOCK_ALLOW_CHECKOUT == 'false' && $products_options->fields['pasqty'] > 0)) {
       $selected_attribute = true;

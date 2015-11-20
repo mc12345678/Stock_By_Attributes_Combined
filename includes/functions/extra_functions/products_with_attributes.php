@@ -588,7 +588,7 @@ Of the attributes provided, determine the number of those attributes that are
       $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
       $isSBA = $db->Execute($isSBA_query);
     
-      if ($isSBA->RecordCount() > 0) {
+      if (!$isSBA->EOF && $isSBA->RecordCount() > 0) {
         return true;
       } else {
         return false;
