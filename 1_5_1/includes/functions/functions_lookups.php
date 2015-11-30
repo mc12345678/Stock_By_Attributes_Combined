@@ -169,7 +169,7 @@
     global $db;
     $products_id = zen_get_prid($products_id);
 
-    if ($products_id && (!is_array($attributes) && sizeof($attributes) <= 0)) {
+    if ($products_id && (!is_array($attributes) && !zen_not_null($attributes))) {
       //For products without associated attributes, get product level stock quantity
       $stock_query = "select products_quantity 
                       from " . TABLE_PRODUCTS . " 

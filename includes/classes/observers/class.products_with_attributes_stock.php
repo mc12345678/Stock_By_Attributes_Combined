@@ -120,6 +120,7 @@ class products_with_attributes_stock extends base {
    function updateNotifyAttributesModulesOptionsValuesSet (&$callingClass, $notifier, $paramsArray) {
      global $db, $options_menu_images, $products_options, $products_options_names, $PWA_STOCK_QTY;
      
+     if ($this->_isSBA) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
      // START "Stock by Attributes"  SBA
       //used to find if an attribute is display-only
       $sqlDO = "select pa.attributes_display_only
@@ -198,6 +199,7 @@ class products_with_attributes_stock extends base {
         $options_menu_images[] = array('id' => $products_options->fields['products_options_values_id']);
       }
       // END "Stock by Attributes" SBA
+     } // End if _isSBA
    }
 
    /*
