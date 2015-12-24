@@ -486,7 +486,7 @@ Of the attributes provided, determine the number of those attributes that are
               $stockResult = $stock_values->fields['products_quantity'];
               $stockResultArray[] = $stock_values->fields['stock_id'];
 
-              if (!$stockResult->EOF) {
+              if ($stockResult->EOF) {
                 $notAccounted = true;
               }
 

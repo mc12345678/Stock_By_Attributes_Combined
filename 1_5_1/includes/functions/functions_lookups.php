@@ -252,7 +252,7 @@
               $stock_values = $db->Execute($stock_query);
               $stockResult = $stock_values->fields['products_quantity'];
 
-              if (!$stockResult->EOF) {
+              if ($stockResult->EOF) {
                 $notAccounted = true;
               }
 
