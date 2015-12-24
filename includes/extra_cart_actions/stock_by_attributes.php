@@ -259,7 +259,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       $_SESSION['cart']->flag_duplicate_msgs_set = FALSE;
       
       $productAttrAreSBA = zen_get_sba_stock_attribute_id($product_id, $attributes, 'products');
-      if (!zen_not_null($productAttrAreSBA)) {
+      if ($productAttrAreSBA === false) {
         $the_list .= PWA_COMBO_OUT_OF_STOCK . "<br />";
         foreach ($_POST['id'] as $key2 => $value2) {
           $the_list .= TEXT_ERROR_OPTION_FOR . '<span class="alertBlack">' . zen_options_name($key2) . '</span>' . TEXT_INVALID_SELECTION . '<span class="alertBlack">' . ($value == (int)PRODUCTS_OPTIONS_VALUES_TEXT_ID ? TEXT_INVALID_USER_INPUT : zen_values_name($value2)) . '</span>' . '<br />';

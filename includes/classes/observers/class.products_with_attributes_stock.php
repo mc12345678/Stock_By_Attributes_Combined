@@ -27,13 +27,15 @@ class products_with_attributes_stock extends base {
   
   private $_isSBA = false;
   
+  private $_orderIsSBA = false;
+  
   private $_products_options_names_count;
 
   
   /*
    * This is the observer for the includes/classes/order.php file to support Stock By Attributes when the order is being processed at the end of the purchase.
    */
-  function products_with_attributes_stock() {
+  function __construct() {
 		//global $zco_notifier;
     
     $attachNotifier = array();
@@ -56,7 +58,7 @@ class products_with_attributes_stock extends base {
    * NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE
    */
   function updateNotifyAttributesModuleSaleMakerDisplayPricePercentage(&$callingClass, $notifier, $paramsArray){
-    global $products_option_names, $products_options_display_price, $products_options, $currencies, $new_attributes_price, $product_info;
+    global $products_options_names, $products_options_display_price, $products_options, $currencies, $new_attributes_price, $product_info;
     
     if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_RADIO || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
       //use this if a PRODUCTS_OPTIONS_TYPE_RADIO or PRODUCTS_OPTIONS_TYPE_CHECKBOX
@@ -70,7 +72,7 @@ class products_with_attributes_stock extends base {
    * NOTIFY_ATTRIBUTES_MODULE_OPTIONS_SQL
    */
    function updateNotifyAttributesModuleOptionsSQL(&$callingClass, $notifier, $paramsArray) {
-     global $db, $sql, $options_menu_images, $moveSelectedAttribute, $products_options_array, $options_attributes_image, $products_options_names, $products_options_names_count, $stock, $is_SBA_product;
+     global $db, $sql, $options_menu_images, $moveSelectedAttribute, $products_options_array, $options_attributes_image, $products_options_names, $products_options_names_count, $stock, $is_SBA_product, $order_by;
      
      $options_menu_images = array();
      $moveSelectedAttribute = false;
@@ -120,7 +122,7 @@ class products_with_attributes_stock extends base {
    function updateNotifyAttributesModulesOptionsValuesSet (&$callingClass, $notifier, $paramsArray) {
      global $db, $options_menu_images, $products_options, $products_options_names, $PWA_STOCK_QTY;
      
-     if ($this->_isSBA) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
+     if ($this->_isSBA && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
      // START "Stock by Attributes"  SBA
       //used to find if an attribute is display-only
       $sqlDO = "select pa.attributes_display_only
@@ -208,24 +210,25 @@ class products_with_attributes_stock extends base {
   function updateNotifyAttributesModuleOriginalPrice(&$callingClass, $notifier, $paramsArray){
     global $db, $products_options, $products_options_names, $currencies, $new_attributes_price, $product_info, $products_options_display_price, $PWA_STOCK_QTY;
     
-    // START "Stock by Attributes" SBA added original price for display, and some formatting
-    $originalpricedisplaytext = null;
-    if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !(zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false') == $new_attributes_price || (zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false') == -$new_attributes_price && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
-      //Original price struck through
-      if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_RADIO || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
-        //use this if a PRODUCTS_OPTIONS_TYPE_RADIO or PRODUCTS_OPTIONS_TYPE_CHECKBOX
-        //class="normalprice" can be used in a CSS file to control the text properties, not compatable with selection lists
-        $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="normalprice">' . $products_options->fields['price_prefix'] . $currencies->display_price(zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false'), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
-      } else {
-        //need to remove the <span> tag for selection lists and text boxes
-        $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . $products_options->fields['price_prefix'] . $currencies->display_price(abs(zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false')), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+    if ($this->_isSBA && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
+      // START "Stock by Attributes" SBA added original price for display, and some formatting
+      $originalpricedisplaytext = null;
+      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !(zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false') == $new_attributes_price || (zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false') == -$new_attributes_price && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
+        //Original price struck through
+        if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_RADIO || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
+          //use this if a PRODUCTS_OPTIONS_TYPE_RADIO or PRODUCTS_OPTIONS_TYPE_CHECKBOX
+          //class="normalprice" can be used in a CSS file to control the text properties, not compatable with selection lists
+          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="normalprice">' . $products_options->fields['price_prefix'] . $currencies->display_price(zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false'), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+        } else {
+          //need to remove the <span> tag for selection lists and text boxes
+          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . $products_options->fields['price_prefix'] . $currencies->display_price(abs(zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false')), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+        }
       }
-    }
 
-    $products_options_display_price .= $originalpricedisplaytext . $PWA_STOCK_QTY;
-    // END "Stock by Attributes" SBA
-     
-   }
+      $products_options_display_price .= $originalpricedisplaytext . $PWA_STOCK_QTY;
+      // END "Stock by Attributes" SBA
+    }
+  }
    
    /*
     * NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED
@@ -233,7 +236,8 @@ class products_with_attributes_stock extends base {
   function updateNotifyAttributesModuleAttribSelected(&$callingClass, $notifier, $paramsArray){
     global $products_options, $selected_attribute, $moveSelectedAttribute, $disablebackorder;
     
-    if (!$this->_isSBA) {
+//       if ($this->_isSBA && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
+    if (!$this->_isSBA || ($this->_isSBA && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0') || ($this->_isSBA && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() == 1) || ($this->_isSBA && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() > 1)) {
       return;
     }
 
@@ -264,21 +268,24 @@ class products_with_attributes_stock extends base {
 	function updateNotifyOrderProcessingStockDecrementInit(&$callingClass, $notifier, $paramsArray, & $productI, & $i) {
     $this->_i = $i;
     $this->_productI = $productI;
+    $this->_orderIsSBA = zen_product_is_sba($this->_productI['id']);
+    
+    if ($this->_orderIsSBA /*&& zen_product_is_sba($this->_productI['id'])*/) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
+      $this->_stock_info = zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order'); // Sorted comma separated list of the attribute_id.
 
-    $this->_stock_info = zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order'); // Sorted comma separated list of the attribute_id.
-
-    // START "Stock by Attributes"
-    $attributeList = null;
-    $customid = null;
-    if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) >0){
-      foreach($this->_productI['attributes'] as $attributes){
-        $attributeList[] = $attributes['value_id'];
-      }
-      $customid = zen_get_customid($this->_productI['id'],$attributeList); // Expects that customid would be from a combination product, not individual attributes on a single product.  Should return an array if the values are individual or a single value if all attributes equal a single product.
-      $productI['customid'] = $customid;
-      $this->_productI['customid'] = $customid;
+      // START "Stock by Attributes"
+      $attributeList = null;
+      $customid = null;
+      if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) >0){
+        foreach($this->_productI['attributes'] as $attributes){
+          $attributeList[] = $attributes['value_id'];
+        }
+        $customid = zen_get_customid($this->_productI['id'],$attributeList); // Expects that customid would be from a combination product, not individual attributes on a single product.  Should return an array if the values are individual or a single value if all attributes equal a single product.
+        $productI['customid'] = $customid;
+        $this->_productI['customid'] = $customid;
 //      $productI['model'] = (zen_not_null($customid) ? $customid : $productI['model']);
-      $this->_productI['model'] = $productI['model'];
+        $this->_productI['model'] = $productI['model'];
+      }
     }
     // END "Stock by Attributes"
   }
@@ -292,7 +299,7 @@ class products_with_attributes_stock extends base {
 
     $this->_stock_values = $stock_values;
 
-    if ($stock_values->RecordCount() > 0) {
+    if ($this->_orderIsSBA && $stock_values->RecordCount() > 0) {
 			// kuroi: Begin Stock by Attributes additions
 			// added to update quantities of products with attributes
 			$attribute_search = array();
@@ -325,14 +332,16 @@ class products_with_attributes_stock extends base {
   function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $paramsArray) {
     //Need to modify the email that is going out regarding low-stock.
     //paramsArray is $i at time of development.
-    if ($callingClass->email_low_stock == '' && $callingClass->doStockDecrement && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
-      // kuroi: trigger and details for attribute low stock email
-      $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid'] . ', name ' . $this->_productI['name'] . ', ';
-			foreach($this->_productI['attributes'] as $attributes){
-				$callingClass->email_low_stock .= $attributes['option'] . ': ' . $attributes['value'] . ', ';
-			}
-			$callingClass->email_low_stock .= 'Stock: ' . $this->_attribute_stock_left . "\n\n";
-		// kuroi: End Stock by Attribute additions
+    if ($this->_orderIsSBA /*zen_product_is_sba($this->_productI['id'])*/) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
+      if ($callingClass->email_low_stock == '' && $callingClass->doStockDecrement && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
+        // kuroi: trigger and details for attribute low stock email
+        $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid'] . ', name ' . $this->_productI['name'] . ', ';
+			  foreach($this->_productI['attributes'] as $attributes){
+  				$callingClass->email_low_stock .= $attributes['option'] . ': ' . $attributes['value'] . ', ';
+	  		}
+		  	$callingClass->email_low_stock .= 'Stock: ' . $this->_attribute_stock_left . "\n\n";
+  		// kuroi: End Stock by Attribute additions
+      }
     }
   }
 
@@ -345,7 +354,7 @@ class products_with_attributes_stock extends base {
      *  supplied in the stock_id parameter (which should only be populated when a SBA tracked
      *  item is in the order */
 //      $_SESSION['paramsArray'] = $paramsArray;
-    if (defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && zen_not_null($this->_stock_info['stock_id'])) {  
+    if ($this->_orderIsSBA && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && zen_not_null($this->_stock_info['stock_id'])) {  
       //Need to validate that order had attributes in it.  If so, then were they tracked by SBA and then add to appropriate table.
 /*          `orders_products_attributes_stock_id` INT(11) NOT NULL auto_increment, 
   `orders_products_attributes_id` INT(11) NOT NULL default '0',

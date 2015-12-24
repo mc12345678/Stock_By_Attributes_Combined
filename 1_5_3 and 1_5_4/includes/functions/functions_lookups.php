@@ -9,7 +9,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version GIT: $Id: Author: DrByte  Tue Jul 23 19:29:41 2013 -0400 Modified in v1.5.2 $
  * 
- * Stock by Attributes 1.5.4 15-11-14 mc12345678
+ * Stock by Attributes 1.5.4 15-12-21 mc12345678
  */
 
 /**
@@ -178,56 +178,40 @@
       //	1. Check if the attribute has been added to the SBA Stock Page.
       //	2. Check if the attribute(s) are listed in seperate rows or are combined into a single row.
       // mc12345678 - The following seems like it could be compressed more/do less searches.  Now that this seems to work, there is some code that can be compressed.
-      $attribute_stock_query = 
-	  		"select stock_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
-				where products_id = :products_id:";
-      $attribute_stock_query = $db->bindVars($attribute_stock_query, ':products_id:', $products_id, 'integer');
-      $attribute_stock = $db->Execute($attribute_stock_query);
 
+   /* mc12345678 Comment about the $attribute_stock test is really to see if the product is tracked by SBA. */
       // check if any attribute stock values have been set for the product in the SBA table, if not do the else part
-      if ($attribute_stock->RecordCount() > 0) {
+      if (zen_product_is_sba($products_id)) {
 
         // prepare to search for details for the particular attribute combination passed as a parameter
-        if (sizeof($attributes) > 1 || $dupTest) {
-          $first_search = 'where options_values_id in ("' . implode('","', $attributes) . '")';  // This helps make a list of items where the options_values_id is compared to each individual attribute ("x","y","z")
-        } else {
-          //foreach extracts the attribute from the array
-          foreach ($attributes as $attribute) { // sets the search to use the last attribute in the list
-            //used for product with a single attribute 
-            $first_search = 'where options_values_id = "' . $attribute . '"';
-          }
-        }
 
-        // obtain the attribute ids
-        $query = 'select products_attributes_id 
-                  from ' . TABLE_PRODUCTS_ATTRIBUTES . ' 
-                  :first_search: 
-                  and products_id = :products_id: 
-                  order by products_attributes_id';
-        $query = $db->bindVars($query, ':first_search:', $first_search, 'passthru');
-        $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
-        $attributes_new = $db->Execute($query);
+        $stock_attributes_list = array();
+        $stock_attributes = '';
 
-        while (!$attributes_new->EOF) {
-          $stock_attributes[] = $attributes_new->fields['products_attributes_id'];
-          $attributes_new->MoveNext();
-        }
+        $stock_attributes_list = zen_get_sba_attribute_ids($products_id, $attributes, 'products');
 
-        if (sizeof($stock_attributes) == 1 && !$dupTest) {
+
+        if (sizeof($stock_attributes_list) == 1 && !$dupTest) {
           // 		  	echo '<br />Single Attribute <br />';
-          $stock_attributes = $stock_attributes[0];
+          $stock_attributes = $stock_attributes_list[0];
           // create the query to find single attribute stock
           $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes=:stock_attributes:';
           $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
           $stock_query = $db->bindVars($stock_query, ':stock_attributes:', $stock_attributes, 'passthru');
           $stock_values = $db->Execute($stock_query);
           // return the stock qty for the attribute
+          if (!$stock_values->EOF) {
           return $stock_values->fields['products_quantity'];
-        } elseif (sizeof($stock_attributes) > 1) {
+          } else {
+            return false;
+          }
+        } elseif (sizeof($stock_attributes_list) > 1) {
+          // mc12345678 multiple attributes are associated with the product
+          //   question is how these relate to the SBA variant.
           // 			echo '<br />Multiple attributes <br />';
           $stockResult = null;
           //This part checks for "attribute combinations" in the SBA table. (Multiple attributes per Stock ID Row, Multiple Attribute types in stock_attributes Field  i.e, 123,321,234)
-          $TMPstock_attributes = implode(',', $stock_attributes);
+          $TMPstock_attributes = implode(',', $stock_attributes_list);
           // create the query to find attribute stock
           $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :TMPstock_attributes:';
           $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
@@ -242,7 +226,7 @@
               return 'true';
             }
             return 'false';
-          } elseif ($stock_values->RecordCount() == 1) {
+          } elseif (!$stock_values->EOF && $stock_values->RecordCount() == 1) {
             //return the stock for "attribute combinations"
             return $stockResult;
           } else {
@@ -251,8 +235,9 @@
             $stockResult = null;
             $returnedStock = null;
             $i = 0;
+            $notAccounted = false;
 
-            foreach ($stock_attributes as $eachAttribute) {
+            foreach ($stock_attributes_list as $eachAttribute) {
               // create the query to find attribute stock
               //echo '<br />Multiple Attributes selected (one attribute type per product)<br />';
               $stock_query = 'select quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes= :eachAttribute:';
@@ -262,6 +247,10 @@
               // get the stock value for the combination
               $stock_values = $db->Execute($stock_query);
               $stockResult = $stock_values->fields['products_quantity'];
+
+              if (!$stockResult->EOF) {
+                $notAccounted = true;
+              }
 
               //special test to account for qty when all attributes are listed seperetly
               if (!zen_not_null($returnedStock) && $i == 0) {
@@ -278,7 +267,11 @@
               $i++;
             } // end for each attribute.
 
-            return $returnedStock;
+            if ($notAccounted) {
+              return false;
+            } else {
+              return $returnedStock;
+            }
           }
         }
       } else {
