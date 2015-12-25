@@ -16,7 +16,7 @@
 ?>
 <div id="productAttributes">
      <?php
-    if ($is_SBA_product /*$stock->_isSBA*/ && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && defined('PRODINFO_ATTRIBUTE_DYNAMIC_STATUS') && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS != '0') {
+    if ($is_SBA_product /*$stock->_isSBA*/ && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && defined('PRODINFO_ATTRIBUTE_DYNAMIC_STATUS') && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS != '0' && (function_exists('zen_sba_dd_allowed') ? zen_sba_dd_allowed($products_options_names) : true)) {
       if (!defined('SBA_ZC_DEFAULT')) {
         define('SBA_ZC_DEFAULT','true'); // sets to use the ZC method of HTML tags around attributes.
       }

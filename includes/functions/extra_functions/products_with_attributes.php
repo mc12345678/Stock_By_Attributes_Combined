@@ -461,63 +461,63 @@ Of the attributes provided, determine the number of those attributes that are
         $stock_values = $db->Execute($stock_query);
         $stockResult = $stock_values->fields['stock_id'];
 
-          if (!$stock_values->EOF && $stock_values->RecordCount() == 1) {
-            //return the stock for "attribute combinations"
-            return array($stockResult);
-          } else {
-            //This part is for attributes that are all listed separately in the SBA table for the product
+        if (!$stock_values->EOF && $stock_values->RecordCount() == 1) {
+          //return the stock for "attribute combinations"
+          return array($stockResult);
+        } else {
+          //This part is for attributes that are all listed separately in the SBA table for the product
 
-            $stockResult = null;
-            $returnedStock = null;
-            $i = 0;
-            
-            $stockResultArray = array();
-            $notAccounted = false;
-            
+          $stockResult = null;
+          $returnedStock = null;
+          $i = 0;
+          
+          $stockResultArray = array();
+          $notAccounted = false;
+          
           foreach ($stock_attributes_list as $eachAttribute) {
-              // create the query to find attribute stock
-              //echo '<br />Multiple Attributes selected (one attribute type per product)<br />';
-              $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes= :eachAttribute:';
-              $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
-              $stock_query = $db->bindVars($stock_query, ':eachAttribute:', $eachAttribute, 'passthru');
+            // create the query to find attribute stock
+            //echo '<br />Multiple Attributes selected (one attribute type per product)<br />';
+            $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes= :eachAttribute:';
+            $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
+            $stock_query = $db->bindVars($stock_query, ':eachAttribute:', $eachAttribute, 'passthru');
 
-              // get the stock value for the combination
-              $stock_values = $db->Execute($stock_query);
-              $stockResult = $stock_values->fields['products_quantity'];
-              $stockResultArray[] = $stock_values->fields['stock_id'];
+            // get the stock value for the combination
+            $stock_values = $db->Execute($stock_query);
+            $stockResult = $stock_values->fields['products_quantity'];
+            $stockResultArray[] = $stock_values->fields['stock_id'];
 
-              if ($stockResult->EOF) {
-                $notAccounted = true;
-              }
-
-              //special test to account for qty when all attributes are listed seperetly
-              if (!zen_not_null($returnedStock) && $i == 0) {
-                //set initial value
-                if ($stock_values->EOF) {
-                  $returnedStock = 0;
-                } else {
-                  $returnedStock = $stockResult;
-                }
-              } elseif ($returnedStock > $stockResult) {
-                //update for each attribute, if qty is lower than the previous one
-                $returnedStock = $stockResult;
-              } // end if first stock item of attribute
-              $i++;
-            } // end for each attribute.
-
-            /*foreach ($stockResultArray as $stockResult) {
-              if (!zen_not_null($stockResult)) {
-                $stockResultArray = false;
-                continue;
-              }
-            }*/
-
-            if ($notAccounted) {
-              return false;
-            } else {
-              return $stockResultArray;
+            if ($stockResult->EOF) {
+              $notAccounted = true;
             }
+
+            //special test to account for qty when all attributes are listed seperetly
+            if (!zen_not_null($returnedStock) && $i == 0) {
+              //set initial value
+              if ($stock_values->EOF) {
+                $returnedStock = 0;
+              } else {
+                $returnedStock = $stockResult;
+              }
+            } elseif ($returnedStock > $stockResult) {
+              //update for each attribute, if qty is lower than the previous one
+              $returnedStock = $stockResult;
+            } // end if first stock item of attribute
+            $i++;
+          } // end for each attribute.
+
+          /*foreach ($stockResultArray as $stockResult) {
+            if (!zen_not_null($stockResult)) {
+              $stockResultArray = false;
+              continue;
+            }
+          }*/
+
+          if ($notAccounted) {
+            return false;
+          } else {
+            return $stockResultArray;
           }
+        }
       
     }
 
@@ -630,6 +630,53 @@ Of the attributes provided, determine the number of those attributes that are
     // and maintain uniqueness of the values:
     //  $stock_id_list = array_keys($stock_id_list);
     return $stock_id_list;
+  }
+
+  function zen_sba_dd_allowed($products_options_names, $data_type = 'attributes') {
+//  if (!is_array($products_options_names)) $products_options_names = array($products_options_names);
+
+    // mc12345678 Below is a list of product types that are currently not supported
+    //  by dynamic dropdowns and therefore should not be displayed with dropdowns 
+    //  until the option type is properly worked around and supported in the dropdowns.
+    $special = array(PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_FILE, PRODUCTS_OPTIONS_TYPE_READONLY, PRODUCTS_OPTIONS_TYPE_CHECKBOX);
+
+    // This is the default "reason" for using this code, and will handle 
+    //   the data that is default provided ($products_options_names from: 
+    //   includes/modules/YOUR_TEMPLATE/attributes.php
+    if ($data_type == 'attributes') {
+      $opt_array = array();
+      // If there is at least one option name then perform the testing.
+      if ($products_options_names->RecordCount() > 0) { 
+        $products_options_names->Move(0);
+//        $products_options_names->MoveNext();
+        while (!$products_options_names->EOF) {
+          if (in_array($products_options_names->fields['products_options_type'], $special)) {
+            return false; // mc12345678 Found that current option type is not supported by Dynamic Dropdowns
+          }
+          $products_options_names->MoveNext();
+        }
+      } else {
+        return false;  // There are no option names therefore there is no DD.
+      }
+    }
+
+    return true;  // Default to trying to use the dynamic dropdown option if
+                  //  not specifically excluded above.
+
+/*  if (sizeof($attributes) > 0) {
+      $sql = "select products_options_type, products_options_id from " . TABLE_PRODUCTS_OPTIONS . " where products_options_id in (:products_options_ids:)";
+      $sql = $db->bindVars($sql, ':products_options_ids:', implode(',', $opt_array), 'noquotestring');
+      $has_special = $db->Execute($sql);
+
+      while (!$has_special->EOF) {
+        if (in_array($has_special->fields['products_options_type'], $special)) {
+          return false;
+        }
+        $has_special->MoveNext();
+      }
+    } else {
+      return false;
+    }*/
   }
 
   // function zen_is_SBA was removed as it was a duplicate of zen_product_is_sba.  If code
