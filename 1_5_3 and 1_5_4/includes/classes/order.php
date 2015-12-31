@@ -880,7 +880,7 @@ class order extends base {
           $order_products_attributes_id = $db->Insert_ID(); // mc13245678 added to suport SBA 1.5.4
 
           //mc12345678 probably want to obtain the same merged data as above related to the orders_products_attributes_id.
-          $this->notify('NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM', array_merge(array('orders_products_attributes_id' => $order_products_attributes_id), $sql_data_array));
+          $this->notify('NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM', array_merge(array('orders_products_attributes_id' => $order_products_attributes_id), $sql_data_array), $order_products_attributes_id);
 
           if ((DOWNLOAD_ENABLED == 'true') && isset($attributes_values->fields['products_attributes_filename']) && zen_not_null($attributes_values->fields['products_attributes_filename'])) {
             $sql_data_array = array('orders_id' => $zf_insert_id,

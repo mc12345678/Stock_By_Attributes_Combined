@@ -556,6 +556,7 @@ $sql = "select count(*) as total
                   } else {
                     $options_name[] = '<label class="attribsInput" for="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '-' . $products_options_value_id . '">' . $products_options_names->fields['products_options_name'] . '</label>';
                   }
+                  $options_html_id[] = 'txt-attrib-' . $products_options_names->fields['products_options_id'];
                   $options_menu[] = $tmp_html . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
@@ -568,6 +569,7 @@ $sql = "select count(*) as total
                   } else {
                     $options_name[] = $products_options_names->fields['products_options_name'];
                   }
+                  $options_html_id[] = 'chk-attrib-' . $products_options_names->fields['products_options_id'];
                   $options_menu[] = $tmp_checkbox . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
@@ -580,6 +582,7 @@ $sql = "select count(*) as total
                   } else {
                     $options_name[] = $products_options_names->fields['products_options_name'];
                   }
+                  $options_html_id[] = 'rad-attrib-' . $products_options_names->fields['products_options_id'];
                   $options_menu[] = $tmp_radio . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
@@ -592,6 +595,7 @@ $sql = "select count(*) as total
                   } else {
                     $options_name[] = '<label class="attribsUploads" for="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '-' . $products_options_value_id . '">' . $products_options_names->fields['products_options_name'] . '</label>';
                   }
+                  $options_html_id[] = 'upl-attrib-' . $products_options_names->fields['products_options_id'];
                   $options_menu[] = $tmp_html . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
@@ -600,6 +604,7 @@ $sql = "select count(*) as total
                   // READONLY
                   case ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_READONLY):
                   $options_name[] = $products_options_names->fields['products_options_name'];
+                  $options_html_id[] = 'ro-attrib-' . $products_options_names->fields['products_options_id'];
                   $options_menu[] = $tmp_html . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
@@ -612,6 +617,7 @@ $sql = "select count(*) as total
                   } else {
                     $options_name[] = $products_options_names->fields['products_options_name'];
                   }
+                  $options_html_id[] = 'drprad-attrib-' . $products_options_names->fields['products_options_id'];
                   $options_menu[] = zen_draw_radio_field('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_value_id, 'selected', 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '-' . $products_options_value_id . '"') . '<label class="attribsRadioButton" for="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '-' . $products_options_value_id . '">' . $products_options_details . '</label>' . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
@@ -645,10 +651,11 @@ $sql = "select count(*) as total
                   // START "Stock by Attributes" SBA
                   $disablebackorder = null;
                   //disable default selected if out of stock
-                  if (STOCK_ALLOW_CHECKOUT == 'false') {
+                  if (defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') {
                     $disablebackorder = ' disabled="disabled" ';
                   }
                   //var_dump($products_options_array);//Debug Line
+                  $options_html_id[] = 'drp-attrib-' . $products_options_names->fields['products_options_id'];
                   //added new image rotate ability ($options_menu_images);
                   $options_menu[] = zen_draw_pull_down_menu_SBAmod('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '"' . ' class="sbaselectlist"', false, $disablebackorder, $options_menu_images) . "\n";
                   // END "Stock by Attributes" SBA
@@ -660,7 +667,7 @@ $sql = "select count(*) as total
 
                 // attributes images table
                 // START "Stock by Attributes" SBA
-                if (SBA_SHOW_IMAGE_ON_PRODUCT_INFO == 'true') {
+                if (!defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') || SBA_SHOW_IMAGE_ON_PRODUCT_INFO != 'false') {
                   $options_attributes_image[] = trim($tmp_attributes_image) . "\n";
                 }
                 // END "Stock by Attributes" SBA

@@ -77,7 +77,7 @@
          } // END h3_option_comment
          ?>
 
-         <div class="wrapperAttribsOptions">
+         <div class="wrapperAttribsOptions" id="<?php echo $options_html_id[$I]; ?>">
               <h4 class="optionName back"><?php echo $options_name[$I]; ?></h4>
               <div class="back"><?php echo "\n" . $options_menu[$I]; ?></div>
               <br class="clearBoth" />
