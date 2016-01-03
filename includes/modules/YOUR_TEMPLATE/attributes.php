@@ -11,7 +11,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version GIT: $Id: Author: Ian Wilson  Tue Aug 14 14:56:11 2012 +0100 Modified in v1.5.1 $
  * 
- * Stock by Attributes 1.5.4 : mc12345678 15-08-22
+ * Stock by Attributes 1.5.4 : mc12345678 16-01-02
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
@@ -38,7 +38,7 @@ $sql = "select count(*) as total
             //LPAD - Return the string argument, left-padded with the specified string 
             //example: LPAD(po.products_options_sort_order,11,"0") the field is 11 digits, and is left padded with 0
               if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
-                $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0")';
+                $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
               } else {
                 $options_order_by= ' order by popt.products_options_name';
               }
@@ -59,11 +59,9 @@ $sql = "select count(*) as total
               $sql = $db->bindVars($sql, ':products_id:', $_GET['products_id'], 'integer');
               $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
               $products_options_names = $db->Execute($sql);
-// BOF "Stock By Attribute" SBA Start
-              $products_options_names_count = $products_options_names->RecordCount();
-// EOF "Stock By Attribute" SBA End
-              // iii 030813 added: initialize $number_of_uploads
-              $number_of_uploads = 0;
+
+  // iii 030813 added: initialize $number_of_uploads
+  $number_of_uploads = 0;
 
               if ( PRODUCTS_OPTIONS_SORT_BY_PRICE =='1' ) {
                 $order_by= ' order by LPAD(pa.products_options_sort_order,11,"0"), pov.products_options_values_name';
@@ -124,6 +122,7 @@ $sql = "select count(*) as total
                   $price_onetime = '';
 
                   // Start "Stock By Attributes" SBA
+                  //used to find if an attribute is read-only
                   $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULES_OPTIONS_VALUES_SET');
                   // End "Stock By Attributes" SBA
 
@@ -649,11 +648,11 @@ $sql = "select count(*) as total
                   }
 
                   // START "Stock by Attributes" SBA
-                  $disablebackorder = null;
+//                  $disablebackorder = null;
                   //disable default selected if out of stock
-                  if (defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') {
+/*                  if (defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') {
                     $disablebackorder = ' disabled="disabled" ';
-                  }
+                  }*/
                   //var_dump($products_options_array);//Debug Line
                   $options_html_id[] = 'drp-attrib-' . $products_options_names->fields['products_options_id'];
                   //added new image rotate ability ($options_menu_images);

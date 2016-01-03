@@ -434,14 +434,22 @@ switch ($action) {
     $count = $sql->RecordCount(); // mc12345678 why not use $sql->RecordCount()? If doesn't return correct value, then above SQL needs to be called to include a cache "reset".
     $array_sorted_array = array();
     $skip_update = false;
+    
     while (!$sql->EOF) {
       // get the attributes for sort to get the sort order
+
+  if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
+                $options_order_by= ' order by LPAD(po.products_options_sort_order,11,"0"), po.products_options_name';
+  } else {
+                $options_order_by= ' order by po.products_options_name';
+  }
+
       $sort_query = "SELECT DISTINCT pa.products_attributes_id, pov.products_options_values_sort_order as sort
              FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa
              LEFT JOIN " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov on (pov.products_options_values_id = pa.options_values_id)
 			 LEFT JOIN " . TABLE_PRODUCTS_OPTIONS . " po on (po.products_options_id = pa.options_id) 
              WHERE pa.products_attributes_id in (" . $sql->fields['stock_attributes'] . ")
-             ORDER BY po.products_options_sort_order ASC;"; // pov.products_options_values_sort_order ASC";
+             " . $options_order_by; // ORDER BY po.products_options_sort_order ASC, pov.products_options_values_sort_order ASC;"; // pov.products_options_values_sort_order ASC";
       $sort = $db->Execute($sort_query);
       if ($sort->RecordCount() > 1) {
         $skip_update = true;

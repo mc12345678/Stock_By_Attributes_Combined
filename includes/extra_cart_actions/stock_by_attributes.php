@@ -1,6 +1,6 @@
 <?php
 /*
- * Stock by Attributes 1.5.4 15-11-14 mc12345678
+ * Stock by Attributes 1.5.4 2016-01-02 mc12345678
  */
 
 //What about: 'multiple_products_add_product' (Needs to be addressed though don't see at the moment why since generally unable to select multiple products each with attributes, perhaps something to consider for later, but let's get serious here at the moment as there are more routine actions to be handled properly first.), 'update_product' (Needs to be addressed), or 'cart' (does a notify action, so may need to address?)actions?
@@ -9,6 +9,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 
   $productIsSBA = array();
   for ($i=0, $n=sizeof($_POST['products_id']); $i<$n; $i++) {
+/*    if (!zen_product_is_sba($_POST['products_id'][$i])) {
+      // If the product is not SBA tracked then allow the cart's actions to
+      // handle the remaining items and not be bothered by this code. :)
+      //  Although, it may still be best to not skip this entire thing
+      //  because of use of other Dynamic Dropdown options. So this is 
+      //  now commented out until further testing. mc12345678 1/1/2016
+      continue;
+    }*/ 
     $adjust_max= 'false';
     if ($_POST['cart_quantity'][$i] == '') {
       $_POST['cart_quantity'][$i] = 0;
@@ -30,9 +38,6 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
          */
       }
       $add_max = zen_get_products_quantity_order_max($_POST['products_id'][$i]); // maximum allowed
-      $query = 'select stock_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK .  ' where products_id = :products_id:';
-      $query = $db->bindVars($query, ':products_id:', zen_get_prid($_POST['products_id'][$i]), 'integer');
-      $stock_id = $db->Execute($query, false, false, 0, true);
 
       if((PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2') /*single dropdown as multiple*/) {
         /* Breakdown the attributes into individual attributes to then be able to 
@@ -40,12 +45,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
          * 
          */
       }
-      $attributes = ($_POST['id'][$_POST['products_id'][$i]]) ? $_POST['id'][$_POST['products_id'][$i]] : null;
-      if ($stock_id->RecordCount()) {
-        $productIsSBA[$i] = true;
-      } else {
-        $productIsSBA[$i] = false;
-      }
+      $attributes = (is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
+      $productIsSBA[$i] = zen_product_is_sba(zen_get_prid($_POST['products_id'][$i]));
       if (!$productIsSBA[$i]) {
         if((PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2') /*single dropdown as multiple*/) {
         /* Breakdown the attributes into individual attributes to then be able to 
@@ -107,7 +108,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
            * 
            */
         }
-      $attributes = ($_POST['id'][$_POST['products_id'][$i]]) ? $_POST['id'][$_POST['products_id'][$i]] : '';
+      $attributes = (is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
 
 // eof: adjust new quantity to be same as current in stock
       if (($add_max == 1 and $cart_qty == 1) && $new_qty != $cart_qty) {
@@ -152,11 +153,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
            * 
            */
         }
-        $attributes = ($_POST['id'][$_POST['products_id'][$i]]) ? $_POST['id'][$_POST['products_id'][$i]] : '';
+        $attributes = (is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
         $_SESSION['cart']->add_cart($_POST['products_id'][$i], $new_qty, $attributes, false);
       } else {
         // adjust minimum and units
-        $attributes = ($_POST['id'][$_POST['products_id'][$i]]) ? $_POST['id'][$_POST['products_id'][$i]] : '';
+        $attributes = (is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
         $_SESSION['cart']->add_cart($_POST['products_id'][$i], $new_qty, $attributes, false);
       }
       }
@@ -212,7 +213,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
     $attr_val = array();
     if((PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2')) {
       /*single dropdown as multiple*/
-    $attr_list = explode(',',$_POST['attrcomb']);
+      $attr_list = explode(',',$_POST['attrcomb']);
       foreach ($attr_list as $attr_item) {
         list($attr_id, $attr_val) = explode('-',$attr_item);
         if (zen_not_null($attr_id) && zen_not_null($attr_val)) {
@@ -225,30 +226,21 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
            */
     }
     $attributes = (isset($_POST['id']) && zen_not_null($_POST['id'])  ? $_POST['id']  : null );
+    // to address product with maleable attributes where the attribute 
+    // is not stock dependent (text field) product_id needs to reflect 
+    // the appropriate designation as built using the appropriate $attributes.
+    //  This would take a refactoring of entered text as if it was absent. mc12345678 01-02-2016
     $product_id = zen_get_uprid($_POST['products_id'], $attributes);
 
     $add_max = zen_get_products_quantity_order_max($_POST['products_id']);
+    // to address product with maleable attributes where the attribute 
+    // is not stock dependent cart_qty needs to reflect the appropriate number.  mc12345678 01-02-2016
     $cart_qty = $_SESSION['cart']->get_quantity($product_id);
     
     if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'B: FUNCTION ' . __FUNCTION__ . ' Products_id: ' . $_POST['products_id'] . ' cart_qty: ' . $cart_qty . ' $_POST[cart_quantity]: ' . $_POST['cart_quantity'] . ' <br>', 'caution');
 
-    $query = 'SELECT * 
-                    FROM information_schema.tables
-                    WHERE table_schema = :your_db: 
-                    AND table_name = :table_name:
-                    LIMIT 1;';
-    $query = $db->bindVars($query, ':your_db:', DB_DATABASE, 'string');
-    $query = $db->bindVars($query, ':table_name:', TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'string');
-  $stock_id = $db->Execute($query, false, false, 0, true);
-  if ($stock_id->RecordCount() > 0) {
-      
-      $query = 'select stock_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK .  ' where products_id = :products_id:';
-      $query = $db->bindVars($query, ':products_id:',  $_POST['products_id'], 'integer');
-      $stock_id = $db->Execute($query, false, false, 0, true);
-//  $_SESSION['stock_idquery'] = $stock_id->RecordCount();
 //Check if item is an SBA tracked item, if so, then perform analysis of whether to add or not.
-    }
-    if ($stock_id->RecordCount() > 0) {
+    if (function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) /*$stock_id->RecordCount() > 0*/) {
 //Looks like $_SESSION['cart']->in_cart_mixed($prodId) could be used here to pull the attribute related product information to verify same product is being added to cart... This also may help in the shopping_cart routine added for SBA as all SBA products will have this modifier.
 //      $cart_qty = 0;
       $new_qty = $_POST['cart_quantity']; //Number of items being added (Known to be SBA tracked already)
@@ -258,7 +250,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       $chk_current_qty = zen_get_products_stock($product_id, $attributes);
       $_SESSION['cart']->flag_duplicate_msgs_set = FALSE;
       
-      $productAttrAreSBA = zen_get_sba_stock_attribute_id($product_id, $attributes, 'products');
+//      $productAttrAreSBA = zen_get_sba_stock_attribute_id($product_id, $attributes, 'products');
+      $productAttrAreSBA = zen_get_sba_attribute_info($product_id, $attributes, 'products', 'ids');
       if ($productAttrAreSBA === false) {
         $the_list .= PWA_COMBO_OUT_OF_STOCK . "<br />";
         foreach ($_POST['id'] as $key2 => $value2) {

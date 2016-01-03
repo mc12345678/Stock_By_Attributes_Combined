@@ -24,7 +24,7 @@
           11/2004 - Created
           12/2004 - Fix _draw_js_stock_array to prevent error when all attribute combinations are
                     out of stock.
-  
+          01/2016 - Provide Option name and option value sorting as directed by ZC admin settings.
 *******************************************************************************************
   
       QT Pro Product Attributes Display Plugin
@@ -312,7 +312,15 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
         $stocked_where="and popt.products_options_track_stock = 0";
       }
       
-      $products_options_name_query = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_track_stock, popt.products_options_images_style, popt.products_options_type from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id = :products_id: and popt.products_options_id = patrib.options_id and popt.language_id = :languages_id: :stocked_where: order by popt.products_options_sort_order";
+      //LPAD - Return the string argument, left-padded with the specified string 
+      //example: LPAD(po.products_options_sort_order,11,"0") the field is 11 digits, and is left padded with 0
+      if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
+        $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+      } else {
+        $options_order_by= ' order by popt.products_options_name';
+      }
+//      $products_options_name_query = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_track_stock, popt.products_options_images_style, popt.products_options_type from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id = :products_id: and popt.products_options_id = patrib.options_id and popt.language_id = :languages_id: :stocked_where: order by popt.products_options_sort_order";
+      $products_options_name_query = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_track_stock, popt.products_options_images_style, popt.products_options_type from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id = :products_id: and popt.products_options_id = patrib.options_id and popt.language_id = :languages_id: :stocked_where:" . $options_order_by;
 
       $products_options_name_query = $db->bindVars($products_options_name_query, ':products_id:', $this->products_id, 'integer');
       $products_options_name_query = $db->bindVars($products_options_name_query, ':languages_id:', $_SESSION['languages_id'], 'integer');
@@ -321,14 +329,22 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
       $products_options_name = $db->Execute($products_options_name_query);
 
       $attributes=array();
+
+      if (PRODUCTS_OPTIONS_SORT_BY_PRICE == '1') {
+        $order_by = ' order by LPAD(pa.products_options_sort_order,11,"0"), pov.products_options_values_name';
+      } else {
+        $order_by = ' order by LPAD(pa.products_options_sort_order,11,"0"), pa.options_values_price';
+      }
 		
       while (!$products_options_name->EOF) {
         $products_options_array = array();
-        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: order by pa.products_options_sort_order";
+//        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: order by pa.products_options_sort_order";
+        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: :order_by:";
 
         $products_options_query = $db->bindVars($products_options_query, ':products_id:', $this->products_id, 'integer');
         $products_options_query = $db->bindVars($products_options_query, ':languages_id:', $_SESSION['languages_id'], 'integer');
         $products_options_query = $db->bindVars($products_options_query, ':products_options_id:', $products_options_name->fields['products_options_id'], 'integer');
+        $products_options_query = $db->bindVars($products_options_query, ':order_by:', $order_by, 'passthru');
 
         $products_options = $db->Execute($products_options_query);
    

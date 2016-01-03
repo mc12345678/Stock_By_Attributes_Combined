@@ -19,7 +19,7 @@ class products_with_attributes_stock
 		function get_products_attributes($products_id, $languageId=1)
 		{
 			global $db;
-			// Added the following to query "and pa.attributes_display_only != 1" This removed read only attributes from the stock selection.
+			// Added the following to query "and pa.attributes_display_only != 1" This removed display only attributes from the stock selection.
 			$query = '	select pa.products_attributes_id, pa.options_values_price, pa.price_prefix,
 			 				po.products_options_name, pov.products_options_values_name
 			 			from '.TABLE_PRODUCTS_ATTRIBUTES.' pa
@@ -306,11 +306,17 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
                   $html .= '<td>' . $attribute_products->fields['product_attribute_combo'] . '</td>'."\n";
                   $html .= '<td class="stockAttributesCellVariant">'."\n";
                  
+                  if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
+                    $options_order_by= ' order by LPAD(po.products_options_sort_order,11,"0"), po.products_options_name';
+                  } else {
+                    $options_order_by= ' order by po.products_options_name';
+                  }
+
                   $sort2_query = "SELECT DISTINCT pa.products_attributes_id 
                          FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa
 			             LEFT JOIN " . TABLE_PRODUCTS_OPTIONS . " po on (po.products_options_id = pa.options_id) 
                          WHERE pa.products_attributes_id in (" . $attribute_products->fields['stock_attributes'] . ")
-                         ORDER BY po.products_options_sort_order ASC;"; 
+                         " . $options_order_by; 
                   $sort_class = $db->Execute($sort2_query);
                   $array_temp_sorted_array = array();
                   $attributes_of_stock = array();

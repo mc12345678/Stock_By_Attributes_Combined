@@ -82,7 +82,7 @@ class products_with_attributes_stock extends base {
      if (!zen_not_null($this->_products_options_names_count)) {
        $this->_products_options_names_count = $products_options_names->RecordCount();
      }
-//     $products_options_names_count = $products_options_names->RecordCount();
+     $products_options_names_count = $products_options_names->RecordCount();
 
      if (zen_product_is_sba($_GET['products_id'])) {
        $this->_isSBA = true;
@@ -237,6 +237,7 @@ class products_with_attributes_stock extends base {
     global $products_options_names, $products_options, $selected_attribute, $moveSelectedAttribute, $disablebackorder;
     
 //       if ($this->_isSBA && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
+    $disablebackorder = null;
     if (!$this->_isSBA || ($this->_isSBA && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' && $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || ($this->_isSBA && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() == 1 && $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || ($this->_isSBA && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() > 1)) {
       return;
     }
@@ -246,7 +247,7 @@ class products_with_attributes_stock extends base {
       $selected_attribute = true;
       $moveSelectedAttribute = false;
     }
-    $disablebackorder = null;
+
     //disable radio and disable default selected
     if ((STOCK_ALLOW_CHECKOUT == 'false' && $products_options->fields['pasqty'] <= 0 && !empty($products_options->fields['pasid']) ) 
     || ( STOCK_ALLOW_CHECKOUT == 'false' && $products_options->fields['products_quantity'] <= 0 && empty($products_options->fields['pasid']) )

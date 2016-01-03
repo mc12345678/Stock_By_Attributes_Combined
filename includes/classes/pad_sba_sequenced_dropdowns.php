@@ -161,7 +161,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 
         $attribute_stock = $db->Execute($attribute_stock_query);
 //echo 'Attrib stock_' . $a . ' is: ' . $attribute_stock->RecordCount();
-        $out_of_stock = (($attribute_stock->fields['quantity']) == 0);  // This looks at all variants indicating 0 or no variant being present.  Need to modify to look at the quantity for each variant... So look at the quantity of each and if that quantity is zero then, that line needs to be modified...
+        $out_of_stock = (($attribute_stock->fields['quantity']) <= 0);  // This looks at all variants indicating 0 or no variant being present.  Need to modify to look at the quantity for each variant... So look at the quantity of each and if that quantity is zero then, that line needs to be modified...
         if ($out_of_stock && ($this->show_out_of_stock == 'True')) {
           switch ($this->mark_out_of_stock) {
             case 'Left': $attributes[$o]['ovals'][$a]['text'] = TEXT_OUT_OF_STOCK . ' - ' . zen_output_string_protected($attributes[$o]['ovals'][$a]['text']);

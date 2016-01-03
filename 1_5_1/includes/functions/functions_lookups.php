@@ -9,7 +9,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: functions_lookups.php 19352 2011-08-19 16:13:43Z ajeh $
  * 
- * Updated for Stock by Attributes 1.5.3.1 15-11-14 mc12345678
+ * Stock by Attributes 1.5.4 2016-01-03 mc12345678
  */
 
 
@@ -169,6 +169,7 @@
     global $db;
     $products_id = zen_get_prid($products_id);
 
+   // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
     if ($products_id && (!is_array($attributes) && !zen_not_null($attributes))) {
       //For products without associated attributes, get product level stock quantity
       $stock_query = "select products_quantity 
@@ -183,8 +184,10 @@
       //	2. Check if the attribute(s) are listed in seperate rows or are combined into a single row.
       // mc12345678 - The following seems like it could be compressed more/do less searches.  Now that this seems to work, there is some code that can be compressed.
 
-
+   /* mc12345678 Comment about the $attribute_stock test is really to see if the product is tracked by SBA. */
       // check if any attribute stock values have been set for the product in the SBA table, if not do the else part
+      return zen_get_sba_attribute_info($products_id, $attributes, 'products', 'stock');
+
       if (zen_product_is_sba($products_id)) {
 
         // prepare to search for details for the particular attribute combination passed as a parameter
@@ -199,7 +202,7 @@
           // 		  	echo '<br />Single Attribute <br />';
           $stock_attributes = $stock_attributes_list[0];
           // create the query to find single attribute stock
-          $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes=:stock_attributes:';
+          $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :stock_attributes:';
           $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
           $stock_query = $db->bindVars($stock_query, ':stock_attributes:', $stock_attributes, 'passthru');
           $stock_values = $db->Execute($stock_query);
@@ -207,6 +210,109 @@
           if (!$stock_values->EOF) {
           return $stock_values->fields['products_quantity'];
           } else {
+            // Known: product is tracked by SBA, product is reported as 
+            //  having one attribute, though if there is one or more 
+            //  attributes that can be blank (text/upload file) then this
+            //  is the same "result" if there is one other non-text field
+            //  or one text field is filled and the other not.
+            
+            //  Need: identify if this product/combination can exist in the
+            //   above known state.  In essence to repeat the check process
+            //   of the add-to-cart, but not needing to ensure that the 
+            //   contents match the required attribute marker as product 
+            //   could not make it to the cart if that were allowed.
+            
+            //  So.. Could pull all of the attributes for this product,
+            //  remove the attribute currently known, 
+            //  Could pull all of the variants that have this attribute, 
+            //  review all of the other attributes to see if they could be
+            //  zeroable.. if so, then return the quantity(ies) 
+            
+            $check_query = 'select stock_attributes, quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes in (:stock_attributes:) order by stock_attributes';
+            $check_query = $db->bindVars($check_query, ':products_id:', $products_id, 'integer');
+            $check_query = $db->bindVars($check_query, ':stock_attributes:', $stock_attributes, 'noquotestring');
+            $check_values = $db->Execute($check_query);
+
+
+            $check_attribs = array();
+            $check_quantity = array();
+            
+            while (!$check_values->EOF) {
+              $check_attribs[] = explode(',', $check_values->fields['stock_attributes']);
+
+              foreach ($check_attribs[sizeof($check_attribs) - 1] as $s_key => $stocklet) {
+                if ($stocklet == $stock_attributes) {
+                  unset($check_attribs[sizeof($check_attribs) - 1][$s_key]);
+                }
+              }
+              $check_quantity[] = $check_values->fields['quantity'];
+              $check_values->MoveNext();
+            }
+            
+            foreach ($check_attribs as $v_key => $att_id_array) {
+/*        $query = 'select products_attributes_id 
+                  from ' . TABLE_PRODUCTS_ATTRIBUTES . ' 
+                  :first_search: 
+                  and products_id = :products_id: 
+                  :specAttributes:
+                  order by products_attributes_id';*/
+  if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
+                $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0")';
+  } else {
+                $options_order_by= ' order by popt.products_options_name';
+  }
+
+              $sql = "select distinct patrib.options_id, patrib.options_values_id" /*COUNT(popt.products_options_id) AS qty"*/ . /*, popt.products_options_name, popt.products_options_sort_order,
+                              popt.products_options_type, popt.products_options_length, popt.products_options_comment,
+                              popt.products_options_size,
+                              popt.products_options_images_per_row,
+                              popt.products_options_images_style,
+                              popt.products_options_rows*/ "
+              from        " . TABLE_PRODUCTS_OPTIONS . " popt
+              left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
+              where patrib.products_id= :products_id:
+              and patrib.products_attributes_id in (:check_attribs:)
+              and (popt.products_options_type = :txt_type: OR popt.products_options_type = :file_type:)
+              and popt.language_id = :languages_id: " .
+              $options_order_by;
+
+              $sql = $db->bindVars($sql, ':txt_type:', PRODUCTS_OPTIONS_TYPE_TEXT, 'integer');
+              $sql = $db->bindVars($sql, ':file_type:', PRODUCTS_OPTIONS_TYPE_FILE, 'integer');
+              $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
+              $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+              $sql = $db->bindVars($sql, ':check_attribs:', implode(',', $att_id_array), 'noquotestring');
+              $check_totals = $db->Execute($sql);
+
+              while (!$check_totals->EOF) {
+                $quantity_return = zen_get_products_stock($products_id, array_merge($attributes, array($check_totals->fields['options_id']=>$check_totals->fields['options_values_id']))); 
+//                $quantity_return = $check_quantity[$v_key];
+                if ($quantity_return !== false) {
+                
+                  break 2;
+                }
+                
+                $check_totals->MoveNext();
+              }
+//              $check_query = 'select 
+//              foreach ($att_id_array as $a_key => $att_id) {
+                // if the attribute is one of those that can be blank
+                //  then we've found or end and can return the related quantity
+//              }
+              unset($check_attribs[$v_key]);
+            }
+
+
+
+            
+            if (sizeof($check_attribs) > 0) {
+              return $quantity_return;
+            } else {
+              return false;
+            }
+            
+            // Here need to also check to see if product in question has
+            //  attributes that could be blank such as a text option
+            //  if it can be blank then give quantity, if not set to false.
             return false;
           }
         } elseif (sizeof($stock_attributes_list) > 1) {
@@ -244,7 +350,7 @@
             foreach ($stock_attributes_list as $eachAttribute) {
               // create the query to find attribute stock
               //echo '<br />Multiple Attributes selected (one attribute type per product)<br />';
-              $stock_query = 'select quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes= :eachAttribute:';
+              $stock_query = 'select quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :eachAttribute:';
               $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
               $stock_query = $db->bindVars($stock_query, ':eachAttribute:', $eachAttribute, 'passthru');
 
@@ -252,7 +358,9 @@
               $stock_values = $db->Execute($stock_query);
               $stockResult = $stock_values->fields['products_quantity'];
 
-              if ($stockResult->EOF) {
+              if ($stock_values->EOF) {
+                // Bounce against attribute type to see if it is one of those that can be empty and still be okay.  
+                //  If it can't be empty then $notAccounted = true;
                 $notAccounted = true;
               }
 
@@ -274,7 +382,7 @@
             if ($notAccounted) {
               return false;
             } else {
-            return $returnedStock;
+              return $returnedStock;
             }
           }
         }
