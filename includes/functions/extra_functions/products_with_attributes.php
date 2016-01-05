@@ -534,6 +534,260 @@ Of the attributes provided, determine the number of those attributes that are
     
   }
   
+  function zen_sba_has_text_field($sba_table_ids = array()){
+    global $db;
+    
+    if (!isset($sba_table_ids)) {
+      return false;
+    }
+    
+    if (isset($sba_table_ids) && !is_array($sba_table_ids)) {
+      $sba_table_ids = array($sba_table_ids);
+    }
+    
+    $attrib_sql = 'select stock_attributes, products_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' pwas where stock_id in (:stock_id:)';
+    $attrib_sql = $db->bindVars($attrib_sql, ':stock_id:', implode(',',$sba_table_ids), 'passthru');
+
+    $attrib_ids = $db->Execute($attrib_sql);
+
+    while (!$attrib_ids->EOF){
+      $attrib_type_sql = "select distinct popt.products_options_type, popt.products_options_id
+              from     " . TABLE_PRODUCTS_ATTRIBUTES . " patrib " . 
+              left join    " . TABLE_PRODUCTS_OPTIONS . " popt ON (popt.products_options_id = patrib.options_id) " . 
+              where patrib.products_attributes_id in (:check_attribs:)
+              and (popt.products_options_type = :txt_type: OR popt.products_options_type = :file_type:)
+              and popt.language_id = :languages_id: ";
+
+      $attrib_type_sql = $db->bindVars($attrib_type_sql, ':check_attribs:', $attrib_ids->fields['stock_attributes'], 'passthru');
+      $attrib_type_sql = $db->bindVars($attrib_type_sql, ':txt_type:', PRODUCTS_OPTIONS_TYPE_TEXT, 'integer');
+      $attrib_type_sql = $db->bindVars($attrib_type_sql, ':file_type:', PRODUCTS_OPTIONS_TYPE_FILE, 'integer');
+      $attrib_type_sql = $db->bindVars($attrib_type_sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+      
+      $attrib_type = $db->Execute($attrib_type_sql);
+      
+      while (!$attrib_type->EOF) {
+        if ($attrib_type->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_TEXT || $attrib_type->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_FILE) {
+          return true;
+        }
+      }
+      
+      $attrib_ids->MoveNext();
+    }
+
+    return false;
+  }
+
+
+  
+  function zen_sba_attribs_no_text($products_id, $attribute_list, $from = 'products', $how = 'add') {
+    global $db;
+
+    $specAttributes = array();
+    $temp_attributes = array();
+    $stock_attributes_list = array();
+    $stock_attributes = '';
+    $compArray = array();
+    
+    $pro_id = $products_id;
+    
+    $products_id = zen_get_prid($products_id);
+
+    $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
+
+    // Thinking either don't want to test the attributes here yet unless before this makes sure that the attributes are properly added for a product that only has text attributes and nothing entered.
+    //   
+    if (!zen_product_is_sba($products_id)) {
+      return $attribute_list;
+    } 
+    
+    if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
+      $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+    } else {
+      $options_order_by= ' order by popt.products_options_name';
+    }
+
+              //get the option/attribute list
+    $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
+                              popt.products_options_type, popt.products_options_length, popt.products_options_comment,
+                              popt.products_options_size,
+                              popt.products_options_images_per_row,
+                              popt.products_options_images_style,
+                              popt.products_options_rows
+              from        " . TABLE_PRODUCTS_OPTIONS . " popt
+              left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
+              where patrib.products_id= :products_id:
+              and popt.language_id = :languages_id: " .
+              $options_order_by;
+
+    $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
+    $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+    $products_options_names = $db->Execute($sql);
+    
+    if ($products_options_names->EOF) {
+      $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
+      //There's an issue because this shouldn't be possible
+    } else {
+      if (isset($_SESSION['sba_extra_functions_error'])) {
+//        unset($_SESSION['sba_extra_functions_error']);
+      }
+    }
+
+    if (defined('TEXT_PREFIX')) {
+      $text_prefix = constant('TEXT_PREFIX');
+    } else {
+      $text_prefix = 'txt_';
+    }
+
+    if (defined('UPLOAD_PREFIX')) {
+      $file_prefix = UPLOAD_PREFIX;
+    } else {
+      $file_prefix = 'upload_';
+    }
+
+    if (defined('PRODUCTS_OPTIONS_VALUE_TEXT_ID')) {
+      $text_value = PRODUCTS_OPTIONS_VALUE_TEXT_ID;
+    } else {
+      $text_value = '0';
+    }
+
+    if (defined('PRODUCTS_OPTIONS_VALUE_TEXT_ID')) {
+      $file_value = PRODUCTS_OPTIONS_VALUE_TEXT_ID;
+    } else {
+      $file_value = '0';
+    }
+
+    if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
+      $compArray = $attribute_list;
+    }
+
+    foreach($compArray as $optid => $optvalid) {
+      if (preg_match('/'.$text_prefix.'/', $optid)) {
+        $specAttributes[str_replace($text_prefix,'',$optid)] = $text_value;
+      } elseif (preg_match('/'.$file_prefix.'/', $optid)) {
+        $specAttributes[str_replace($file_prefix,'',$optid)] = $file_value;
+      } elseif ($optvalid == 0) {
+        $specAttributes[$optid] = $optvalid;
+      } elseif (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.  This is probably the best place to do the review because all aspects of the attribute are available.
+        $specAttributes[$optid] = $optvalid;
+      }
+    }
+//              $_SESSION['specAttribs'] = $specAttributes;
+//              $_SESSION['compArray'] = $compArray;
+                
+//      $_SESSION['prod_options_names'] = $products_options_names;
+      $lastIndex = 0;
+    while (!$products_options_names->EOF) {
+//      $_SESSION['prod_optins_names'] = $products_options_names;
+//                if (!isset($specAttributes[$products_options_names->fields['products_options_id']])) {
+      if (!array_key_exists($products_options_names->fields['products_options_id'], $specAttributes)) {
+//                    $_SESSION['key_not_exist']++;
+//                    $_SESSION['key_not_exist_spec_' . $_SESSION['key_not_exist']] = $products_options_names->fields['products_options_id'];
+//                    $_SESSION['key_not_exist_spec_type_' . $_SESSION['key_not_exist']] = $products_options_names->fields['products_options_type'];
+//                    $_SESSION['key_not_exist_spec_type_text_' . $_SESSION['key_not_exist']] = PRODUCTS_OPTIONS_TYPE_TEXT;
+                   // option name of product is not provided
+        if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_TEXT || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_FILE) {
+                     // May need to check/verify that is okay to be empty.
+                     //   For now... Just accept it as empty.
+          if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_TEXT) {
+            if ($how == 'add') {
+//              $_SESSION['compArray_before_'.$products_id] = $compArray;
+              $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
+              array(($text_prefix . $products_options_names->fields['products_options_id']) => $text_value) + 
+              array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true) ;
+ //            }
+//              $_SESSION['compArray_after_'.$products_id] = $compArray;
+            } elseif ($how == 'addNoText') {
+              $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
+              array((/*$text_prefix .*/ $products_options_names->fields['products_options_id']) => $text_value) + 
+              array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+            } else {
+              $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
+               array((/*$text_prefix .*/ $products_options_names->fields['products_options_id']) => $text_value) + 
+               array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+            }
+            $lastIndex = $products_options_names->cursor + 1;
+//                       $_SESSION['key_not_exist_add_' . $_SESSION['key_not_exist']] = $text_prefix . $products_options_names->fields['products_options_id'];
+//                       $_SESSION['key_not_exist_added_' . $_SESSION['key_not_exist']] = $compArray[$text_prefix . $products_options_names->fields['products_options_id']];
+          }
+          if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_FILE) {
+            if ($how == 'add') {
+//              $_SESSION['compArray_before_'.$products_id] = $compArray;
+              $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
+              array(($file_prefix . $products_options_names->fields['products_options_id']) => $file_value) + 
+              array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true) ;
+ //            }
+//              $_SESSION['compArray_after_'.$products_id] = $compArray;
+            } elseif ($how == 'addNoText') {
+              $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
+              array((/*$file_prefix .*/ $products_options_names->fields['products_options_id']) => $file_value) + 
+              array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+            } else {
+             $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
+               array((/*$file_prefix .*/ $products_options_names->fields['products_options_id']) => $file_value) + 
+               array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+            }
+            $lastIndex = $products_options_names->cursor + 1;
+//            $compArray[/*$file_prefix . */$products_options_names->fields['products_options_id']] = $file_value;
+//            $compArray[$products_options_names->fields['products_options_id']] = $file_value;
+          }
+        } else {
+          // Potential problem as option name expected is not
+          //  one that is a text field and was not assigned to the
+          //  product. mc12345678 01-02-2016
+//                    $_SESSION['key_exist']++;
+//                    $_SESSION['key_exist_spec_' . $_SESSION['key_exist']] = $products_options_names->fields['products_options_id'];
+        }
+      } elseif ($how != 'add' /*&& $how != 'addNoText'*/) {
+        if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_TEXT || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_FILE) {
+          // May need to check/verify that is okay to be empty.
+          //   For now... Just accept it as empty.
+          if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_TEXT) {
+//            $compArray[$text_prefix . $products_options_names->fields['products_options_id']] = $text_value;
+//            $compArray[$products_options_names->fields['products_options_id']] = $text_value;
+            unset($compArray[$text_prefix . $products_options_names->fields['products_options_id']]);
+
+            $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
+            array((/*$text_prefix .*/ $products_options_names->fields['products_options_id']) => $text_value) + 
+            array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+
+            $lastIndex = $products_options_names->cursor + 1;
+//            $_SESSION['key_not_exist_add_' . $_SESSION['key_not_exist']] = $text_prefix . $products_options_names->fields['products_options_id'];
+//            $_SESSION['key_not_exist_added_' . $_SESSION['key_not_exist']] = $compArray[$text_prefix . $products_options_names->fields['products_options_id']];
+          }
+          if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_FILE) {
+            unset($compArray[$file_prefix . $products_options_names->fields['products_options_id']]);
+//            $compArray[$file_prefix . $products_options_names->fields['products_options_id']] = $file_value;
+//            $compArray[$products_options_names->fields['products_options_id']] = $file_value;
+            $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
+            array((/*$file_prefix .*/ $products_options_names->fields['products_options_id']) => $file_value) + 
+            array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+
+            $lastIndex = $products_options_names->cursor + 1;
+          }
+        }
+      }
+
+      $products_options_names->MoveNext();
+    }              
+//    $_SESSION['specAttribs2'] = $specAttributes;
+//    $_SESSION['compArray2'.$pro_id] = $compArray;
+//    $_SESSION['attrib_list2'.$pro_id] = $attribute_list;
+
+    if (sizeof($compArray) > 0) {
+//      $attribute_list = $compArray; // + $attribute_list /*+ $compArray*/;
+      if ($how == 'add' && $how != 'addNoText') {
+        $attribute_list = $attribute_list + $compArray;
+      } elseif ($how == 'update') {
+        $attribute_list = $compArray;
+      } else {
+        $attribute_list = $compArray + $attribute_list;
+      }
+    }
+
+    return $attribute_list;
+    
+  }
+  
   /*
    * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to zen_get_sba_stock_attribute in order to identify data to help with this search.
    * 
@@ -628,11 +882,9 @@ Of the attributes provided, determine the number of those attributes that are
 
     $products_id = zen_get_prid($products_id);
 
-    $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
-
     // Thinking either don't want to test the attributes here yet unless before this makes sure that the attributes are properly added for a product that only has text attributes and nothing entered.
     //   
-    if ($datatype == 'products' && !zen_product_is_sba($products_id)) {
+    if ($datatype == 'stock' && !zen_product_is_sba($products_id)) {
       //Used with products that have attributes But the attribute is not listed in the SBA Stock table.
       //Get product level stock quantity
       $stock_query = "select products_quantity from " . TABLE_PRODUCTS . " where products_id = :products_id:";
@@ -643,6 +895,8 @@ Of the attributes provided, determine the number of those attributes that are
       return NULL;
     } 
     
+    $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
+
     // NEED TO ENSURE ATTRIBUTES ARE PROPERLY/FULLY PROVIDED REGARDING "TEXT" OR OTHER ZC DELETES ATTRIBUTES.
     
     // KNOWN product is tracked by SBA.

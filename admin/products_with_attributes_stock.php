@@ -438,16 +438,16 @@ switch ($action) {
     while (!$sql->EOF) {
       // get the attributes for sort to get the sort order
 
-  if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
-                $options_order_by= ' order by LPAD(po.products_options_sort_order,11,"0"), po.products_options_name';
-  } else {
-                $options_order_by= ' order by po.products_options_name';
-  }
+      if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
+        $options_order_by= ' order by LPAD(po.products_options_sort_order,11,"0"), po.products_options_name';
+      } else {
+        $options_order_by= ' order by po.products_options_name';
+      }
 
       $sort_query = "SELECT DISTINCT pa.products_attributes_id, pov.products_options_values_sort_order as sort
              FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa
              LEFT JOIN " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov on (pov.products_options_values_id = pa.options_values_id)
-			 LEFT JOIN " . TABLE_PRODUCTS_OPTIONS . " po on (po.products_options_id = pa.options_id) 
+             LEFT JOIN " . TABLE_PRODUCTS_OPTIONS . " po on (po.products_options_id = pa.options_id) 
              WHERE pa.products_attributes_id in (" . $sql->fields['stock_attributes'] . ")
              " . $options_order_by; // ORDER BY po.products_options_sort_order ASC, pov.products_options_values_sort_order ASC;"; // pov.products_options_values_sort_order ASC";
       $sort = $db->Execute($sort_query);
@@ -479,18 +479,18 @@ switch ($action) {
           }
           $name[] = $sorter['stock_id'];
         }
-		unset($sorter);
+        unset($sorter);
 
         $param = array();
-		for ($i=0; isset($t[$i]); $i++) {
-		  $param[] = &$t[$i];
-		  $param[] = SORT_ASC;
-		  $param[] = SORT_NUMERIC;
-		}
-		if(isset($param) && sizeof($param) > 0) {
-	      $param[] = &$name;
+        for ($i=0; isset($t[$i]); $i++) {
+          $param[] = &$t[$i];
+          $param[] = SORT_ASC;
+          $param[] = SORT_NUMERIC;
+        }
+        if(isset($param) && sizeof($param) > 0) {
+          $param[] = &$name;
           call_user_func_array('array_multisort', $param);
-		}
+        }
         //array_multisort($t[0],$t[1],..$t[n],$name); // Need to figure out how to get these sub-arrays populated.
         // Do update to table using $sort_order variable, increment $sort_order after each update, keep on moving...
         $icount = 0;
@@ -498,7 +498,7 @@ switch ($action) {
           $db->Execute("UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set sort = '" . $icount * 10 . "' WHERE stock_id = '" . $value . "' LIMIT 1;");
           $icount++;
         }
-		unset($value);
+        unset($value);
       }
       unset($part_array);
     }

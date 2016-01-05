@@ -8,6 +8,91 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'FUNCTION ' . __FUNCTION__, 'caution');
 
   $productIsSBA = array();
+
+  // Goal of this first set of code is to create a "medium" where SBA product with text like attributes can be compared.
+  //   A couple of things though.  
+  //   * Need to look at the Posted quantity as it compares to the cart
+  //       quantity.  
+  //     Any quantity that has been increased is under suspicion.  If two or more of the
+  //   same product were increased and total was in excess, then probably should reset all of them.
+  //   * As going through the product, if a product's attributes are "text like" then:
+  //     1. If the products_id for that non-text like product does not exist add the products_id 
+  //        to the list and add the quantity of that product to the overall for that products_id.
+  //     2. This additional products_id could/should be a separate variable for quantities only.
+  //     3. 
+  //     example POST data available on update:
+  /*
+  post_info (array)	
+
+    securityToken (string) => HIDDEN as should never post
+    cart_quantity (array)	
+        0 (string) => 6
+        1 (string) => 5
+        2 (string) => 4
+    products_id (array)	
+        0 (string) => 1073:d03135f8216dddbdd820de243693c9de
+        1 (string) => 1073:b4919d80280b711fc9eb17d7e4a1d6dc
+        2 (string) => 1073:e1caedf3208ffc17906cc2d9aa396cb4
+    id (array)	
+        1073:d03135f8216dddbdd820de243693c9de (array)	
+            txt_10 (string) => test
+            9 (string) => 78
+        1073:b4919d80280b711fc9eb17d7e4a1d6dc (array)	
+            txt_10 (string) => test2
+            9 (string) => 78
+        1073:e1caedf3208ffc17906cc2d9aa396cb4 (array)	
+            9 (string) => 78
+
+  */
+  $productHasText = array();
+  $sba_add_prods = array();
+  $sba_add_prods_old = array();
+  $sba_add_prods_attribs = array();
+  $sba_add_prods_cart_quantity = array(); // Quantity of the product already in the cart at this time.
+  $sba_add_prods_quantity = array(); // Quantity summary of product in the cart to identify total at each product.
+  
+  for ($i=0, $n=sizeof($_POST['products_id']); $i<$n; $i++) {
+    $productIsSBA[$i] = (function_exists('zen_product_is_sba') ? zen_product_is_sba(zen_get_prid($_POST['products_id'][$i])) : false);
+
+    if ($productIsSBA[$i]) {
+
+      $attributes2 = array();
+
+      $attributes2 = zen_sba_attribs_no_text($_POST['products_id'][$i], $_POST['id'][$_POST['products_id'][$i]], 'products', 'update');
+//      $_SESSION['attribs2_' . $_POST['products_id'][$i]] = $attributes2;
+//      $_SESSION['attribs3_' . $_POST['products_id'][$i]] = $_POST['id'][$_POST['products_id'][$i]];
+      $product_id = zen_get_uprid((int)$_POST['products_id'][$i], $attributes2);
+//      $_SESSION['prod_id2_' . $_POST['products_id'][$i]] = $product_id;
+
+      
+      if(!in_array($product_id, $sba_add_prods)) {
+        $sba_add_prods[] = $product_id;
+        $sba_add_prods_cart_quantity[] = $_SESSION['cart']->contents[$_POST['products_id'][$i]]['qty'];
+        $sba_add_prods_attribs[$product_id] = $attributes2;
+      } else {
+        $pos = array_search($product_id, $sba_add_prods);
+        $sba_add_prods_cart_quantity[$pos] = $sba_add_prods_cart_quantity[$pos] + $_SESSION['cart']->contents[$_POST['products_id'][$i]]['qty'];
+      }
+
+      // Capture only those prids that have been modified to support this functionality.
+      //   Can be used later to test if the key exists, then to use/modify the above data.
+      if ($_POST['products_id'][$i] != $product_id) {
+//      if ($attributes2 != $_POST['id'][$_POST['products_id'][$i]]) {//$_POST['products_id'][$i] != $product_id) {
+        $sba_add_prods_old[$_POST['products_id'][$i]] = $product_id;
+      }
+    
+    }
+  }
+
+//  $_SESSION['productIsSba'] = $productIsSBA;
+//  $_SESSION['productHasText'] = $productHasText;
+  $_SESSION['sba_add_prods'] = $sba_add_prods;
+  $_SESSION['sba_add_prods_old'] = $sba_add_prods_old;
+  $_SESSION['sba_add_prods_attribs'] = $sba_add_prods_attribs;
+  $_SESSION['sba_add_prods_cart_quantity'] = $sba_add_prods_cart_quantity; // Quantity of the product already in the cart at this time.
+  
+  
+
   for ($i=0, $n=sizeof($_POST['products_id']); $i<$n; $i++) {
 /*    if (!zen_product_is_sba($_POST['products_id'][$i])) {
       // If the product is not SBA tracked then allow the cart's actions to
@@ -45,8 +130,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
          * 
          */
       }
+//      $_SESSION['verify_attributes'] = $_POST['id'][$_POST['products_id'][$i]];
       $attributes = (is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
-      $productIsSBA[$i] = zen_product_is_sba(zen_get_prid($_POST['products_id'][$i]));
+//      $productIsSBA[$i] = zen_product_is_sba(zen_get_prid($_POST['products_id'][$i]));
       if (!$productIsSBA[$i]) {
         if((PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2') /*single dropdown as multiple*/) {
         /* Breakdown the attributes into individual attributes to then be able to 
@@ -54,7 +140,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
          * 
          */
         }
-        $cart_qty = $_SESSION['cart']->in_cart_mixed($_POST['products_id'][$i]); // total currently in cart
+        if (array_key_exists($_POST['products_id'][$i], $sba_add_prods_old) && $productIsSBA[$i]) {
+//          $_SESSION['cart_qty_1'] = 
+          $pos = array_search($sba_add_prods_old[$_POST['products_id'][$i]], $sba_add_prods);
+          $cart_qty = $sba_add_prods_cart_quantity[$pos];
+//          $_SESSION['cart_qty_1_' . $_POST['products_id'][$i]] = $cart_qty;
+        } else {
+          $cart_qty = $_SESSION['cart']->in_cart_mixed($_POST['products_id'][$i]); // total currently in cart
+        }
       } else {
         if((PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2') /*single dropdown as multiple*/) {
           /* Breakdown the attributes into individual attributes to then be able to 
@@ -62,17 +155,41 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
            * 
            */
         }
-        $cart_qty = $_SESSION['cart']->in_cart_mixed($_POST['products_id'][$i]);
+        if (array_key_exists($_POST['products_id'][$i], $sba_add_prods_old) && $productIsSBA[$i]) {
+          $pos = array_search($sba_add_prods_old[$_POST['products_id'][$i]], $sba_add_prods);
+          $cart_qty = $sba_add_prods_cart_quantity[$pos];
+//          $_SESSION['cart_qty_2_' . $_POST['products_id'][$i]] = $cart_qty;
+        } else {
+          $cart_qty = $_SESSION['cart']->in_cart_mixed($_POST['products_id'][$i]);
+//          $_SESSION['cart_qty_incart_2_' . $_POST['products_id'][$i]] = $sba_add_prods_old;
+//          unset($_SESSION['cart_qty_incart_2_' . $_POST['products_id'][$i]]);// = $sba_add_prods_old;
+        }
       }
       if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'FUNCTION ' . __FUNCTION__ . ' Products_id: ' . $_POST['products_id'][$i] . ' cart_qty: ' . $cart_qty . ' <br>', 'caution');
       $new_qty = $_POST['cart_quantity'][$i]; // new quantity
-      $current_qty = $_SESSION['cart']->get_quantity($_POST['products_id'][$i]); // how many currently in cart for attribute
-        if($productIsSBA[$i] && (PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2') /*single dropdown as multiple*/) {
-          /* Breakdown the attributes into individual attributes to then be able to 
-           * feed them into the applicable section(s).
-           * 
-           */
-        }
+      if (array_key_exists($_POST['products_id'][$i], $sba_add_prods_old) && $productIsSBA[$i]) {
+        $pos = array_search($sba_add_prods_old[$_POST['products_id'][$i]], $sba_add_prods);
+        $sba_add_prods_quantity[$pos] = $sba_add_prods_quantity[$pos] + $_POST['cart_quantity'][$i];
+//        $new_qty = $sba_add_prods_quantity[$pos];
+//        $_SESSION['cart_qty_4.1_' . $_POST['products_id'][$i]] = $sba_add_prods_quantity;
+//        $_SESSION['cart_qty_4_' . $_POST['products_id'][$i]] = $new_qty;
+      }
+      
+      if (array_key_exists($_POST['products_id'][$i], $sba_add_prods_old) && $productIsSBA[$i]) {
+        $pos = array_search($sba_add_prods_old[$_POST['products_id'][$i]], $sba_add_prods);
+//        $sba_add_prods_quantity[$pos] = $sba_add_prods_quantity[$pos] + $_POST['cart_quantity'][$i];
+        $current_qty = $sba_add_prods_quantity[$pos];
+//        $_SESSION['cart_qty_3_' . $_POST['products_id'][$i]] = $current_qty;
+//        unset($_SESSION['cart_qty_3_' . $_POST['products_id'][$i]]); // = $cart_qty;
+      } else {
+        $current_qty = $_SESSION['cart']->get_quantity($_POST['products_id'][$i]); // how many currently in cart for attribute
+      }
+      if($productIsSBA[$i] && (PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2') /*single dropdown as multiple*/) {
+        /* Breakdown the attributes into individual attributes to then be able to 
+         * feed them into the applicable section(s).
+         * 
+         */
+      }
 // how many currently in cart for attribute
       $chk_mixed = zen_get_products_quantity_mixed($_POST['products_id'][$i]); // use mixed
 
@@ -83,6 +200,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
            */
         }
       $new_qty = $_SESSION['cart']->adjust_quantity($new_qty, $_POST['products_id'][$i], 'shopping_cart');
+//          $_SESSION['new_qty_i_'.$i] = $new_qty;
 // bof: adjust new quantity to be same as current in stock
 // Mine          $chk_current_qty = zen_get_products_stock($_POST['products_id'][$i]);
 //          if (!$productIsSBA[$i]) {
@@ -96,11 +214,39 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
         }
           $chk_current_qty = zen_get_products_stock($_POST['products_id'][$i], $attributes);
 //          }
-//          $_SESSION['qty_chk_current_qty'] = $chk_current_qty;
+//          $_SESSION['qty_chk_current_qty_i_'.$i] = $chk_current_qty;
+/*          if ($i >= 1) {
+            $_SESSION['sba_add_prods_old_'.$i] = $sba_add_prods_old[$_POST['products_id'][$i]];
+          }*/
+      if (array_key_exists($_POST['products_id'][$i], $sba_add_prods_old) && $productIsSBA[$i]) {
+        $pos = array_search($sba_add_prods_old[$_POST['products_id'][$i]], $sba_add_prods);
+//        $sba_add_prods_quantity[$pos] = $sba_add_prods_quantity[$pos] + $_POST['cart_quantity'][$i];
+        $temp_new_qty = $new_qty;
+        $new_qty = $sba_add_prods_quantity[$pos];
+        for ($j=0, $m=$i; $j < $m; $j++) {
+          if (array_key_exists($_POST['products_id'][$j], $sba_add_prods_old)) {
+            if ($sba_add_prods_old[$_POST['products_id'][$i]] == $sba_add_prods_old[$_POST['products_id'][$j]]) {
+              $chk_current_qty = $chk_current_qty - $_POST['cart_quantity'][$j];
+              $new_qty = $new_qty - $_POST['cart_quantity'][$j];
+            }
+          }
+        }
+//        $chk_current_qty = $sba_add_prods_quantity[$pos] - $_POST['cart_quantity'][$i]
+      }
         if (STOCK_ALLOW_CHECKOUT == 'false' && ($new_qty > $chk_current_qty)) {
             $new_qty = $chk_current_qty;
             $messageStack->add_session('shopping_cart', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id'][$i]), 'caution');
         }
+      if (array_key_exists($_POST['products_id'][$i], $sba_add_prods_old) && $productIsSBA[$i]) {
+        $pos = array_search($sba_add_prods_old[$_POST['products_id'][$i]], $sba_add_prods);
+//        $sba_add_prods_quantity[$pos] = $sba_add_prods_quantity[$pos] + $_POST['cart_quantity'][$i];
+        if (STOCK_ALLOW_CHECKOUT == 'false' && ($sba_add_prods_quantity[$pos] <= $chk_current_qty)) {
+          $new_qty = $temp_new_qty;
+        }
+//        $_SESSION['cart_qty_10_' . $_POST['products_id'][$i]] = $new_qty;
+      }
+//      $_SESSION['add_max_'.$i] = $add_max;
+//      $_SESSION['adjust_max_'.$i] = $adjust_max;
 
         if($productIsSBA[$i] && (PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2') /*single dropdown as multiple*/) {
           /* Breakdown the attributes into individual attributes to then be able to 
@@ -230,13 +376,87 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
     // is not stock dependent (text field) product_id needs to reflect 
     // the appropriate designation as built using the appropriate $attributes.
     //  This would take a refactoring of entered text as if it was absent. mc12345678 01-02-2016
+    
+
+    //$attributes2 is to be a "text free" set of attributes.
     $product_id = zen_get_uprid($_POST['products_id'], $attributes);
+    $attributes2 = array();
+
+    if (function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) /*$stock_id->RecordCount() > 0*/) {
+      $attributes2 = zen_sba_attribs_no_text($_POST['products_id'], $attributes, 'products', 'add');
+      $product_id = zen_get_uprid($_POST['products_id'], $attributes2);
+    }
 
     $add_max = zen_get_products_quantity_order_max($_POST['products_id']);
     // to address product with maleable attributes where the attribute 
     // is not stock dependent cart_qty needs to reflect the appropriate number.  mc12345678 01-02-2016
+    if (function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) /*$stock_id->RecordCount() > 0*/) {
+      $backup = array();
+      $backup = $_SESSION['cart']->contents;
+      reset($backup);
+      
+      $addProdIDs = zen_get_sba_attribute_info($product_id, $attributes2, 'products', 'ids');
+      
+      $attributes_values = array();
+      $contents_key = array();
+
+      foreach ($backup as $prod_id => $prod_attrib) {
+
+        if ((int)$_POST['products_id'] != (int)$prod_id) {
+          continue;
+        }
+        
+        if (array_key_exists('attributes_values', $_SESSION['cart']->contents[$prod_id])) {
+//          $attributes_values[] = array($prod_id=>$_SESSION['cart']->contents[$prod_id]['attributes_values']);
+//          unset($_SESSION['cart']->contents[$prod_id]['attributes_values']);
+        } else {
+          $_SESSION['cart']->contents[$prod_id]['attributes'] = zen_sba_attribs_no_text($_POST['products_id'], $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'addNoText');
+        }
+        if ($addProdIDs != zen_get_sba_attribute_info($product_id, $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'ids')) {
+          continue;
+        }
+//          $_SESSION['cart']->contents[$prod_id]['attributes'] = zen_sba_attribs_no_text($_POST['products_id'], $_SESSION['cart']->contents[$prod_id]['attributes']);
+        $product_id = zen_get_uprid((int)$prod_id, $_SESSION['cart']->contents[$prod_id]['attributes']);
+        $add_val = 0;
+        if (array_key_exists($product_id, $_SESSION['cart']->contents)) {
+          $add_val = $_SESSION['cart']->contents[$product_id]['qty'];
+        }
+        $_SESSION['cart']->contents[$product_id] = $_SESSION['cart']->contents[$prod_id];
+
+        if (zen_sba_has_text_field($addProdIDs)) {
+          $_SESSION['cart']->contents[$product_id]['qty'] +=  $add_val;
+        } else {
+          $_SESSION['cart']->contents[$product_id]['qty'] = $add_val;
+        }
+        $contents_key[] = array($prod_id => $_SESSION['cart']->contents[$prod_id]);
+      }
+    }
+
     $cart_qty = $_SESSION['cart']->get_quantity($product_id);
-    
+
+    if (function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) /*$stock_id->RecordCount() > 0*/) {
+      unset($_SESSION['cart']->contents[$product_id]);
+      $_SESSION['cart']->contents = $backup;
+      unset($backup);
+      $product_id = zen_get_uprid($_POST['products_id'], $attributes);
+/*      foreach ($contents_key as $num_pos=>$key) {
+        $key2 = key($key);
+        if(array_key_exists('qty', $contents_key[$num_pos][$key2])) {
+          $_SESSION['cart']->contents[$key2]['qty'] = $contents_key[$num_pos][$key2]['qty'];
+        } else {
+          $_SESSION['cart']->contents[$key2]['qty'] = 0;
+        }
+        if(array_key_exists($key2, $attributes_values[$num_pos])) {
+          $_SESSION['cart']->contents[$key2]['attributes_values'] = $attributes_values[$num_pos][$key2];
+        }
+        if(array_key_exists('attributes', $contents_key[$num_pos][$key2])) {
+          $_SESSION['cart']->contents[$key2]['attributes'] = $contents_key[$num_pos][$key2]['attributes'];
+        }
+      }*/
+    }
+//        unset($_SESSION['cart_after2']); //  = $_SESSION['cart'];
+//        $_SESSION['sba_cart_after2'] = $_SESSION['sba_cart'];
+//        unset($_SESSION['sba_cart_after2']); //  = $backup;
     if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'B: FUNCTION ' . __FUNCTION__ . ' Products_id: ' . $_POST['products_id'] . ' cart_qty: ' . $cart_qty . ' $_POST[cart_quantity]: ' . $_POST['cart_quantity'] . ' <br>', 'caution');
 
 //Check if item is an SBA tracked item, if so, then perform analysis of whether to add or not.

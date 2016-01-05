@@ -181,7 +181,7 @@
 
    /* mc12345678 Comment about the $attribute_stock test is really to see if the product is tracked by SBA. */
       // check if any attribute stock values have been set for the product in the SBA table, if not do the else part
-      return zen_get_sba_attribute_info($products_id, $attributes, 'products', 'stock');
+      return zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'));
 
       if (zen_product_is_sba($products_id)) {
 
@@ -203,7 +203,7 @@
           $stock_values = $db->Execute($stock_query);
           // return the stock qty for the attribute
           if (!$stock_values->EOF) {
-          return $stock_values->fields['products_quantity'];
+            return $stock_values->fields['products_quantity'];
           } else {
             // Known: product is tracked by SBA, product is reported as 
             //  having one attribute, though if there is one or more 

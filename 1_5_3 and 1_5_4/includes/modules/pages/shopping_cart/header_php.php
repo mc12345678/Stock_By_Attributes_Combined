@@ -171,7 +171,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
   if ( STOCK_CHECK == 'true' ) {
     $flagStockCheck = zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes);
 
-    if($inSBA){
+			if(false && $inSBA){
       //check for product used multiple time in cart with different attributes
       //test for total qty availability for each combination
       if( cartProductCount($products[$i]['id']) > 1 ){
@@ -210,7 +210,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 //                 echo 'Product: ' . $products[$i]['id'] . '<br />';
 //                 echo 'Requested: ' . $products[$i]['quantity'] . '<br />';
 //                 echo zen_get_products_stock($products[$i]['id'], $attributes, 'true') . ' TEST<br />';
-                if( zen_get_products_stock($products[$i]['id'], $attributes, 'true') != 'true' ){
+                if( zen_get_products_stock($products[$i]['id'], $attributes, 'true') !== 'true' ){
                   $productsQty = ($productsQty + $dupCOMPARE[3] + $products[$i]['quantity']);
 //                   echo 'Qty Requested: ' . $productsQty . '<br />';
 //                   echo 'Available qty: ' . zen_get_products_stock($products[$i]['id'], $attributes) . '<br />';
