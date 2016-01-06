@@ -537,12 +537,16 @@ Of the attributes provided, determine the number of those attributes that are
   function zen_sba_has_text_field($sba_table_ids = array()){
     global $db;
     
-    if (!isset($sba_table_ids)) {
+    if (!isset($sba_table_ids) || isset($sba_table_ids) && !is_array($sba_table_ids) && $sba_table_ids === false) {
       return false;
     }
     
     if (isset($sba_table_ids) && !is_array($sba_table_ids)) {
       $sba_table_ids = array($sba_table_ids);
+    }
+    
+    if (!isset($sba_table_ids) || !is_array($sba_table_ids) || sizeof($sba_table_ids) < 1 || !zen_not_null($sba_table_ids)) {
+      return false;
     }
     
     $attrib_sql = 'select stock_attributes, products_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' pwas where stock_id in (:stock_id:)';
@@ -552,8 +556,8 @@ Of the attributes provided, determine the number of those attributes that are
 
     while (!$attrib_ids->EOF){
       $attrib_type_sql = "select distinct popt.products_options_type, popt.products_options_id
-              from     " . TABLE_PRODUCTS_ATTRIBUTES . " patrib " . 
-              left join    " . TABLE_PRODUCTS_OPTIONS . " popt ON (popt.products_options_id = patrib.options_id) " . 
+              from     " . TABLE_PRODUCTS_ATTRIBUTES . " patrib 
+              left join    " . TABLE_PRODUCTS_OPTIONS . " popt ON (popt.products_options_id = patrib.options_id) 
               where patrib.products_attributes_id in (:check_attribs:)
               and (popt.products_options_type = :txt_type: OR popt.products_options_type = :file_type:)
               and popt.language_id = :languages_id: ";

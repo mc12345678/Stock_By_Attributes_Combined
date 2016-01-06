@@ -595,40 +595,51 @@ function insertSBAconfiguration(){
 	
 	$sql = "INSERT INTO `".TABLE_CONFIGURATION."` (configuration_title, configuration_key, configuration_value, 
 	       configuration_description, configuration_group_id, sort_order, 
-	       last_modified, date_added, use_function, set_function) 
+	       date_added, use_function, set_function) 
 		
 	       VALUES 
 		    ('SBA Show Available Stock Level in Cart (when less than order)', 'STOCK_SHOW_LOW_IN_CART', 'true', 
 	        'When customer places more items in cart than are available, show the available stock on the shopping cart page:',
-	        9,".$result.",now(),now(),NULL,'zen_cfg_select_option(array(\'true\', \'false\'),'),
+	        9,".$result.",now(),NULL,'zen_cfg_select_option(array(\'true\', \'false\'),'),
 	
 	        ('SBA Display Images in Admin', 'STOCK_SHOW_IMAGE', 'true', 
 	        'Display image thumbnails on Products With Attributes Stock page? (warning, setting this to true can severely slow the loading of this page):',
-	        9,".$result.",now(),now(),NULL,'zen_cfg_select_option(array(\'true\', \'false\'),'),
+	        9,".$result.",now(),NULL,'zen_cfg_select_option(array(\'true\', \'false\'),'),
 		
 		    ('SBA Show Stock Level on Product Info Page', 'STOCK_SHOW_ATTRIB_LEVEL_STOCK', 'true', 
 	        'Show the available stock with each attribute on product info page:',
-	        9,".$result.",now(),now(),NULL,'zen_cfg_select_option(array(\'true\', \'false\'),'),
+	        9,".$result.",now(),NULL,'zen_cfg_select_option(array(\'true\', \'false\'),'),
 	
 		    ('SBA Original Price Struck Through', 'STOCK_SHOW_ORIGINAL_PRICE_STRUCK', 'true', 
 	        'Show the original price (struck through) on product info page with attribute:',
-	        9,".$result.",now(),now(),NULL,'zen_cfg_select_option(array(\'true\', \'false\'),'),
+	        9,".$result.",now(),NULL,'zen_cfg_select_option(array(\'true\', \'false\'),'),
 	
 			('SBA Display Search Box Only', 'STOCK_SET_SBA_SEARCHBOX', 'false', 
 			'Show Search box only (no records):',
-			9,".$result.",now(),now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),'),
+			9,".$result.",now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),'),
 	
 			('SBA Display Search List Box', 'STOCK_SBA_SEARCHLIST', 'true', 
 			'Show the Search List box At the top of the page:',
-			9,".$result.",now(),now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),'),
+			9,".$result.",now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),'),
 
 			('SBA Display Custom ID', 'STOCK_SBA_DISPLAY_CUSTOMID', 'true', 
 			'Display the Custom ID value in history, checkout, and order forms:',
-			9,".$result.",now(),now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),'),
+			9,".$result.",now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),'),
 			
 			('SBA Display Attributes Images', 'SBA_SHOW_IMAGE_ON_PRODUCT_INFO', 'false', 
 			'Display the Attribute Image on the product information page:',
-			9,".$result.",now(),now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),');";
+			9,".$result.",now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),'),";
+
+	$sql2 ="SELECT c.sort_order
+			FROM ".TABLE_CONFIGURATION." c
+			WHERE c.configuration_group_id = 13
+			order by c.sort_order desc limit 1";
+	$result = $db->Execute($sql2);
+	$result = $result->fields['sort_order'] + 1;
+
+			$sql .=" ('SBA Display CustomID in Attribute Dropdowns', 'ATTRIBUTES_SBA_DISPLAY_CUSTOMID', '2', 
+			'Display the CustomID in the Attribute Dropdown list(s) for the customer to see while selecting an option.<br /><br /> 0 - Hide the Custom ID<br /> 1 - Display the Custom ID depending on the setting for display throughout<br ?> 2 - Always display the Custom ID (default)<br />',
+			13,".$result.",now(),null,'zen_cfg_select_drop_down(array(array(\'id\'=>\'0\', \'text\'=>\'Off\'), array(\'id\'=>\'1\', \'text''=>\'On Pending SBA Stock\'), array(\'id\'=>\'2\', \'text''=>\'Always On\'), ),');";
 		
 		/* save for next version when pagination is implemented
 		 * 
@@ -688,7 +699,7 @@ function insertDynDropdownsConfiguration(){
 		    ('Enable Dynamic Dropdowns', 'PRODINFO_ATTRIBUTE_DYNAMIC_STATUS', '2', 'Selects status of using this portion of the SBA plugin (Dynamic Dropdowns).', :configuration_id:, 10, now(), NULL, 'zen_cfg_select_drop_down(array(array(\'id\'=>\'0\', \'text\'=>\'Off\'), array(\'id\'=>\'1\', \'text''=>\'On for All SBA Tracked\'), array(\'id\'=>\'2\', \'text''=>\'On for Multi-Attribute Only\'), array(\'id\'=>\'3\', \'text''=>\'On for Single-Attribute Only\'), ),'),
         ('Product Info Single Attribute Display Plugin', 'PRODINFO_ATTRIBUTE_PLUGIN_SINGLE', 'multiple_dropdowns', 'The plugin used for displaying attributes on the product information page.', :configuration_id:, 20, now(), NULL, 'zen_cfg_select_option(array(\'single_radioset\', \'single_dropdown\',\'multiple_dropdowns\',\'sequenced_dropdowns\',\'sba_sequenced_dropdowns\'),'),
 	        ('Product Info Multiple Attribute Display Plugin', 'PRODINFO_ATTRIBUTE_PLUGIN_MULTI', 'sba_sequenced_dropdowns', 'The plugin used for displaying attributes on the product information page.', :configuration_id:, 30, now(), NULL, 'zen_cfg_select_option(array(\'single_radioset\', \'single_dropdown\',\'multiple_dropdowns\',\'sequenced_dropdowns\',\'sba_sequenced_dropdowns\'),'),
-    ('Use ZC default HTML Attribute Tags', 'SBA_ZC_DEFAULT', 'true', 'Controls whether to use ZC HTML tags around attributes or to use the Dynamic Dropdown Version of the tags to support modifications made by others over the years but also compatibility with other ZC plugins.<br /><br />Options:<br />true (Default)<br />false.', :configuration_id:, 40, now(), NULL, 'zen_cfg_select_option(array(\'true\', \'false\'),'),
+    ('Use ZC default HTML Attribute Tags', 'SBA_ZC_DEFAULT', 'false', 'Controls whether to use ZC HTML tags around attributes or to use the Dynamic Dropdown Version of the tags to support modifications made by others over the years but also compatibility with other ZC plugins.<br /><br />Options:<br />true <br />false (Default).', :configuration_id:, 40, now(), NULL, 'zen_cfg_select_option(array(\'true\', \'false\'),'),
       ('Show Out of Stock Attributes', 'PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK', 'True', 'Controls the display of out of stock attributes.', :configuration_id:, 50, now(), NULL, 'zen_cfg_select_option(array(\'True\', \'False\'),'),
     ('Mark Out of Stock Attributes', 'PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK', 'Right', 'Controls how out of stock attributes are marked as out of stock.', :configuration_id:, 60, now(), NULL, 'zen_cfg_select_option(array(\'None\', \'Right\', \'Left\'),'),
       ('Display Out of Stock Message Line', 'PRODINFO_ATTRIBUTE_OUT_OF_STOCK_MSGLINE', 'True', 'Controls the display of a message line indicating an out of stock attributes is selected.', :configuration_id:, 70, now(), NULL, 'zen_cfg_select_option(array(\'True\', \'False\'),'),
