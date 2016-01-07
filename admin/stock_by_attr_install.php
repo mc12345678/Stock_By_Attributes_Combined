@@ -313,6 +313,13 @@ function removeSBAconfiguration(){
 	}
 	array_push($resultMmessage, '&bull; Deleted PRODUCTS_OPTIONS_TYPE_SELECT_SBA  ' . $msg);
 	
+  $sql = "DELETE IGNORE FROM `".TABLE_CONFIGURATION."` WHERE `configuration_key` = 'ATTRIBUTES_SBA_DISPLAY_CUSTOMID'";
+  $db->Execute($sql);
+  if($db->error){		
+    $msg = ' Error Message: ' . $db->error;
+  }
+  array_push($resultMmessage, '&bull; Deleted ATTRIBUTES_SBA_DISPLAY_CUSTOMID  ' . $msg);
+  
 	//DELETE FROM `products_options_types` 
 	array_push($resultMmessage, '<br /><b>Clean-Up</b>, Removing from products_options_types: ');
 	

@@ -314,7 +314,7 @@ class products_with_attributes_stock extends base {
 				$get_quantity_query = 'select quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
 
         // mc12345678 Identify the stock available from SBA.
-  			$attribute_stock_available = $db->Execute($get_quantity_query);	
+  			$attribute_stock_available = $db->Execute($get_quantity_query, false, false, 0, true);	
         // mc12345678 Identify the stock remaining for the overall stock by removing the number of the current product from the number available for the attributes_id. 
 				$attribute_stock_left = $attribute_stock_available->fields['quantity'] - $this->_productI['qty'];
 	
