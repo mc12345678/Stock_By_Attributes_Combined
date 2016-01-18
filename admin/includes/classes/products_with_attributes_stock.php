@@ -784,7 +784,7 @@ function nullDataEntry($fieldtoNULL){
         $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
         $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'string');
   		$customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
-        if (!$customid->RecordCount()){ // if a customid does not exist for the combination of attributes then perhaps the attributes are individually listed.
+        if ($attribute_stock->RecordCount() > 0 && !$customid->RecordCount()){ // if a customid does not exist for the combination of attributes then perhaps the attributes are individually listed.
   			  $customid_query = 'select customid as products_model
 		  							from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
 		  							where products_id = :products_id: 
@@ -796,7 +796,7 @@ function nullDataEntry($fieldtoNULL){
   		}
   		
 //  		$customid = $db->Execute($customid_query);
-        if($customid->fields['products_model']){
+        if($customid->RecordCount() > 0 && $customid->fields['products_model']){
   		
 	  		//Test to see if a custom ID exists
 	  		//if there are custom IDs with the attribute, then return them.
