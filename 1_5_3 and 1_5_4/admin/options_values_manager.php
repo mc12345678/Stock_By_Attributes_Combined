@@ -10,13 +10,6 @@
  */
 
   require('includes/application_top.php');
-	// START "Stock by Attributes"
-	//include language file
-	include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
-	//new object from class
-	require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
-	$stock = new products_with_attributes_stock;
-	// END "Stock by Attributes"
 
   // verify option names and values
   $chk_option_names = $db->Execute("select count(*) as count from " . TABLE_PRODUCTS_OPTIONS . " where language_id='" . (int)$_SESSION['languages_id'] . "' limit 1");
