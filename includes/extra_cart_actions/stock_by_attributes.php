@@ -86,10 +86,10 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 
 //  $_SESSION['productIsSba'] = $productIsSBA;
 //  $_SESSION['productHasText'] = $productHasText;
-  $_SESSION['sba_add_prods'] = $sba_add_prods;
+/*  $_SESSION['sba_add_prods'] = $sba_add_prods;
   $_SESSION['sba_add_prods_old'] = $sba_add_prods_old;
   $_SESSION['sba_add_prods_attribs'] = $sba_add_prods_attribs;
-  $_SESSION['sba_add_prods_cart_quantity'] = $sba_add_prods_cart_quantity; // Quantity of the product already in the cart at this time.
+  $_SESSION['sba_add_prods_cart_quantity'] = $sba_add_prods_cart_quantity; // Quantity of the product already in the cart at this time.*/
   
   
 
