@@ -37,12 +37,9 @@ if (isset($_SESSION['languages_id'])) {
 }
 
 //action
-if (isset($_GET['action']) && $_GET['action']) {
-  $action = addslashes(trim($_GET['action']));
-} else {
-  $action = null;
-}
+$action = ((isset($_GET['action']) && $_GET['action']) ? addslashes(trim($_GET['action'])) : null);
 
+if (zen_not_null($action)) {
 //case selection 'add', 'edit', 'confirm', 'execute', 'delete_all', 'delete', 'resync', 'resync_all', 'auto_sort'
 switch ($action) {
   case 'add':
@@ -510,7 +507,7 @@ switch ($action) {
     // Show a list of the products
     break;
 }
-
+}
 global $template_dir;
 ?>
 <!doctype html>
@@ -556,6 +553,7 @@ require(DIR_WS_INCLUDES . 'header.php');
 
     <?php
 //case selection 'add', 'edit', 'delete_all', 'delete',  'confirm'
+if (zen_not_null($action)) {
     switch ($action) {
       case 'add':
         if (isset($products_id)) {
@@ -739,6 +737,7 @@ require(DIR_WS_INCLUDES . 'header.php');
     echo $stock->displayFilteredRows(STOCK_SET_SBA_SEARCHBOX, null, $seachPID);
     echo '</div>';
     break;
+}
 }
 ?>
 </div>
