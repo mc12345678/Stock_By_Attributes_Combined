@@ -121,14 +121,14 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 
       $attributes = "SELECT popt.products_options_name, poval.products_options_values_name, pa.options_values_price, pa.price_prefix
                       , popt.products_options_type 
-                     FROM " . TABLE_PRODUCTS_OPTIONS . " popt 
-                     LEFT JOIN " . TABLE_PRODUCTS_ATTRIBUTES . " pa ON (pa.options_id = popt.products_options_id)
-                     LEFT JOIN " . TABLE_PRODUCTS_OPTIONS_VALUES . " poval ON (pa.options_values_id = poval.products_options_values_id)
-                     WHERE pa.products_id = :productsID
-                     AND pa.options_id = :optionsID
-                     AND pa.options_values_id = :optionsValuesID
-                     AND popt.language_id = :languageID
-                     AND poval.language_id = :languageID " . $options_order_by;
+                    FROM      " . TABLE_PRODUCTS_OPTIONS        . " popt 
+                    LEFT JOIN " . TABLE_PRODUCTS_ATTRIBUTES     . " pa    ON (pa.options_id        = popt.products_options_id)
+                    LEFT JOIN " . TABLE_PRODUCTS_OPTIONS_VALUES . " poval ON (pa.options_values_id = poval.products_options_values_id)
+                    WHERE pa.products_id       = :productsID
+                      AND pa.options_id        = :optionsID
+                      AND pa.options_values_id = :optionsValuesID
+                      AND popt.language_id     = :languageID
+                      AND poval.language_id    = :languageID " . $options_order_by;
 
       //Bind variables to query
       $attributes = $db->bindVars($attributes, ':productsID', $products[$i]['id'], 'integer');
