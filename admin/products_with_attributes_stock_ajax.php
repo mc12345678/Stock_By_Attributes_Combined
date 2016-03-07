@@ -16,15 +16,15 @@ include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/products_with_attributes_st
 //$stock = new products_with_attributes_stock;
 $stock = $products_with_attributes_stock_class;
 
-    if( $_GET['save'] == 1 ){
-		if (isset($_GET['page']) && $_GET['page']) {
-		  $parameters = 'page=' . $_GET['page'];
+    if( isset($_GET['save']) && $_GET['save'] == 1 ){
+		if (isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0) {
+		  $parameters = 'page=' . (int)$_GET['page'];
 		} else {
 		  $parameters = '';
 		}
         $x = $stock->saveAttrib();//This does not seem to have a purpose, need to look closer.
-		if( is_numeric($_GET['pid']) && $_GET['pid'] > 0 ){
-			zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $_GET['pid'] . '&amp;' . $parameters, 'NONSSL'));
+		if( isset($_GET['pid']) && is_numeric($_GET['pid']) && $_GET['pid'] > 0 ){
+			zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . (int)$_GET['pid'] . '&amp;' . $parameters, 'NONSSL'));
 		}
 		else{
 			 zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, $parameters, 'NONSSL'));
