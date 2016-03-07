@@ -33,6 +33,13 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'NOTIFIER_ADMIN_ZEN_DELETE_PRODUCTS_ATTRIBUTES';
     $attachNotifier[] = 'NOTIFY_PACKINGSLIP_INLOOP';
     $attachNotifier[] = 'NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP';
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE';
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL';
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES';
+    $attachNotifier[] = 'OPTIONS_NAME_MANAGER_DELETE_OPTION';
+    $attachNotifier[] = 'OPTIONS_NAME_MANAGER_UPDATE_OPTIONS_VALUES_DELETE';
+    $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUE';
+    $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME';
 
 //    $zco_notifier->attach($this, $attachNotifier); 
     $this->attach($this, $attachNotifier); 
@@ -148,6 +155,123 @@ class products_with_attributes_stock_admin extends base {
     }
   }
     
+  // NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE
+  function updateNotifyAttributeControllerDeleteAttribute(&$callingClass, $notifier, $paramsArray, &$attribute_id) {
+    global $db;
+    
+    $stock_ids = zen_get_sba_ids_from_attribute($attribute_id);
+
+    if (sizeof($stock_ids) > 0) {
+      $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
+           where stock_id in (" . implode(',', $stock_ids) . ")");
+    }
+
+  }
+  
+  // NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL', array('pID' => $_POST['products_filter']));
+  function updateNotifyAttributeControllerDeleteAll(&$callingClass, $notifier, $paramsArray) {
+    // , array('pID' => $_POST['products_filter']));
+    pID = $paramsArray['pID'];
+    
+  }
+  
+  // 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES', array('pID' => $_POST['products_filter'], 'options_id' => $_POST['products_options_id_all']));
+  function updateNotifyAttributeControllerDeleteOptionNameValues(&$callingClass, $notifier, $paramsArray) {
+    //  array('pID' => $_POST['products_filter'], 'options_id' => $_POST['products_options_id_all'])
+
+    global $db;
+    
+    $pID = $paramsArray['pID'];
+    $options_id = $paramsArray['options_id'];
+    
+    $delete_attributes_options_id = $db->Execute("select * from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $pID . "' and options_id='" . $options_id . "'");
+
+    while (!$delete_attributes_options_id->EOF) {
+      $stock_ids = zen_get_sba_ids_from_attribute($delete_attributes_options_id->fields['products_attributes_id']);
+    
+      if(sizeof($stock_ids) > 0) {
+        $delete_attributes_stock_options_id_values = $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id='" . $pID . "' and stock_id in (" . implode(',', $stock_ids) . ")");
+      }
+    }
+
+  }
+  
+  // OPTIONS_NAME_MANAGER_DELETE_OPTION', array('option_id' => $option_id, 'options_values_id' => (int)$remove_option_values->fields['products_options_values_id']));
+  function updateOptionsNameManagerDeleteOption(&$callingClass, $notifier, $paramsArray) {
+    //array('option_id' => $option_id, 'options_values_id' => (int)$remove_option_values->fields['products_options_values_id']));
+    $option_id = $paramsArray['option_id'];
+    $options_values_id = $paramsArray['options_values_id'];
+    
+    $remove_attributes_query = $db->Execute("select products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where options_id = " . (int)$option_id . " and options_values_id = " . (int)$options_values_id);
+
+    while (!$remove_attributes_query->EOF) {
+      $remove_attributes_list[] = $remove_attributes_query->fields['products_attributes_id'];
+      $remove_attributes_query->MoveNext();
+    }
+
+    $stock_ids = zen_get_sba_ids_from_attribute($remove_attributes_list);
+
+    if (sizeof($stock_ids) > 0) {
+      $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
+                    where stock_id in (" . implode(',', $stock_ids) . ")");
+    }
+    
+    
+  }
+  
+  // OPTIONS_NAME_MANAGER_UPDATE_OPTIONS_VALUES_DELETE', array('products_id' => $all_update_products->fields['products_id'], 'options_id' => $all_options_values->fields['products_options_id'], 'options_values_id' => $all_options_values->fields['products_options_values_id']));
+  function updateOptionsNameManagerUpdateOptionsValuesDelete(&$callingClass, $notifier, $paramsArray) {
+  // ', array('products_id' => $all_update_products->fields['products_id'], 'options_id' => $all_options_values->fields['products_options_id'], 'options_values_id' => $all_options_values->fields['products_options_values_id']));
+    global $db;
+    
+    $products_id = $paramsArray['products_id'];
+    $options_id = $paramsArray['options_id'];
+    $options_values_id = $paramsArray['options_values_id'];
+    
+    $check_all_options_values = $db->Execute("select products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . (int)$products_id . "' and options_id='" . (int)$options_id . "' and options_values_id='" . (int)$options_values_id . "'");
+
+    $stock_ids = zen_get_sba_ids_from_attribute($check_all_options_values->fields['products_attributes_id']);
+    if (sizeof($stock_ids) > 0) {
+      $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
+                    where stock_id in (" . implode(',', $stock_ids) . ")");
+    }
+
+  }
+  
+  // OPTIONS_VALUES_MANAGER_DELETE_VALUE', array('value_id' => $value_id));
+  function updateOptionsValuesManagerDeleteValue(&$callingClass, $notifier, $paramsArray) {
+  // ', array('value_id' => $value_id));
+    $value_id = $paramsArray['value_id'];
+    
+    $remove_attributes_query = $db->Execute("select products_id, products_attributes_id, options_id, options_values_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where options_values_id ='" . (int)$value_id . "'");
+    if ($remove_attributes_query->RecordCount() > 0) {
+      // clean all tables of option value
+      while (!$remove_attributes_query->EOF) {
+        $stock_ids = zen_get_sba_ids_from_attribute($remove_attributes_query->fields['products_attributes_id']);
+        
+        if (sizeof($stock_ids) > 0) {
+          $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
+                        where stock_id in (" . implode(',', $stock_ids) . ")");
+        }
+      }
+    }
+
+  }
+  
+  // OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME', array('current_products_id' => $current_products_id, 'remove_ids' => $remove_downloads_ids, 'options_id'=>$options_id_from, 'options_values_id'=>$options_values_values_id_from));
+  function updateOptionsValuesManagerDeleteValuesOfOptionname(&$callingClass, $notifier, $paramsArray) {
+    // ', array('current_products_id' => $current_products_id, 'remove_ids' => $remove_downloads_ids, 'options_id'=>$options_id_from, 'options_values_id'=>$options_values_values_id_from));
+    $remove_ids = $paramsArray['remove_ids'];
+    
+    $stock_ids = zen_get_sba_ids_from_attribute($remove_ids);
+
+    if (sizeof($stock_ids) > 0) {
+      $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
+                    where stock_id in (" . implode(',', $stock_ids) . ")");
+    }
+
+  }
+    
 //  notify('NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP', array('i'=>$i, 'j'=>$j, 'productsI'=>$order->products[$i], 'prod_img'=>$prod_img), $order->products[$i], $prod_img);
 
   function update(&$callingClass, $notifier, $paramsArray) {
@@ -209,5 +333,35 @@ class products_with_attributes_stock_admin extends base {
 /*      $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                   where products_id = '" . (int)$product_id . "'");*/
     }
+
+    if ($notifier == 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE'){
+      $attribute_id = $paramsArray['attribute_id'];
+      $this->updateNotifyAttributeControllerDeleteAttribute($callingClass, $notifier, $paramsArray, $attribute_id);
+    }
+    
+    if ($notifier == 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL') {
+      $this->updateNotifyAttributeControllerDeleteAll($callingClass, $notifier, $paramsArray) {
+    }
+    
+    if ($notifier == 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES') {
+    //, array('pID' => $_POST['products_filter'], 'options_id' => $_POST['products_options_id_all']));
+      $this->updateNotifyAttributeControllerDeleteOptionNameValues($callingClass, $notifier, $paramsArray);
+    }
+    
+    if ($notifier == 'OPTIONS_NAME_MANAGER_DELETE_OPTION') {
+    //, array('option_id' => $option_id, 'options_values_id' => (int)$remove_option_values->fields['products_options_values_id']));
+      $this->updateOptionsNameManagerDeleteOption($callingClass, $notifier, $paramsArray);
+    }
+    
+    if ($notifier == 'OPTIONS_NAME_MANAGER_UPDATE_OPTIONS_VALUES_DELETE') {
+    // , array('products_id' => $all_update_products->fields['products_id'], 'options_id' => $all_options_values->fields['products_options_id'], 'options_values_id' => $all_options_values->fields['products_options_values_id']));
+      $this->updateOptionsNameManagerUpdateOptionsValuesDelete($callingClass, $notifier, $paramsArray);
+    }
+    
+    if ($notifier == 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME') {
+      //, array('current_products_id' => $current_products_id, 'remove_ids' => $remove_downloads_ids, 'options_id'=>$options_id_from, 'options_values_id'=>$options_values_values_id_from));
+      $this->updateOptionsValuesManagerDeleteValuesOfOptionname($callingClass, $notifier, $paramsArray);
+    }
+
 	} //end update function - mc12345678
 } // EOF Class
