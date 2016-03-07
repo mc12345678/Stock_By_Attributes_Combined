@@ -11,6 +11,8 @@
  */
 define('PWA_STOCK_AVAILABLE', ' Available Stock: ');
 define('PWA_OUT_OF_STOCK', ' Out of Stock: ');
+define('PWA_OUT_OF_STOCK_LEFT', ' Out of Stock: ');
+define('PWA_OUT_OF_STOCK_RIGHT', ' Out of Stock: ');
 define('PWA_COMBO_OUT_OF_STOCK', ' Selected Combination is Out of Stock: ');
 define('PWA_STOCK_QTY', ' Qty: ');
 define('PWA_LOW_STOCK', ' Low Stock! ');
