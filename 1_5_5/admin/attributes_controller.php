@@ -21,8 +21,12 @@
   }
   $chk_option_values = $db->Execute("select * from " . TABLE_PRODUCTS_OPTIONS_VALUES . " where language_id='" . (int)$_SESSION['languages_id'] . "' and products_options_values_id != " . (int)PRODUCTS_OPTIONS_VALUES_TEXT_ID . " limit 1");
   if ($chk_option_values->RecordCount() < 1) {
+    foreach ($chk_option_names as $chk_option_name) {
+      if (!zen_option_name_base_expects_no_values($chk_option_name->fields['products_options_id'])) {
     $messageStack->add_session(ERROR_DEFINE_OPTION_VALUES, 'caution');
     zen_redirect(zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER));
+      }
+    }
   }
   $chk_products = $db->Execute("select * from " . TABLE_PRODUCTS . " limit 1");
   if ($chk_products->RecordCount() < 1) {
@@ -515,21 +519,15 @@ if ($_POST['image_delete'] == 1) {
         {
           $attribute_id = zen_db_prepare_input($_POST['delete_attribute_id']);
 
+          $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE', array('attribute_id' => $attribute_id), $attribute_id);
+
           $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES . "
-                      where products_attributes_id = '" . (int)$attribute_id . "'");
+                        where products_attributes_id = " . (int)$attribute_id);
 
 // added for DOWNLOAD_ENABLED. Always try to remove attributes, even if downloads are no longer enabled
           $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD . "
-                      where products_attributes_id = '" . (int)$attribute_id . "'");
+                        where products_attributes_id = " . (int)$attribute_id);
 
-  /* START STOCK BY ATTRIBUTES */
-          $stock_ids = zen_get_sba_ids_from_attribute($attribute_id);
-          if (sizeof($stock_ids) > 0) {
-            $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
-                      where stock_id in (" . implode(',', $stock_ids) . ")");
-          }
-  /* END STOCK BY ATTRIBUTES */
-          
         // reset products_price_sorter for searches etc.
           zen_update_products_price_sorter($products_filter);
 
@@ -538,6 +536,8 @@ if ($_POST['image_delete'] == 1) {
         break;
 // delete all attributes
       case 'delete_all_attributes':
+        $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL', array('pID' => $_POST['products_filter']));
+
         zen_delete_products_attributes($_POST['products_filter']);
         $messageStack->add_session(SUCCESS_ATTRIBUTES_DELETED . ' ID#' . $products_filter, 'success');
         $action='';
@@ -550,20 +550,14 @@ if ($_POST['image_delete'] == 1) {
         break;
 
       case 'delete_option_name_values':
+        $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES', array('pID' => $_POST['products_filter'], 'options_id' => $_POST['products_options_id_all']));
+
         $delete_attributes_options_id = $db->Execute("select * from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $_POST['products_filter'] . "' and options_id='" . $_POST['products_options_id_all'] . "'");
         while (!$delete_attributes_options_id->EOF) {
 // remove any attached downloads
           $remove_downloads = $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD . " where products_attributes_id= '" . $delete_attributes_options_id->fields['products_attributes_id'] . "'");
 // remove all option values
           $delete_attributes_options_id_values = $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $_POST['products_filter'] . "' and options_id='" . $_POST['products_options_id_all'] . "'");
-
-  /* START STOCK BY ATTRIBUTES */
-          $stock_ids = zen_get_sba_ids_from_attribute($delete_attributes_options_id->fields['products_attributes_id']);
-          if(sizeof($stock_ids) > 0) {
-            $delete_attributes_stock_options_id_values = $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id='" . $_POST['products_filter'] . "' and stock_id in (" . implode(',', $stock_ids) . ")");
-          }
-/* END STOCK BY ATTRIBUTES */
-          
           $delete_attributes_options_id->MoveNext();
         }
 
