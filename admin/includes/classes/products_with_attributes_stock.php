@@ -241,6 +241,8 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
         $html .= '</table>';
         }
     $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid='.$ReturnedProductID.'&amp;page='.$_GET['page'], 'post');
+    $html .= zen_draw_hidden_field('save', '1');
+    $html .= zen_draw_hidden_field('pid', $ReturnedProductID);
     $html .= zen_image_submit('button_save.gif', IMAGE_SAVE) . ' Hint: To quickly edit click in the "Quantity in Stock" field.';
        $html .= '<br/>';
     $html .= '
