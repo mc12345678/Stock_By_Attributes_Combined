@@ -171,7 +171,7 @@ class products_with_attributes_stock_admin extends base {
   // NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL', array('pID' => $_POST['products_filter']));
   function updateNotifyAttributeControllerDeleteAll(&$callingClass, $notifier, $paramsArray) {
     // , array('pID' => $_POST['products_filter']));
-    pID = $paramsArray['pID'];
+    $pID = $paramsArray['pID'];
     
   }
   
@@ -340,7 +340,7 @@ class products_with_attributes_stock_admin extends base {
     }
     
     if ($notifier == 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL') {
-      $this->updateNotifyAttributeControllerDeleteAll($callingClass, $notifier, $paramsArray) {
+      $this->updateNotifyAttributeControllerDeleteAll($callingClass, $notifier, $paramsArray);
     }
     
     if ($notifier == 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES') {
