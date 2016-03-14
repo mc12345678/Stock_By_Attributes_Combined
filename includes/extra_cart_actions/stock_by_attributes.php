@@ -328,6 +328,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 
 if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'A: FUNCTION ' . __FUNCTION__, 'caution');
+  // Here can add product attributes grid check and prepare to iterate through the "products" that have been added.
+  // if is a multi-product add, then capture/process the necessary data to be able to assign each $_POST['products_id'], $_POST['id'],
+  // and $_POST['cart_quantity'].  $_POST['products_id'] is expected to be relatively the same for each product (ie. the product's number only).
+  // the 'id' is expected to be all of the attributes associated with the product and 'cart_quantity' will end up being the total 
+  // quantity of a product, ie. carts_quantity times the number entered in the individual field box.  This way the quantity box will
+  // have a default value if not shown, but if shown then multiples of the selected number of "groups" will be added to the cart.
+  //  In this section, want to also be sure to add/maintain the 'id's in the order that would be expected without this additional
+  //  feature so that all future manipulations work out correctly.
   if (isset($_POST['products_id'] ) && is_numeric ( $_POST['products_id'])) {
 //Loop for each product in the cart
     if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'A2: FUNCTION ' . __FUNCTION__, 'caution');
