@@ -336,6 +336,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   // have a default value if not shown, but if shown then multiples of the selected number of "groups" will be added to the cart.
   //  In this section, want to also be sure to add/maintain the 'id's in the order that would be expected without this additional
   //  feature so that all future manipulations work out correctly.
+  /* Test to see if is a grid related submission/product*/
+  /* Do additional prestage work for grid related submission/product*/
+  $grid_loop = 0;
+  $grid_add_number = 1; // Representative of the number of products to add.
+  while ($grid_loop++ <= $grid_add_number) {
   if (isset($_POST['products_id'] ) && is_numeric ( $_POST['products_id'])) {
 //Loop for each product in the cart
     if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'A2: FUNCTION ' . __FUNCTION__, 'caution');
@@ -569,14 +574,21 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'E: FUNCTION ' . __FUNCTION__ . '<br>' . ERROR_MAXIMUM_QTY . zen_get_products_name($_POST['products_id']), 'caution');
       }
     
+      // Want to bypass this entire section if not done with addressing all of the products, though also may need to pull out some of
+      //  the actions so that all products are addressed, but basically do not want to redirect away from this operation until the
+      //  last object has been addressed.  Maybe just need to if around the redirects and leave the add_session information
       if ($the_list == '') {
         // no errors
   // display message if all is good and not on shopping_cart page
         if (DISPLAY_CART == 'false' && $_GET['main_page'] != FILENAME_SHOPPING_CART && $messageStack->size('shopping_cart') == 0) {
           $messageStack->add_session('header', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . SUCCESS_ADDED_TO_CART_PRODUCT, 'success');
-          zen_redirect(zen_href_link($goto, zen_get_all_get_params($parameters)));
+          if ($grid_loop == $grid_add_number) {
+            zen_redirect(zen_href_link($goto, zen_get_all_get_params($parameters)));
+          }
         } else {
-          zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+          if ($grid_loop == $grid_add_number) {
+            zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+          }
         }
       } else {
         // errors found with attributes - perhaps display an additional message here, using an observer class to add to the messageStack
@@ -585,4 +597,5 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       }
     }
   }
+  } // end of $grid_loop
 }
