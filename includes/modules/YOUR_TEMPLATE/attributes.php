@@ -621,7 +621,29 @@ $sql = "select count(*) as total
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
                   break;
-
+/****************************************************
+/* Absolute-Solutions.co.uk Edit
+/*
+/* Attributes Grid format
+/* 2 of 2
+/****************************************************/
+				  case ($products_options_names->fields['products_options_type'] == PRODUCT_TYPE_ATTRIBUTE_OPTION_GRID): // GRID LAYOUT
+				    //Only show on the first attribute
+					if (zen_not_null($attrib_grid)) {
+					  $options_name[] = '';
+					  $options_menu[] = $attrib_grid;
+					  $options_comment[] = '';
+					  $options_comment_position[] = '';
+					  // Then remove the attribute grid so it isn't shown twice
+					  $attrib_grid = '';
+					}
+					break;
+/****************************************************
+/* Absolute-Solutions.co.uk Edit
+/*
+/* Attributes Grid format
+/* END of 2 of 2
+/****************************************************/
                   default:
                   // normal dropdown "SELECT LIST" menu display
                   if (isset($_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names->fields['products_options_id']])) {
