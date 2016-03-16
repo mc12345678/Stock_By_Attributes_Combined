@@ -553,7 +553,7 @@ require(DIR_WS_INCLUDES . 'header.php');
 
     <?php
 //case selection 'add', 'edit', 'delete_all', 'delete',  'confirm'
-if (zen_not_null($action)) {
+/*if (zen_not_null($action))*/ {
     switch ($action) {
       case 'add':
         if (isset($products_id)) {
