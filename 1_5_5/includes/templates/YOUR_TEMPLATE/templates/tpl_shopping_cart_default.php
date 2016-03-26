@@ -6,10 +6,10 @@
  * Displays shopping-cart contents
  *
  * @package templateSystem
- * @copyright Copyright 2003-2010 Zen Cart Development Team
+ * @copyright Copyright 2003-2016 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: tpl_shopping_cart_default.php 15881 2010-04-11 16:32:39Z wilt $
+ * @version $Id: Author: DrByte  Thu Jan 7 22:38:14 2016 -0500 Modified in v1.5.5 $
  * 
  * Updated for Stock by Attributes 1.5.3 15-10-04
  */
@@ -51,7 +51,7 @@
 <?php    } //endif STOCK_ALLOW_CHECKOUT ?>
 <?php  } //endif flagAnyOutOfStock ?>
 
-<table  border="0" width="100%" cellspacing="0" cellpadding="0" id="cartContentsDisplay">
+<table id="cartContentsDisplay">
      <tr class="tableHeading">
         <th scope="col" id="scQuantityHeading"><?php echo TABLE_HEADING_QUANTITY; ?></th>
         <th scope="col" id="scUpdateQuantity">&nbsp;</th>
@@ -84,7 +84,7 @@
 ?>
        </td>
        <td class="cartProductDisplay">
-<a href="<?php echo $product['linkProductsName']; ?>"><span id="cartImage" class="back"><?php echo $product['productsImage']; ?></span><span id="cartProdTitle"><?php echo $product['productsName'] . '<span class="alert bold">' . $product['flagStockCheck'] . '</span>'; ?></span></a>
+<a href="<?php echo $product['linkProductsName']; ?>"><span class="cartImage back"><?php echo $product['productsImage']; ?></span><span class="cartProdTitle"><?php echo $product['productsName'] . '<span class="alert bold">' . $product['flagStockCheck'] . '</span>'; ?></span></a>
 
 <?php 
 	// START "Stock by Attributes"
