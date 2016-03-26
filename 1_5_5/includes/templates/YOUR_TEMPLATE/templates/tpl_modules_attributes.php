@@ -84,22 +84,30 @@
 </div>
 
 
-<?php if ($options_comment[$i] != '' and $options_comment_position[$i] == '1') { ?>
-    <div class="ProductInfoComments"><?php echo $options_comment[$i]; ?></div>
-<?php } ?>
-
-
-<?php
-if ($options_attributes_image[$i] != '') {
+         <?php
+         if ($options_comment[$I] != '' and
+                 $options_comment_position[$I] == '1') {
+           ?>
+           <div class="ProductInfoComments"><?php echo $options_comment[$I]; ?></div>
+<?php } // END if Div_options_Comment    
 ?>
-<?php echo $options_attributes_image[$i]; ?>
-<?php
-}
-?>
-<br class="clearBoth" />
-<?php
-    }
-?>
+         <?php
+       } // End FOR options_name 
+       ?>
+       <?php
+       // This displays ALL images regardless of attribute stock levels. Comment-out the "echo" if you want to skip images.
+       for ($i = 0; $i < sizeof($options_name); $i++) {
+         if ($options_attributes_image[$i] != '') {
+           ?>
+           <?php echo $options_attributes_image[$i]; ?>
+           <?php
+         } // End If(attributes images)
+       } // End For Options_name
+       ?>
+       <br class="clearBoth" />
+       <?php
+     }
+     ?>
 
 
 <?php
