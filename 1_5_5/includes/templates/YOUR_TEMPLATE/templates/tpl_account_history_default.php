@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * Page Template
  *
  * Loaded automatically by index.php?main_page=account_edit.<br />
@@ -10,7 +10,7 @@
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: Author: DrByte  Fri Jan 8 13:28:51 2016 -0500 Modified in v1.5.5 $
- */
+ *
  * Updated for Stock by Attributes 1.5.3.1
  */
 ?>
