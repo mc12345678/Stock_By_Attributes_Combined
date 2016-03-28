@@ -3,10 +3,10 @@
  * shopping_cart header_php.php
  *
  * @package page
- * @copyright Copyright 2003-2014 Zen Cart Development Team
+ * @copyright Copyright 2003-2016 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version GIT: $Id: Author: ajeh  Modified in v1.5.4 $
+ * @version $Id: Author: DrByte  Fri Dec 4 16:31:15 2015 -0500 Modified in v1.5.5 $
  * 
  * Stock by Attributes 1.5.4
  */
@@ -162,14 +162,13 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
   $customid = null;
   //unset($attributes); //Unnecessary because reeassigned below.
   $productsQty = 0;
-
+  // Stock Check
   if ($inSBA) {
     $attributes = $products[$i]['attributes']; 
   }  else {
     $attributes = null; //Force normal operation if the product is not monitored by SBA.
   }
-    
-  if ( STOCK_CHECK == 'true' ) {
+  if (STOCK_CHECK == 'true') {
     $flagStockCheck = zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes);
  $qtyAvailable = zen_get_products_stock($products[$i]['id'], $attributes);
     if($inSBA){
@@ -304,3 +303,4 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 
 // This should be last line of the script:
 $zco_notifier->notify('NOTIFY_HEADER_END_SHOPPING_CART');
+?>
