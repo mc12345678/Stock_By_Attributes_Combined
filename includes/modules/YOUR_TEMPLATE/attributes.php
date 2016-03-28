@@ -95,11 +95,6 @@ $sql = "select count(*) as total
               and       pov.language_id = '" . (int)$_SESSION['languages_id'] . "' " .
                 $order_by;
 
-                // Start "Stock By Attributes" SBA
-                $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_OPTIONS_SQL');
-//                echo ($_isSBA ? 'true' : 'false') . "\n";
-                // End "Stock By Attributes" SBA
-                
                 $products_options = $db->Execute($sql);
 
                 $products_options_value_id = '';
@@ -627,30 +622,9 @@ $sql = "select count(*) as total
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
                   break;
-/****************************************************
-/* Absolute-Solutions.co.uk Edit
-/*
-/* Attributes Grid format
-/* 2 of 2
-/****************************************************/
-				  case ($products_options_names->fields['products_options_type'] == PRODUCT_TYPE_ATTRIBUTE_OPTION_GRID): // GRID LAYOUT
-				    //Only show on the first attribute
-					if (zen_not_null($attrib_grid)) {
-					  $options_name[] = '';
-					  $options_menu[] = $attrib_grid;
-					  $options_comment[] = '';
-					  $options_comment_position[] = '';
-					  // Then remove the attribute grid so it isn't shown twice
-					  $attrib_grid = '';
-					}
-					break;
-/****************************************************
-/* Absolute-Solutions.co.uk Edit
-/*
-/* Attributes Grid format
-/* END of 2 of 2
-/****************************************************/
-                  default:
+
+                  // previously this was default:
+                  case ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT):
                   // normal dropdown "SELECT LIST" menu display
                   if (isset($_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names->fields['products_options_id']])) {
                     $selected_attribute = $_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names->fields['products_options_id']];
@@ -689,6 +663,10 @@ $sql = "select count(*) as total
 
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
+                  break;
+
+                  default:
+                  $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH', $products_options_names->fields, $options_name, $options_menu, $options_comment, $options_comment_position, $options_html_id);
                   break;
                 }
 

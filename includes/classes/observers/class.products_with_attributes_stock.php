@@ -44,15 +44,58 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END';
-    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTIONS_SQL';
+//    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTIONS_SQL';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULES_OPTIONS_VALUES_SET';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE';
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTION';
+
+/* Need to add/modify code to support:    
+'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT';
+'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
+'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP';
+*/
 	
 //		$zco_notifier->attach($this, $attachNotifier); 
 		$this->attach($this, $attachNotifier); 
 	}	
+
+
+  /*
+   * 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
+   */
+  function updateNotifyAttributesModuleDefaultSwitch(&$callingClass, $notifier, $products_options_names_fields, &$options_name, &$options_menu, &$options_comment, &$options_comment_position, &$options_html_id){
+  global $attrib_grid;
+
+          switch (true) {
+  /****************************************************
+/* Absolute-Solutions.co.uk Edit
+/*
+/* Attributes Grid format
+/* 2 of 2
+/****************************************************/
+      case ($products_options_names_fields['products_options_type'] == PRODUCT_TYPE_ATTRIBUTE_OPTION_GRID): // GRID LAYOUT
+        //Only show on the first attribute
+        if (zen_not_null($attrib_grid)) {
+          $options_name[] = '';
+          $options_menu[] = $attrib_grid;
+          $options_comment[] = '';
+          $options_comment_position[] = '';
+          // Then remove the attribute grid so it isn't shown twice
+          $attrib_grid = '';
+        }
+        break;
+/****************************************************
+/* Absolute-Solutions.co.uk Edit
+/*
+/* Attributes Grid format
+/* END of 2 of 2
+/****************************************************/
+      default:
+        break;
+    }
+  }
 
   /*
    * NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE
@@ -113,6 +156,59 @@ class products_with_attributes_stock extends base {
        $sql = $db->bindVars($sql, ':products_id:', $_GET['products_id'], 'integer');
        $sql = $db->bindVars($sql, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
        $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+     }
+   }
+
+  /*
+   * NOTIFY_ATTRIBUTES_MODULE_START_OPTION
+   */
+   function updateNotifyAttributesModuleStartOption(&$callingClass, $notifier, $paramsArray) {
+     global $db, $sql, $options_menu_images, $moveSelectedAttribute, 
+        $products_options_array, $options_attributes_image, 
+        $products_options_names, $products_options_names_count, 
+        $stock, $is_SBA_product, $order_by, $products_options;
+     
+     $options_menu_images = array();
+     $moveSelectedAttribute = false;
+     $products_options_array = array();
+     $options_attributes_image = array();
+     // Could do the calculation here the first time set a variable above as part of the class and then reuse that... instead of the modification to the attributes file...
+     if (!zen_not_null($this->_products_options_names_count)) {
+       $this->_products_options_names_count = $products_options_names->RecordCount();
+     }
+     $products_options_names_count = $products_options_names->RecordCount();
+
+     if (zen_product_is_sba($_GET['products_id'])) {
+       $this->_isSBA = true;
+     } else {
+       $this->_isSBA = false;
+     }
+     
+//     $stock->_isSBA = $this->_isSBA;
+     $is_SBA_product = $this->_isSBA;
+     
+     if ($this->_isSBA) {
+       $sql = "select distinct pov.products_options_values_id,
+                        pov.products_options_values_name,
+                        pa.*, p.products_quantity, 
+                      " . ($this->_products_options_names_count <= 1 ? " pas.stock_id as pasid, pas.quantity as pasqty, pas.sort,  pas.customid, pas.title, pas.product_attribute_combo, pas.stock_attributes, " : "") . " pas.products_id 
+
+                from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
+                left join " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov on (pa.options_values_id = pov.products_options_values_id)
+                left join " . TABLE_PRODUCTS . " p on (pa.products_id = p.products_id)
+                
+                left join " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pas on 
+                (p.products_id = pas.products_id and FIND_IN_SET(pa.products_attributes_id, pas.stock_attributes) > 0 )
+            where pa.products_id = :products_id:
+            and       pa.options_id = :options_id:
+            and       pov.language_id = :languages_id: " .
+              $order_by;
+              
+       $sql = $db->bindVars($sql, ':products_id:', $_GET['products_id'], 'integer');
+       $sql = $db->bindVars($sql, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
+       $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+
+       $products_options = $db->Execute($sql);
      }
    }
 
@@ -388,6 +484,10 @@ class products_with_attributes_stock extends base {
   
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_OPTIONS_SQL') {
       updateNotifyAttributesModuleOptionsSQL($callingClass, $notifier, $paramsArray);
+    }
+    
+    if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_START_OPTION') {
+      updateNotifyAttributesModuleStartOption($callingClass, $notifier, $paramsArray);
     }
     
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULES_OPTIONS_VALUES_SET') {
