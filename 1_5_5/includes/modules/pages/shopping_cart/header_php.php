@@ -171,7 +171,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
   if (STOCK_CHECK == 'true') {
     $flagStockCheck = zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes);
  $qtyAvailable = zen_get_products_stock($products[$i]['id'], $attributes);
-    if($inSBA){
+    if(false && $inSBA){
       //check for product used multiple time in cart with different attributes
       //test for total qty availability for each combination
       if( cartProductCount($products[$i]['id']) > 1 ){
