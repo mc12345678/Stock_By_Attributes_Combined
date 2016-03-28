@@ -79,65 +79,6 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 
     $out = '';
     $out2 = '';
-    $outendecode = '<script type="text/javascript">var htmlEnDeCode = (function() {
-    var charToEntityRegex,
-        entityToCharRegex,
-        charToEntity,
-        entityToChar;
-
-    function resetCharacterEntities() {
-        charToEntity = {};
-        entityToChar = {};
-        // add the default set
-        addCharacterEntities({
-            \'&amp;\'     :   \'&\',
-            \'&gt;\'      :   \'>\',
-            \'&lt;\'      :   \'<\',
-            \'&quot;\'    :   \'"\',
-            \'&#39;\'     :   "\'"
-        });
-    }
-
-    function addCharacterEntities(newEntities) {
-        var charKeys = [],
-            entityKeys = [],
-            key, echar;
-        for (key in newEntities) {
-            echar = newEntities[key];
-            entityToChar[key] = echar;
-            charToEntity[echar] = key;
-            charKeys.push(echar);
-            entityKeys.push(key);
-        }
-        charToEntityRegex = new RegExp(\'(\' + charKeys.join(\'|\') + \')\', \'g\');
-        entityToCharRegex = new RegExp(\'(\' + entityKeys.join(\'|\') + \'|&#[0-9]{1,5};\' + \')\', \'g\');
-    }
-
-    function htmlEncode(value){
-        var htmlEncodeReplaceFn = function(match, capture) {
-            return charToEntity[capture];
-        };
-
-        return (!value) ? value : String(value).replace(charToEntityRegex, htmlEncodeReplaceFn);
-    }
-
-    function htmlDecode(value) {
-        var htmlDecodeReplaceFn = function(match, capture) {
-            return (capture in entityToChar) ? entityToChar[capture] : String.fromCharCode(parseInt(capture.substr(2), 10));
-        };
-
-        return (!value) ? value : String(value).replace(entityToCharRegex, htmlDecodeReplaceFn);
-    }
-
-    resetCharacterEntities();
-
-    return {
-        htmlEncode: htmlEncode,
-        htmlDecode: htmlDecode
-    };
-})();</script>';
-    $out .= "\n" . $outendecode;
-    $out2 .= "\n" . $outendecode;
     $attributes = array();
 
     $attributes = $this->_build_attributes_array(true, true);
@@ -227,7 +168,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $out.='<tr><td align="right" class="main"><b>' . $attributes[0]['oname'] . ":</b></td><td class=\"main\"><input type = \"hidden\" name = \"id[" . $attributes[0]['oid'] . "]\"" . " value=\"" . stripslashes($attributes[0]['ovals'][0]['id']) . "\" />" . $attributes[0]['ovals'][0]['text'] . "</td></tr>\n";
       $out2.='<div class="wrapperAttribsOptions">';
     } else {
-      $out.='<tr><td align="right" class="main"><b>' . $attributes[0]['oname'] . ":</b></td><td class=\"main\">" . zen_draw_pull_down_menu('id[' . $attributes[0]['oid'] . ']', array_merge(array(array('id' => 0, 'text' => TEXT_SEQUENCED_FIRST . $attributes[0]['oname'])), $attributes[0]['ovals']), $attributes[0]['default'], "onchange=\"i" . $attributes[0]['oid'] . "(this.form);\"") . "</td></tr>\n";
+      $out.='<tr><td align="right" class="main"><b>' . $attributes[0]['oname'] . ":</b></td><td class=\"main\">" . zen_draw_pull_down_menu('id[' . $attributes[0]['oid'] . ']', array_merge(array(array('id' => 0, 'text' => TEXT_SEQUENCED_FIRST . $attributes[0]['oname'])), $attributes[0]['ovals']), $attributes[0]['default'], "id=\"attrib-" . $attributes[0]['oid'] . "\" onchange=\"i" . $attributes[0]['oid'] . "(this.form);\"") . "</td></tr>\n";
       $out2.='<div class="wrapperAttribsOptions">';
       $out2.='<h4 class="optionName back">';
       $out2.= $options_name[0];
@@ -267,14 +208,14 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\"><input type = \"hidden\" name = \"id[" . $attributes[$o]['oid'] . "]\"" . " value=\"" . stripslashes($attributes[$o]['ovals'][0]['id']) . "\" />" . $attributes[$o]['ovals'][0]['text'] . "</td></tr>\n";
         $out2.='<div class="wrapperAttribsOptions">';
       } else {
-        $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\">" . zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"") . "</td></tr>\n";
+        $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\">" . zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "id=\"attrib-" . $attributes[$o]['oid'] . "\" onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"") . "</td></tr>\n";
         $out2.='<div class="wrapperAttribsOptions">';
         $out2.='<h4 class="optionName back">';
         $out2.= $options_name[$o];
         $out2.='</h4>';
         $out2.='<div class="back">';
         $out2.="\n";
-        $out2.=zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "id=\"" . "attrib-" . $attributes[$o]['oid'] . "\" onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"");
+        $out2.=zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "id=\"attrib-" . $attributes[$o]['oid'] . "\" onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"");
         $out2.='</div>';
         $out2.='<br class="clearBoth" />';
         $out2.='</div>';
@@ -305,14 +246,14 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\"><input type = \"hidden\" name = \"id[" . $attributes[$o]['oid'] . "]\"" . " value=\"" . stripslashes($attributes[$o]['ovals'][0]['id']) . "\" />" . $attributes[$o]['ovals'][0]['text'] . "</td></tr>\n";
       $out2.='<div class="wrapperAttribsOptions">';
     } else {
-      $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\">" . zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"") . "</td></tr>\n";
+      $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\">" . zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "id=\"attrib-" . $attributes[$o]['oid'] . "\" onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"") . "</td></tr>\n";
       $out2.='<div class="wrapperAttribsOptions">';
       $out2.='<h4 class="optionName back">';
       $out2.= $options_name[$o];
       $out2.='</h4>';
       $out2.='<div class="back">';
       $out2.="\n";
-      $out2.=zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "id=\"" . "attrib-" . $attributes[$o]['oid'] . "\" onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"");
+      $out2.=zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "id=\"attrib-" . $attributes[$o]['oid'] . "\" onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"");
       $out2.='</div>';
       $out2.='<br class="clearBoth" />';
       $out2.='</div>';
@@ -361,8 +302,9 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.="</td><td class=main>";
         $out2.='</h4><div class="back">';
         $out2.="\n";
-        $out.=zen_draw_pull_down_menu('id['.$nonstocked['oid'].']',$nonstocked['ovals'],$nonstocked['default']);
-        $out2.=zen_draw_pull_down_menu('id['.$nonstocked['oid'].']',$nonstocked['ovals'],$nonstocked['default'], "id=\"" . "attrib-" . $nonstocked['oid'] . "\" onchange=\"i" . $nonstocked['oid'] . "(this.form);\"");
+//        $out.=zen_draw_pull_down_menu('id['.$nonstocked['oid'].']',$nonstocked['ovals'],$nonstocked['default']);
+        $out.=zen_draw_pull_down_menu('id['.$nonstocked['oid'].']',$nonstocked['ovals'],$nonstocked['default'], "id=\"attrib-" . $nonstocked['oid'] . "\" onchange=\"i" . $nonstocked['oid'] . "(this.form);\"");
+        $out2.=zen_draw_pull_down_menu('id['.$nonstocked['oid'].']',$nonstocked['ovals'],$nonstocked['default'], "id=\"attrib-" . $nonstocked['oid'] . "\" onchange=\"i" . $nonstocked['oid'] . "(this.form);\"");
         $out.="</td></tr>";
         $out2.='</div><br class="clearBoth" /></div>';
         $out.="\n";
@@ -891,6 +833,73 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       return ''; //'           </div>';
     }
 
+    function _draw_encoding() {
+
+          $out="\n";
+    $out .= '<script type="text/javascript"><!--//<![CDATA[
+    var htmlEnDeCode = (function() {
+    var charToEntityRegex,
+        entityToCharRegex,
+        charToEntity,
+        entityToChar;
+
+    function resetCharacterEntities() {
+        charToEntity = {};
+        entityToChar = {};
+        // add the default set
+        addCharacterEntities({
+            \'&amp;\'     :   \'&\',
+            \'&gt;\'      :   \'>\',
+            \'&lt;\'      :   \'<\',
+            \'&quot;\'    :   \'"\',
+            \'&#39;\'     :   "\'"
+        });
+    }
+
+    function addCharacterEntities(newEntities) {
+        var charKeys = [],
+            entityKeys = [],
+            key, echar;
+        for (key in newEntities) {
+            echar = newEntities[key];
+            entityToChar[key] = echar;
+            charToEntity[echar] = key;
+            charKeys.push(echar);
+            entityKeys.push(key);
+        }
+        charToEntityRegex = new RegExp(\'(\' + charKeys.join(\'|\') + \')\', \'g\');
+        entityToCharRegex = new RegExp(\'(\' + entityKeys.join(\'|\') + \'|&#[0-9]{1,5};\' + \')\', \'g\');
+    }
+
+    function htmlEncode(value){
+        var htmlEncodeReplaceFn = function(match, capture) {
+            return charToEntity[capture];
+        };
+
+        return (!value) ? value : String(value).replace(charToEntityRegex, htmlEncodeReplaceFn);
+    }
+
+    function htmlDecode(value) {
+        var htmlDecodeReplaceFn = function(match, capture) {
+            return (capture in entityToChar) ? entityToChar[capture] : String.fromCharCode(parseInt(capture.substr(2), 10));
+        };
+
+        return (!value) ? value : String(value).replace(entityToCharRegex, htmlDecodeReplaceFn);
+    }
+
+    resetCharacterEntities();
+
+    return {
+        htmlEncode: htmlEncode,
+        htmlDecode: htmlDecode
+    };
+})();
+//]] --></script>';
+
+       $out.="\n";
+       return $out;
+}
+
 /*
     Method: draw
   
@@ -916,7 +925,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     function draw() {
 
       if (SBA_ZC_DEFAULT === 'true') {
-        $out=$this->_draw_attributes_start();
+        $out =$this->_draw_encoding();
+        $out.=$this->_draw_attributes_start();
 
         $out.=$this->_draw_stocked_attributes();
       
@@ -924,7 +934,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     
         $out.=$this->_draw_attributes_end();
       } else {
-        $out=$this->_draw_table_start();
+        $out =$this->_draw_encoding();
+        $out.=$this->_draw_table_start();
 
         $out.=$this->_draw_stocked_attributes();
       
