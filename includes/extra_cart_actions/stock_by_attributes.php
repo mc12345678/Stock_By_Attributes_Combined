@@ -338,12 +338,144 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   //  feature so that all future manipulations work out correctly.
   /* Test to see if is a grid related submission/product*/
   /* Do additional prestage work for grid related submission/product*/
-  $grid_loop = 0;
-  $grid_add_number = 1; // Representative of the number of products to add.
-  while ($grid_loop++ <= $grid_add_number) {
-  if (isset($_POST['products_id'] ) && is_numeric ( $_POST['products_id'])) {
+    $grid_prod_id = array();
+    $grid_id = array();
+    $prod_qty = array();
+    $grid_add_number = 0;
+    if (isset($_POST['product_id']) && is_array($_POST['product_id']) && (function_exists('zen_product_is_sba') ? zen_product_is_sba($_POST['products_id']) : false)) {
+
+        foreach($_POST['product_id'] as $prid => $qty) {
+            $products_id = zen_get_prid($prid);
+
+            $option_ref = array();
+
+            if (!is_numeric($qty) || $qty < 0) {
+                // adjust quantity when not a value
+                $_SESSION['non_sub_qty_'.$prid] = $qty;
+                $chk_link = '<a href="' . zen_href_link(zen_get_info_page($products_id), 'cPath=' . (zen_get_generated_category_path_rev(zen_get_products_category_id($products_id))) . '&products_id=' . $products_id) . '">' . zen_get_products_name($products_id) . '</a>';
+                $messageStack->add_session('header', ERROR_CORRECTIONS_HEADING . ERROR_PRODUCT_QUANTITY_UNITS_SHOPPING_CART . $chk_link . ' ' . PRODUCTS_ORDER_QTY_TEXT . zen_output_string_protected($qty), 'caution');
+                $qty = 0;
+            }
+
+            if (isset($_POST['id']) && is_array($_POST['id'])) { // This is to fix/setup attribs if needed.
+                foreach($_POST['id'] as $option => $option_value) {
+                    $_POST['attribs'][$prid][$option] = $option_value;
+                }
+            }
+
+            foreach($_POST['attribs'][$prid] as $option_id => $value_id) {
+                if (substr($option_id, 0, strlen(TEXT_PREFIX)) == TEXT_PREFIX) {
+                    $option_ref[substr($option_id, strlen(TEXT_PREFIX))] = $option_id;
+                    $option_id = substr($option_id, strlen(TEXT_PREFIX));
+                } elseif (substr($option_id, 0, strlen(FILE_PREFIX)) == FILE_PREFIX) {
+                    $option_ref[substr($option_id, strlen(FILE_PREFIX))] = $option_id;
+                    $option_id = substr($option_id, strlen(FILE_PREFIX));
+                } else {
+                    $option_ref[$option_id] = $option_id;
+                }
+                $check_attrib = $db->Execute(	"select pov.products_options_values_name from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov " .
+                                                "where pa.options_values_id = pov.products_options_values_id " .
+                                                "and pa.options_id = '".(int)$option_id . "' " .
+                                                "and pa.products_id = '".(int)$products_id ."' " .
+                                                "and pov.language_id = '".(int)$_SESSION['languages_id']."'");
+                if ($check_attrib->RecordCount() <= 1 && $check_attrib->fields['products_options_values_name'] == '') {
+                    unset($_POST['attribs'][$prid][$option_id]);  // Not sure why it matters if the value has a name or not. mc12345678
+                }
+            }
+      
+            if (!is_numeric($_POST['cart_quantity']) || $_POST['cart_quantity'] < 0) {
+              // adjust quantity when not a value
+              $chk_link = '<a href="' . zen_href_link(zen_get_info_page($products_id), 'cPath=' . (zen_get_generated_category_path_rev(zen_get_products_category_id($products_id))) . '&products_id=' . $products_id) . '">' . zen_get_products_name($products_id) . '</a>';
+              $messageStack->add_session('header', ERROR_CORRECTIONS_HEADING . ERROR_PRODUCT_QUANTITY_UNITS_SHOPPING_CART . $chk_link . ' ' . PRODUCTS_ORDER_QTY_TEXT . zen_output_string_protected($_POST['cart_quantity']), 'caution');
+              $_POST['cart_quantity'] = 0;
+            }
+            if (is_numeric($qty) && zen_not_null($qty) && $qty > 0) {
+                reset($_POST['attribs'][$prid]);
+        // End result on the side with grid is to set $_POST['id'] = $_POST['attribs'][$prid]
+        // and then move to the next item.
+                if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
+                    $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+                } else {
+                    $options_order_by= ' order by popt.products_options_name';
+                }
+
+  //get the option/attribute list
+                $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
+                              popt.products_options_type, popt.products_options_length, popt.products_options_comment,
+                              popt.products_options_size,
+                              popt.products_options_images_per_row,
+                              popt.products_options_images_style,
+                              popt.products_options_rows
+              from        " . TABLE_PRODUCTS_OPTIONS . " popt
+              left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
+              where patrib.products_id= :products_id:
+              and popt.language_id = :languages_id: " .
+              $options_order_by;
+
+                $sql = $db->bindVars($sql, ':products_id:', $prid, 'integer');
+                $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+                $products_options_sequence = $db->Execute($sql);
+
+                $grid_id2 = array();
+                while (!$products_options_sequence->EOF) {
+
+                    $grid_id2[$option_ref[$products_options_sequence->fields['products_options_id']]] = $_POST['attribs'][$prid][$option_ref[$products_options_sequence->fields['products_options_id']]];
+                    $products_options_sequence->MoveNext();
+                }
+
+                $grid_id[] = $grid_id2;
+                $prod_qty[] = $qty * $_POST['cart_quantity'];
+                $grid_prod_id[] = $products_id;
+                $grid_add_number++;
+            }
+        }
+        if (sizeof($grid_id) < 1 || sizeof($prod_qty) < 1 || sizeof($grid_prod_id) < 1) {
+          $grid_prod_id[0] = null;
+          $prod_qty[0] = 0;
+          $grid_add_number = 0;
+        }
+    } else {
+      if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
+        $grid_prod_id[0] = null;
+        $prod_qty[0] = 0;
+        $grid_add_number = 0;
+        $_POST['products_id'] = 0;
+        $_POST['id'] = 0;
+        $_POST['cart_quantity'] = 0;
+      } else {
+        $grid_prod_id[] = $_POST['products_id'];
+        $grid_id[] = $_POST['id'];
+        $prod_qty[] = $_POST['cart_quantity'];
+        $grid_add_number = 1;
+      }
+    }
+
+    if (sizeof($grid_id) < 1) {
+        $grid_id[0] = null;
+//        $grid_add_number = 1;
+    }
+    if (sizeof($grid_id) == 1 && is_null($grid_id[0])) {
+       $grid_add_number = 0;
+    }
+//        $grid_add_number = 1;
+
+    if (sizeof($prod_qty) < 1) {
+        $prod_qty[0] = 0;
+        $grid_add_number = 0;
+    }
+
+    if (sizeof($grid_prod_id) < 1) {
+        $grid_prod_id[0] = null;
+        $grid_add_number = 0;
+    }
+    $grid_loop = 0;
+    while ($grid_loop++ <= $grid_add_number) {
+        $_POST['products_id'] = $grid_prod_id[$grid_loop - 1];
+        $_POST['id'] = $grid_id[$grid_loop - 1];
+        $_POST['cart_quantity'] = $prod_qty[$grid_loop - 1];
+    if (isset($_POST['products_id'] ) && is_numeric ( $_POST['products_id'])) {
 //Loop for each product in the cart
-    if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'A2: FUNCTION ' . __FUNCTION__, 'caution');
+        if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'A2: FUNCTION ' . __FUNCTION__, 'caution');
     $the_list = '';
     $adjust_max= 'false';
     if (isset($_POST['id'])) {
@@ -597,5 +729,5 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       }
     }
   }
-  } // end of $grid_loop
+  } // EOF while(grid_loop++ <= $grid_add_number
 }
