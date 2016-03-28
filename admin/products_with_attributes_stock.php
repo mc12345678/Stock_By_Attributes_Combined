@@ -523,8 +523,6 @@ global $template_dir;
 <?php } else { ?>
       <script type="text/javascript" src="<?php echo ($page_type == 'NONSSL' ? HTTP_CATALOG_SERVER . DIR_WS_CATALOG : ( ENABLE_SSL_ADMIN == 'true' ? HTTPS_CATALOG_SERVER . DIR_WS_HTTPS_CATALOG : HTTP_CATALOG_SERVER . DIR_WS_CATALOG ) ) . DIR_WS_TEMPLATES . $template_dir; ?>/jscript/jquery-1.10.2.min.js"></script>
 <?php } ?>
-    <script type="text/javascript" src="<?php echo ($page_type == 'NONSSL' ? HTTP_CATALOG_SERVER . DIR_WS_CATALOG : ( ENABLE_SSL_ADMIN == 'true' ? HTTPS_CATALOG_SERVER . DIR_WS_HTTPS_CATALOG : HTTP_CATALOG_SERVER . DIR_WS_CATALOG ) ) . DIR_WS_TEMPLATES . $template_dir; ?>/jscript/jquery.form.js"></script>
-    <script type="text/javascript" src="products_with_attributes_stock_ajax.js"></script>
     <script type="text/javascript" src="includes/menu.js"></script>
     <script type="text/javascript" src="includes/general.js"></script>
     <script type="text/javascript">
@@ -547,6 +545,8 @@ global $template_dir;
 require(DIR_WS_INCLUDES . 'header.php');
 ?>
     <!-- header_eof //-->
+    <script type="text/javascript" src="<?php echo ($page_type == 'NONSSL' ? HTTP_CATALOG_SERVER . DIR_WS_CATALOG : ( ENABLE_SSL_ADMIN == 'true' ? HTTPS_CATALOG_SERVER . DIR_WS_HTTPS_CATALOG : HTTP_CATALOG_SERVER . DIR_WS_CATALOG ) ) . DIR_WS_TEMPLATES . $template_dir; ?>/jscript/jquery.form.js"></script>
+    <script type="text/javascript" src="products_with_attributes_stock_ajax.js"></script>
     <div style="padding: 20px;">
 
       <!-- body_text_eof //-->
