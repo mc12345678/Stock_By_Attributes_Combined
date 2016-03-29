@@ -50,10 +50,10 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULES_OPTIONS_VALUES_SET';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTION';
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
 
 /* Need to add/modify code to support:    
 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT';
-'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
 'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP';
 */
 	
@@ -66,10 +66,10 @@ class products_with_attributes_stock extends base {
    * 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
    */
   function updateNotifyAttributesModuleDefaultSwitch(&$callingClass, $notifier, $products_options_names_fields, &$options_name, &$options_menu, &$options_comment, &$options_comment_position, &$options_html_id){
-  global $attrib_grid;
+    global $attrib_grid;
 
           switch (true) {
-  /****************************************************
+/****************************************************
 /* Absolute-Solutions.co.uk Edit
 /*
 /* Attributes Grid format
@@ -92,6 +92,43 @@ class products_with_attributes_stock extends base {
 /* Attributes Grid format
 /* END of 2 of 2
 /****************************************************/
+      case ($products_options_names_fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA): // SBA Select List (Dropdown) Basic
+        global $selected_attribute, $show_attributes_qty_prices_icon, $products_options_array, $disablebackorder;
+        
+        // normal dropdown "SELECT LIST" menu display
+        $prod_id = $_GET['products_id'];
+        if (isset($_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names_fields['products_options_id']])) {
+        	$selected_attribute = $_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names_fields['products_options_id']];
+        } else {
+          // use customer-selected values
+          if ($_POST['id'] != '') {
+            reset($_POST['id']);
+            foreach($_POST['id'] as $key => $value) {
+              if ($key == $products_options_names_fields['products_options_id']) {
+                $selected_attribute = $value;
+                break;
+              }
+            }
+          } else {
+            // use default selected set above
+          }
+        }
+        
+        if ($show_attributes_qyt_prices_icon == 'true') {
+          $options_name[] = ATTRIBUTES_QTY_PRICE_SYMBOL.$products_options_names_fields['products_options_name'];
+        } else {
+          $options_name[] = '<label class="attribsSelect" for="' . 'attrib-' . $products_options_names_fields['products_options_id'] . '">' . $products_options_names_fields['products_options_name'] . '</label>';
+        }
+        
+        //var_dump($products_options_array); //Debug Line
+        $options_html_id[] = 'drp-attrib-' . $products_options_names_fields['products_options_id'];
+        // added new image rotate ability ($options_menu_images);
+        $options_menu[] = zen_draw_pull_down_menu_SBAmod('id[' . $products_options_names_fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names_fields['products_options_id'] . '"' . ' class="sbaselectlist"', false, $disablebackorder, $options_menu_images) . "\n";
+        // END "Stock by Attributes" SBA
+        
+        $options_comment[] = $products_options_names_fields['products_options_comment'];
+        $options_comment_position[] = ($products_options_names_fields['products_options_comment_position'] == '1' ? '1' : '0');
+        break;
       default:
         break;
     }
@@ -501,6 +538,12 @@ class products_with_attributes_stock extends base {
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED') {
       updateNotifyAttributesModuleAttribSelected($callingClass, $notifier, $paramsArray);
     }
+    
+    if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH') {
+      global $options_name, $options_menu, $options_comment, $options_comment_position, $options_html_id;
+      $this->updateNotifyAttributesModuleDefaultSwitch($callingClass, $notifier, $paramsArray, $options_name, $options_menu, $options_comment, $options_comment_position, $options_html_id);
+    }
+    
     if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_PRODUCT_LINE_ITEM'){
       
     }
