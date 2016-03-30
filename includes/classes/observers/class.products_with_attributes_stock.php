@@ -93,7 +93,7 @@ class products_with_attributes_stock extends base {
 /* END of 2 of 2
 /****************************************************/
       case ($products_options_names_fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA): // SBA Select List (Dropdown) Basic
-        global $selected_attribute, $show_attributes_qty_prices_icon, $products_options_array, $disablebackorder;
+        global $selected_attribute, $show_attributes_qty_prices_icon, $products_options_array, $disablebackorder, $options_menu_images;
         
         // normal dropdown "SELECT LIST" menu display
         $prod_id = $_GET['products_id'];
@@ -114,10 +114,17 @@ class products_with_attributes_stock extends base {
           }
         }
         
-        if ($show_attributes_qyt_prices_icon == 'true') {
+        if ($show_attributes_qty_prices_icon == 'true') {
           $options_name[] = ATTRIBUTES_QTY_PRICE_SYMBOL.$products_options_names_fields['products_options_name'];
         } else {
           $options_name[] = '<label class="attribsSelect" for="' . 'attrib-' . $products_options_names_fields['products_options_id'] . '">' . $products_options_names_fields['products_options_name'] . '</label>';
+        }
+        
+        // START "Stock by Attributes" SBA
+        $disablebackorder = null;
+        //disable default selected if out of stock
+        if (defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') {
+          $disablebackorder = ' disabled="disabled" ';
         }
         
         //var_dump($products_options_array); //Debug Line
