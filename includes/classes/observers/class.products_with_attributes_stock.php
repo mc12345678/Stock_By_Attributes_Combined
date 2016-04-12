@@ -36,15 +36,12 @@ class products_with_attributes_stock extends base {
    * This is the observer for the includes/classes/order.php file to support Stock By Attributes when the order is being processed at the end of the purchase.
    */
   function __construct() {
-		//global $zco_notifier;
     
     $attachNotifier = array();
- //   $attachNotifier[] = 'NOTIFY_ORDER_DURING_CREATE_ADDED_PRODUCT_LINE_ITEM';
     $attachNotifier[] = 'NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END';
-//    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTIONS_SQL';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULES_OPTIONS_VALUES_SET';
@@ -52,13 +49,7 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTION';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
 
-/* Need to add/modify code to support:    
-'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT';
-'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP';
-*/
 	
-//		$zco_notifier->attach($this, $attachNotifier); 
-		$this->attach($this, $attachNotifier); 
 	}	
 
 
@@ -66,7 +57,6 @@ class products_with_attributes_stock extends base {
    * 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
    */
   function updateNotifyAttributesModuleDefaultSwitch(&$callingClass, $notifier, $products_options_names_fields, &$options_name, &$options_menu, &$options_comment, &$options_comment_position, &$options_html_id){
-    global $attrib_grid;
 
           switch (true) {
 /****************************************************
@@ -574,51 +564,6 @@ class products_with_attributes_stock extends base {
       $stock_values = $this->_stock_values;
       updateNotifyOrderProcessingStockDecrementInit($callingClass, $notifier, $paramsArray, $productI, $i);
       updateNotifyOrderProcessingStockDecrementBegin($callingClass, $notifier, $paramsArray, $stock_values, $attribute_stock_left);
-      /*$this->_i = $i;
-      $this->_productI = $productI;
-
-      $this->_stock_info = zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
-
-      // START "Stock by Attributes"
-      $attributeList = null;
-      $customid = null;
-      if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) >0){
-        foreach($this->_productI['attributes'] as $attributes){
-          $attributeList[] = $attributes['value_id'];
-        }
-        $customid = zen_get_customid($this->_productI['id'],$attributeList);
-        $productI['customid'] = $customid;
-        $this->_productI['customid'] = $customid;
-  //      $productI['model'] = (zen_not_null($customid) ? $customid : $productI['model']);
-        $this->_productI['model'] = $productI['model'];
-      }
-      // END "Stock by Attributes"
-
-      if ($this->_stock_values->RecordCount() > 0) {
-        // kuroi: Begin Stock by Attributes additions
-        // added to update quantities of products with attributes
-        $attribute_search = array();
-        $attribute_stock_left = STOCK_REORDER_LEVEL + 1;  // kuroi: prevent false low stock triggers 
-
-        // mc12345678 If the has attibutes then perform the following work.
-        if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) >0){
-          // mc12345678 Identify a list of attributes associated with the product
-          $stock_attributes_search = zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
-
-          $get_quantity_query = 'select quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
-
-          // mc12345678 Identify the stock available from SBA.
-          $attribute_stock_available = $db->Execute($get_quantity_query);	
-          // mc12345678 Identify the stock remaining for the overall stock by removing the number of the current product from the number available for the attributes_id. 
-          $attribute_stock_left = $attribute_stock_available->fields['quantity'] - $this->_productI['qty'];
-
-          // mc12345678 Update the SBA table to reflect the stock remaining based on the above.
-          $attribute_update_query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set quantity='.$attribute_stock_left.' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
-          $db->Execute($attribute_update_query);	
-          $this->_attribute_stock_left = $attribute_stock_left;
-        }
-      }*/
-      
     }
 
     /*
@@ -627,47 +572,11 @@ class products_with_attributes_stock extends base {
     // Line 776
     if ($notifier == 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END') {
       updateNotifyOrderProcessingStockDecrementEnd($callingClass, $notifier, $paramsArray);
-    //function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $paramsArray) {
-      //Need to modify the email that is going out regarding low-stock.
-      //paramsArray is $i at time of development.
-/*      if ($callingClass->email_low_stock == '' && $callingClass->doStockDecrement && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
-        // kuroi: trigger and details for attribute low stock email
-        $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid'] . ', name ' . $this->_productI['name'] . ', ';
-        foreach($this->_productI['attributes'] as $attributes){
-          $callingClass->email_low_stock .= $attributes['option'] . ': ' . $attributes['value'] . ', ';
-        }
-        $callingClass->email_low_stock .= 'Stock: ' . $this->_attribute_stock_left . "\n\n";
-      // kuroi: End Stock by Attribute additions
-      }*/
     }
     
     if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM') {
       updateNotifyOrderDuringCreateAddedAttributeLineItem($callingClass, $notifier, $paramsArray, $paramsArray['orders_products_attributes_id']);
     } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
-			/* First check to see if SBA is installed and if it is then look to see if a value is 
-       *  supplied in the stock_id parameter (which should only be populated when a SBA tracked
-       *  item is in the order */
-//      $_SESSION['paramsArray'] = $paramsArray;
-//			if (defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && zen_not_null($this->_stock_info['stock_id'])) {  
-        //Need to validate that order had attributes in it.  If so, then were they tracked by SBA and then add to appropriate table.
-/*          `orders_products_attributes_stock_id` INT(11) NOT NULL auto_increment, 
-    `orders_products_attributes_id` INT(11) NOT NULL default '0',
-    `orders_id` INT(11) NOT NULL default '0', 
-    `orders_products_id` INT(11) NOT NULL default '0', 
-    `stock_id` INT(11) NOT NULL default '0', 
-    `stock_attribute` VARCHAR(255) NULL DEFAULT NULL, 
-    `products_prid` TINYTEXT NOT NULL, */
-/*              $sql_data_array = array('orders_products_attributes_id' =>$paramsArray['orders_products_attributes_id'],
-                              'orders_id' =>$paramsArray['orders_id'], 
-                              'orders_products_id' =>$paramsArray['orders_products_id'], 
-                              'stock_id' => $this->_stock_info['stock_id'], 
-                              'stock_attribute' => $this->_stock_info['stock_attribute'], 
-                              'customid' => $this->_productI['customid'],
-                              'products_prid' =>$paramsArray['products_prid']);
-      zen_db_perform(TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK, $sql_data_array); //inserts data into the TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK table.
-
-      }
-		} //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678*/
 	} //end update function - mc12345678
 } //end class - mc12345678
 
