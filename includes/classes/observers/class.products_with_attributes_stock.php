@@ -59,29 +59,6 @@ class products_with_attributes_stock extends base {
   function updateNotifyAttributesModuleDefaultSwitch(&$callingClass, $notifier, $products_options_names_fields, &$options_name, &$options_menu, &$options_comment, &$options_comment_position, &$options_html_id){
 
           switch (true) {
-/****************************************************
-/* Absolute-Solutions.co.uk Edit
-/*
-/* Attributes Grid format
-/* 2 of 2
-/****************************************************/
-      case ($products_options_names_fields['products_options_type'] == PRODUCT_TYPE_ATTRIBUTE_OPTION_GRID): // GRID LAYOUT
-        //Only show on the first attribute
-        if (zen_not_null($attrib_grid)) {
-          $options_name[] = '';
-          $options_menu[] = $attrib_grid;
-          $options_comment[] = '';
-          $options_comment_position[] = '';
-          // Then remove the attribute grid so it isn't shown twice
-          $attrib_grid = '';
-        }
-        break;
-/****************************************************
-/* Absolute-Solutions.co.uk Edit
-/*
-/* Attributes Grid format
-/* END of 2 of 2
-/****************************************************/
       case ($products_options_names_fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA): // SBA Select List (Dropdown) Basic
         global $selected_attribute, $show_attributes_qty_prices_icon, $products_options_array, $disablebackorder, $options_menu_images;
         
