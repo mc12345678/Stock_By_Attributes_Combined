@@ -645,18 +645,8 @@ $sql = "select count(*) as total
                     $options_name[] = '<label class="attribsSelect" for="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '">' . $products_options_names->fields['products_options_name'] . '</label>';
                   }
 
-                  // START "Stock by Attributes" SBA
-//                  $disablebackorder = null;
-                  //disable default selected if out of stock
-/*                  if (defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') {
-                    $disablebackorder = ' disabled="disabled" ';
-                  }*/
-                  //var_dump($products_options_array);//Debug Line
                   $options_html_id[] = 'drp-attrib-' . $products_options_names->fields['products_options_id'];
-                  //added new image rotate ability ($options_menu_images);
-                  $options_menu[] = zen_draw_pull_down_menu_SBAmod('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '"' . ' class="sbaselectlist"', false, $disablebackorder, $options_menu_images) . "\n";
-                  // END "Stock by Attributes" SBA
-
+                  $options_menu[] = zen_draw_pull_down_menu('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '"') . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
                   break;
