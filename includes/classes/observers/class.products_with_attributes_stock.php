@@ -51,11 +51,32 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTION';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP';
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT'; // keep
 
 	
     $this->attach($this, $attachNotifier);
+
+    $this->_products_options_names_current = 0; // Initialize this variable to 0.
+    $this->_attrib_grid = '';
 	}	
 
+
+// $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT', $products_options_names->fields, $options_name, $options_menu, $options_comment, $options_comment_position, $options_html_id, $options_attributes_image);
+  /*
+   * 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT'
+   */
+  function updateNotifyAttributesModuleOptionBuilt(&$callingClass, $notifier, $products_options_names_fields,
+                                                   &$options_name, &$options_menu, &$options_comment,
+                                                   &$options_comment_position, &$options_html_id,
+                                                   &$options_attributes_image) {
+
+    // if at the last option name, then no further processing above and want to reset the
+    // counter so that on the next use on this session it is zero.
+    if ($this->_products_options_names_current == $this->_products_options_names_count) {
+      $this->_products_options_names_current = 0;
+    }
+
+  }
 
   /*
    * 'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP'
@@ -626,6 +647,16 @@ class products_with_attributes_stock extends base {
       $this->updateNotifyAttributesModuleStartOptionsLoop($callingClass, $notifier, $paramsArray, $products_options_fields);
     }
     
+    if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT') {
+      global $options_name, $options_menu, $options_comment,
+             $options_comment_position, $options_html_id, $options_attributes_image; 
+      
+      $this->updateNotifyAttributesModuleOptionBuilt($callingClass, $notifier, $paramsArray,
+                                                   $options_name, $options_menu, $options_comment,
+                                                   $options_comment_position, $options_html_id,
+                                                   $options_attributes_image);
+    }
+
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH') {
       global $options_name, $options_menu, $options_comment, $options_comment_position, $options_html_id;
       $this->updateNotifyAttributesModuleDefaultSwitch($callingClass, $notifier, $paramsArray, $options_name, $options_menu, $options_comment, $options_comment_position, $options_html_id);
