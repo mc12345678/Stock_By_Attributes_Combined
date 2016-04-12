@@ -481,8 +481,12 @@ die('I SEE match from products_id:' . $copy_from_products_id . ' options_id_from
               $downloads_remove_list[] = $downloads_remove->fields['products_attributes_id'];
               $downloads_remove->MoveNext();
             }
+            if (method_exists($downloads_remove, 'rewind')) {
+              $downloads_remove->rewind();
+            } else {
             $downloads_remove->Move(0);
             $downloads_remove->MoveNext();
+            }
             $stock_ids = zen_get_sba_ids_from_attribute($downloads_remove_list);
             if (sizeof($stock_ids) > 0 /*&& zen_not_null($stock_ids)*/) {
               $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
