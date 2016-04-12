@@ -33,6 +33,8 @@ class products_with_attributes_stock extends base {
 
   private $_products_options_names_current;
   
+  private $_attrib_grid;
+
   
   /*
    * This is the observer for the includes/classes/order.php file to support Stock By Attributes when the order is being processed at the end of the purchase.
@@ -182,10 +184,12 @@ class products_with_attributes_stock extends base {
     }
   }
 
+
   /*
    * 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
    */
   function updateNotifyAttributesModuleDefaultSwitch(&$callingClass, $notifier, $products_options_names_fields, &$options_name, &$options_menu, &$options_comment, &$options_comment_position, &$options_html_id){
+    //global $attrib_grid;
 
           switch (true) {
       case ($products_options_names_fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA): // SBA Select List (Dropdown) Basic
@@ -194,7 +198,7 @@ class products_with_attributes_stock extends base {
         // normal dropdown "SELECT LIST" menu display
         $prod_id = $_GET['products_id'];
         if (isset($_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names_fields['products_options_id']])) {
-        	$selected_attribute = $_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names_fields['products_options_id']];
+          $selected_attribute = $_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names_fields['products_options_id']];
         } else {
           // use customer-selected values
           if ($_POST['id'] != '') {
@@ -659,6 +663,7 @@ class products_with_attributes_stock extends base {
 
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH') {
       global $options_name, $options_menu, $options_comment, $options_comment_position, $options_html_id;
+      
       $this->updateNotifyAttributesModuleDefaultSwitch($callingClass, $notifier, $paramsArray, $options_name, $options_menu, $options_comment, $options_comment_position, $options_html_id);
     }
     
