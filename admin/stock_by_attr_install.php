@@ -544,50 +544,66 @@ function insertSBAadminPages(){
 function insertSBAproductsOptionsTypes(){
 	global $db, $resultMmessage, $failed;
 	$msg = null;
-	array_push($resultMmessage, '<br /><b>Adding</b> to products_options_types: ');
-	
-	//get current max sort number used, then add 1 to it.
-	//this will place the new entries at the bottom of the list
-	$sql = "SELECT pot.products_options_types_id, products_options_types_name
-			FROM ".TABLE_PRODUCTS_OPTIONS_TYPES." pot	
-			order by pot.products_options_types_id desc limit 1";
-	$result = $db->Execute($sql);
-	$resultGID = $result->fields['products_options_types_id'] + 1;
 
-	$sql = "INSERT INTO ".TABLE_PRODUCTS_OPTIONS_TYPES." (`products_options_types_id`, `products_options_types_name`) 
+	array_push($resultMmessage, '<br /><b>Verifiying</b> products_options_types: ');
+
+	if (!defined('PRODUCTS_OPTIONS_TYPE_SELECT_SBA')) {
+
+		$sql = "SELECT `products_options_types_id` FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " 
+		WHERE `products_options_types_name` = 'SBA Select List (Dropdown) Basic'; ";
+		$result = $db->Execute($sql);
+
+		if (!$result->EOF && $result->RecordCount >= 1) {
+			array_push($resultMmessage, '<br /><b>Obtaining</b> current products_options_types: ');
+			$resultGID = $result->fields['products_options_types_id'];
+		} else {
+			array_push($resultMmessage, '<br /><b>Finding</b> highest products_options_types value: ');
+			//get current max sort number used, then add 1 to it.
+			//this will place the new entries at the bottom of the list
+			$sql = "SELECT pot.products_options_types_id, products_options_types_name
+			FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " pot	
+			order by pot.products_options_types_id desc limit 1";
+			$result = $db->Execute($sql);
+			$resultGID = $result->fields['products_options_types_id'] + 1;
+
+			array_push($resultMmessage, '<br /><b>Adding</b> to products_options_types: ');
+			$sql = "INSERT INTO " . TABLE_PRODUCTS_OPTIONS_TYPES . " (`products_options_types_id`, 
+			`products_options_types_name`) 
 			VALUES (".$resultGID.", 'SBA Select List (Dropdown) Basic');";
 
-	$result = $db->Execute($sql);
-	
-	if($db->error){
-		$msg = ' Error Message: ' . $db->error;
-		$failed = true;
-	}
-	array_push($resultMmessage, '&bull; Inserted into products_options_types "SBA Select List (Dropdown) Basic". ' . $msg);
-	
-	//error test, and prevent a duplicate entry
-	if( $failed != true && $result->fields['products_options_types_name'] !=  'Selection list product option type (SBA)' ){
+			$db->Execute($sql);
+
+			if($db->error){
+				$msg = ' Error Message: ' . $db->error;
+				$failed = true;
+			}
+			array_push($resultMmessage, '&bull; Inserted into products_options_types "SBA Select List (Dropdown) Basic". ' . $msg);
+
+		}
 
 		array_push($resultMmessage, '<br /><b>Adding</b> to configuration: ');
-		
-		$sql = "INSERT INTO ".TABLE_CONFIGURATION." (configuration_title, configuration_key, configuration_value,
-		configuration_description, configuration_group_id, sort_order, last_modified, date_added, use_function, set_function)
-			
+
+		$sql = "INSERT INTO " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value,
+		configuration_description, configuration_group_id, sort_order, date_added, use_function, set_function)
 		VALUES
 		('Selection list product option type (SBA)', 'PRODUCTS_OPTIONS_TYPE_SELECT_SBA', ".$resultGID.", 
 		 'Numeric value of the radio button product option type',
-		 '6', 0, now(), now(), NULL, NULL);";
-		
+		 '6', 0, now(), NULL, NULL);";
+
 		$db->Execute($sql);
-		
+
 		if($db->error){
 			$msg = ' Error Message: ' . $db->error;
 			$failed = true;
 		}
-		array_push($resultMmessage, '&bull; Inserted PRODUCTS_OPTIONS_TYPE_SELECT_SBA  ' . $msg);
 
+		array_push($resultMmessage, '&bull; Inserted into configuration "Selection list product option type (SBA)" . 
+		' . $msg);
+	} else {
+		array_push($resultMmessage, '&bull; Configuration contains "Selection list product option type (SBA)" no 
+		action necessary. ' . $msg);
 	}
-	
+
 	return;
 }
 
