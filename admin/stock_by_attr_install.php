@@ -82,7 +82,7 @@ $failed = null;
 
 //Check for obsolete files from previous version
 function checkSBAobsoleteFiles(){
-	global $resultMmessage, $failed;
+	global $resultMmessage, $failed, $template_dir;
 	
 	// Attempt to find obsolete files from older versions
 	$files = array(		
@@ -100,6 +100,11 @@ function checkSBAobsoleteFiles(){
 		DIR_FS_CATALOG . 'ajax/products_with_attributes_stock_ajax.js'
 	);
 	
+  if (PROJECT_VERSION_MAJOR > '1' || PROJECT_VERSION_MINOR >= '5.5') {
+    $files_merge = array(DIR_FS_CATALOG_MODULES . $template_dir . '/pages/checkout_success/header_php_sba.php');
+    $files = array_merge($files, $files_merge);
+  }
+  
 	foreach($files as $file) {
 		//report failure if file still exists
 		if(file_exists($file)) {
@@ -1683,18 +1688,22 @@ function checkSBAfileLocation(){
 	
 		DIR_FS_CATALOG . DIR_WS_INCLUDES . 'auto_loaders/config.products_with_attributes_stock.php',
 		DIR_FS_CATALOG . DIR_WS_INCLUDES . 'classes/observers/class.products_with_attributes_stock.php',
-		DIR_FS_CATALOG . DIR_WS_INCLUDES . 'modules/pages/checkout_success/header_php_sba.php',
-
+    
 		DIR_FS_CATALOG . DIR_WS_INCLUDES . 'extra_cart_actions/stock_by_attributes.php',
 		DIR_FS_CATALOG . DIR_WS_INCLUDES . 'extra_datafiles/products_with_attributes_stock_database_tables.php',
 		DIR_FS_CATALOG . DIR_WS_INCLUDES . 'functions/extra_functions/products_with_attributes.php',
-		DIR_FS_CATALOG . DIR_WS_INCLUDES . 'languages/english/extra_definitions/products_with_attributes.php',
-		DIR_FS_CATALOG . DIR_WS_INCLUDES . 'modules/' . $template_dir .'/attributes.php',
+		DIR_FS_CATALOG_LANGUAGES . 'english/extra_definitions/products_with_attributes.php',
+		DIR_FS_CATALOG_MODULES . $template_dir .'/attributes.php',
 	
 		DIR_FS_CATALOG_TEMPLATES . $template_dir . '/templates/tpl_shopping_cart_default.php',			
 		DIR_FS_CATALOG_TEMPLATES . $template_dir . '/templates/tpl_account_history_info_default.php',
 		DIR_FS_CATALOG_TEMPLATES . $template_dir . '/templates/tpl_checkout_confirmation_default.php'
 	);
+
+    if (PROJECT_VERSION_MAJOR <= '1' && PROJECT_VERSION_MINOR <= '5.4') {
+      $files_merge = array(DIR_FS_CATALOG_MODULES . 'pages/checkout_success/header_php_sba.php');
+      $files = array_merge($files, $files_merge);
+    }
 
 	foreach($files as $file) {
 		if(!file_exists($file)) {
