@@ -13,11 +13,12 @@
  *  Created for Stock by Attributes Current version: mc12345678 15-09-18
 **/
 
+require('includes/application_top.php');//Provides most of the page display admin menu
+
 $SBAversion = 'SBA Version 1.5.4';
-$ZCversion = 'Zen Cart Version 1.5.4';
+$ZCversion = 'Zen Cart Version ' . PROJECT_VERSION_MAJOR.'.'.PROJECT_VERSION_MINOR;
 
 $version_check_index=true;//used in admin/includes/header.php
-require('includes/application_top.php');//Provides most of the page display admin menu
 
 // Check for language in use
 $languages = zen_get_languages();
