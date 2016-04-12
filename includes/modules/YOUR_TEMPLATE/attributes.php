@@ -6,12 +6,13 @@
  * Prepares HTML for input fields with required uniqueness so template can display them as needed and keep collected data in proper fields
  *
  * @package modules
- * @copyright Copyright 2003-2012 Zen Cart Development Team
+ * @copyright Copyright 2003-2016 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version GIT: $Id: Author: Ian Wilson  Tue Aug 14 14:56:11 2012 +0100 Modified in v1.5.1 $
+ * @version $Id: Author: DrByte  Sat Jan 2 12:53:21 2016 -0500 Modified in v1.5.5 $
  * 
  * Stock by Attributes 1.5.4 : mc12345678 16-01-02
+ * Incorporated to support ZC 1.5.1 and up when using SBA.
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
@@ -60,8 +61,8 @@ $sql = "select count(*) as total
               $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
               $products_options_names = $db->Execute($sql);
 
-  // iii 030813 added: initialize $number_of_uploads
-  $number_of_uploads = 0;
+              // iii 030813 added: initialize $number_of_uploads
+              $number_of_uploads = 0;
 
               if ( PRODUCTS_OPTIONS_SORT_BY_PRICE =='1' ) {
                 $order_by= ' order by LPAD(pa.products_options_sort_order,11,"0"), pov.products_options_values_name';
@@ -119,9 +120,8 @@ $sql = "select count(*) as total
                   $new_attributes_price= '';
                   $price_onetime = '';
 
-
                   $products_options_array[] = array('id' => $products_options->fields['products_options_values_id'],
-                  'text' => $products_options->fields['products_options_values_name']);
+                                                    'text' => $products_options->fields['products_options_values_name']);
 
                   $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP', $i++, $products_options->fields);
 
@@ -671,3 +671,4 @@ $sql = "select count(*) as total
               //      zen_draw_hidden_field('number_of_uploads', $_GET['number_of_uploads']);
               zen_draw_hidden_field('number_of_uploads', $number_of_uploads);
             }
+
