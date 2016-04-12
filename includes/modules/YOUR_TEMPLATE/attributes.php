@@ -119,10 +119,6 @@ $sql = "select count(*) as total
                   $new_attributes_price= '';
                   $price_onetime = '';
 
-                  // Start "Stock By Attributes" SBA
-                  //used to find if an attribute is read-only
-                  $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULES_OPTIONS_VALUES_SET');
-                  // End "Stock By Attributes" SBA
 
                   $products_options_array[] = array('id' => $products_options->fields['products_options_values_id'],
                   'text' => $products_options->fields['products_options_values_name']);
