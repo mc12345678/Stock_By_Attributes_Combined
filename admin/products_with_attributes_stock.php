@@ -257,7 +257,7 @@ switch ($action) {
         $arrMain = array();
         $intCount = 0;
 
-        for ($i = 0; $i < sizeof($arrTemp); $i++) {
+        for ($i = 0, $n = sizeof($arrTemp); $i < $n; $i++) {
           //explode array on ;
           $arrTemp1 = preg_split("/\;/", $arrTemp[$i]);
           $arrMain[] = $arrTemp1;
