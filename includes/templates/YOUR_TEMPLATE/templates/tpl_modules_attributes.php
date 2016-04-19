@@ -25,7 +25,7 @@
 
       $inSBA = $db->Execute($inSBA_query); // Determine that product is tracked by SBA
      } else { 
-       $inSBA = new queryFactoryResult;
+       $inSBA = new queryFactoryResult($db->link);
        $inSBA->EOF = true;
      }
 
@@ -56,7 +56,7 @@
          } //End SBA SINGLE
        } //END SBA Specific
        else {
-         $inSBA = new queryFactoryResult;
+         $inSBA = new queryFactoryResult($db->link);
          $inSBA->EOF = true;
          ?>
          <h3 id="attribsOptionsText"><?php echo TEXT_PRODUCT_OPTIONS; ?>         </h3>
