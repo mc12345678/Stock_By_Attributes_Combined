@@ -724,7 +724,16 @@ function nullDataEntry($fieldtoNULL){
   	$customid_model_query = null;
   	$customid_query = null;
   	$products_id = zen_get_prid($products_id);
-  
+
+    if (!$this->zen_product_is_sba($products_id)) {
+      $no_attribute_stock_query = 'SELECT products_model
+                                   FROM ' . TABLE_PRODUCTS . '
+                                   WHERE products_id = :products_id:';
+      $no_attribute_stock_query = $db->bindVars($no_attribute_stock_query, ':products_id:', $products_id, 'integer');
+      $customid = $db->Execute($no_attribute_stock_query);
+      
+      return $customid->fields['products_model'];
+    } 
   	// check if there are attributes for this product
  	  $stock_has_attributes_query = 'select products_attributes_id 
   											from '.TABLE_PRODUCTS_ATTRIBUTES.' 
@@ -835,5 +844,36 @@ function nullDataEntry($fieldtoNULL){
   		return;//nothing to return, should never reach this return
   	}
   }//end of function
+  
+  function zen_product_is_sba($product_id) {
+    global $db;
+    
+    if (!isset($product_id) && !is_numeric(zen_get_prid($product_id))) {
+      return null;
+    }
+    
+    $inSBA_query = 'SELECT * 
+                    FROM information_schema.tables
+                    WHERE table_schema = :your_db:
+                    AND table_name = :table_name:
+                    LIMIT 1;';
+    $inSBA_query = $db->bindVars($inSBA_query, ':your_db:', DB_DATABASE, 'string');
+    $inSBA_query = $db->bindVars($inSBA_query, ':table_name:', TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'string');
+    $SBA_installed = $db->Execute($inSBA_query, false, false, 0, true);
+    
+    if (!$SBA_installed->EOF && $SBA_installed->RecordCount() > 0) {
+      $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:;';
+      $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
+      $isSBA = $db->Execute($isSBA_query);
+      
+      if (!$isSBA->EOF && $isSBA->RecordCount() > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    
+    return false;
+  }
   
 }//end of class
