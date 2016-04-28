@@ -800,7 +800,7 @@ function nullDataEntry($fieldtoNULL){
   			if ($attribute_stock->RecordCount() > 0) {
   				// search for details for the particular attributes combination
           $first_search = ' WHERE options_values_id IN ('.implode(',',zen_db_prepare_input($attributes)).') ';
-  				
+
   				// obtain the attribute ids
   				$query = 'select products_attributes_id 
   						from '.TABLE_PRODUCTS_ATTRIBUTES.' 
@@ -837,7 +837,7 @@ function nullDataEntry($fieldtoNULL){
   			  $customid_query = 'select customid as products_model
 		  							from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
 		  							where products_id = :products_id: 
-		  							and stock_attributes in (:stock_attributes:)'; 
+		  							and stock_attributes in (:stock_attributes:) and customid IS NOT NULL and customid <> "" and customid <> 0;'; 
           $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
           $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'passthru');
   		    $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
