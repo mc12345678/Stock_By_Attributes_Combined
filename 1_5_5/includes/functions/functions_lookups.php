@@ -178,6 +178,11 @@
       //	1. Check if the attribute has been added to the SBA Stock Page.
       //	2. Check if the attribute(s) are listed in seperate rows or are combined into a single row.
       // mc12345678 - The following seems like it could be compressed more/do less searches.  Now that this seems to work, there is some code that can be compressed.
+
+      // below function/call was written in ZC 1.5.1, 1.5.3, and 1.5.4 to support broadly addressing attributes and for  
+      //   some reason in ZC 1.5.5, the call was omitted/skipped.
+      return zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'));
+      return zen_get_sba_products_stock($products_id, $attributes, $dupTest);
     }
 
     return;
