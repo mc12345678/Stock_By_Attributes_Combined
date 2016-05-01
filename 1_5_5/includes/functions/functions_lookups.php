@@ -182,7 +182,7 @@
       // below function/call was written in ZC 1.5.1, 1.5.3, and 1.5.4 to support broadly addressing attributes and for  
       //   some reason in ZC 1.5.5, the call was omitted/skipped.
       return zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'));
-      return zen_get_sba_products_stock($products_id, $attributes, $dupTest);
+      //  return zen_get_sba_products_stock($products_id, $attributes, $dupTest);
     }
 
     return;
