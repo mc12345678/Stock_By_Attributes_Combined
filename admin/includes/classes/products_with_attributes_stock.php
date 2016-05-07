@@ -800,7 +800,7 @@ function nullDataEntry($fieldtoNULL){
   			if ($attribute_stock->RecordCount() > 0) {
   				// search for details for the particular attributes combination
           $first_search = ' WHERE options_values_id IN ('.implode(',',zen_db_prepare_input($attributes)).') ';
-
+  				
   				// obtain the attribute ids
   				$query = 'select products_attributes_id 
   						from '.TABLE_PRODUCTS_ATTRIBUTES.' 
