@@ -8,8 +8,16 @@ YOUR_VERSION is 1_5_5.
 to correspond to what's being used in your cart.
 Then copy all the files in this directory to your cart.
 
-2) In YOUR_VERSION, change the directory names YOUR_TEMPLATE and 
-YOUR_CLASSIC_RESPONSIVE to correspond to what's being used in your cart.
+2) Set the template names in YOUR_VERSION:
+
+a) If you are using pre-155 OR a non-responsive template, 
+change the directory name YOUR_TEMPLATE to correspond to 
+what's being used in your cart, then remove YOUR_CLASSIC_RESPONSIVE.
+
+b) If you are using 155 with a responsive template, 
+change the directory name YOUR_CLASSIC_RESPONSIVE to correspond to 
+what's being used in your cart, then remove YOUR_TEMPLATE.
+
 Then copy all the files in this directory to your cart.
 
 3) In admin, copy all files to your cart.
