@@ -541,18 +541,20 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
               $products_options_file->set_destination(DIR_FS_UPLOADS);
               $products_options_file->set_output_messages('session');
               if ($products_options_file->parse(TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile])) {
-                $products_image_extension = substr($products_options_file->filename, strrpos($products_options_file->filename, '.'));
-                if ($_SESSION['customer_id']) {
+                //$products_image_extension = substr($products_options_file->filename, strrpos($products_options_file->filename, '.'));
+                /*if ($_SESSION['customer_id']) {
                   $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, customers_id, files_uploaded_name) values('" . zen_session_id() . "', '" . $_SESSION['customer_id'] . "', '" . zen_db_input($products_options_file->filename) . "')");
                 } else {
                   $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, files_uploaded_name) values('" . zen_session_id() . "', '" . zen_db_input($products_options_file->filename) . "')");
                 }
-                $insert_id = $db->Insert_ID();
-                $attributes[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] = $insert_id . ". " . $products_options_file->filename;
-                $products_options_file->set_filename("$insert_id" . $products_image_extension);
-                if (!($products_options_file->save())) {
+                $insert_id = $db->Insert_ID();*/
+                //  The line below did have $insert_id in place of $iFile on the right side; however, with removal of the
+                //   storage information, that number has been "lost".
+                $attributes[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] = $iFile . ". " . $products_options_file->filename;
+                //$products_options_file->set_filename("$insert_id" . $products_image_extension);
+                /*if (!($products_options_file->save())) { 
                   break;
-                }
+                }*/
               } else {
                 break;
               }
