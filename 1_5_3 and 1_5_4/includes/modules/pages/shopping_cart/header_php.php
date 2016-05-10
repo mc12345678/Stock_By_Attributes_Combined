@@ -171,7 +171,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
   if ( STOCK_CHECK == 'true' ) {
     $flagStockCheck = zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes);
 
-			if(false && $inSBA){
+    if(false && $inSBA){
       //check for product used multiple time in cart with different attributes
       //test for total qty availability for each combination
       if( cartProductCount($products[$i]['id']) > 1 ){
@@ -227,15 +227,15 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
     } /* End of if $inSBA inside STOCK_CHECK == true */ else {
     // mc12345678 this section is as if SBA is not installed/involved.  Normal response after the expectation to check stock is included. After this section should go straight to the next default ZC action.
     // bof: extra check on stock for mixed YES
-    if ($flagStockCheck != true) {
+      if ($flagStockCheck != true) {
     //echo zen_get_products_stock($products[$i]['id']) - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) . '<br>';
-      if ( zen_get_products_stock($products[$i]['id']) - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
-        $flagStockCheck = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
-      } else {
-        $flagStockCheck = '';
-      } // End if/else mixed stock
-    } // End flagStockCheck != true
-  } //End of ZC Basic Function inside StockCheck == 'true'
+        if ( zen_get_products_stock($products[$i]['id']) - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
+          $flagStockCheck = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
+        } else {
+          $flagStockCheck = '';
+        } // End if/else mixed stock
+      } // End flagStockCheck != true
+    } //End of ZC Basic Function inside StockCheck == 'true'
 
       //Below seems appropriate for both ZC standard product as well as for SBA variants, therefore is outside the above "loop".
 // eof: extra check on stock for mixed YES
