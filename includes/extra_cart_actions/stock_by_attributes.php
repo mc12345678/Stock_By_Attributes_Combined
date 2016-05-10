@@ -353,7 +353,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 
       if (!is_numeric($qty) || $qty < 0) {
         // adjust quantity when not a value
-        $_SESSION['non_sub_qty_'.$prid] = $qty;
+        //$_SESSION['non_sub_qty_'.$prid] = $qty;
         $chk_link = '<a href="' . zen_href_link(zen_get_info_page($products_id), 'cPath=' . (zen_get_generated_category_path_rev(zen_get_products_category_id($products_id))) . '&products_id=' . $products_id) . '">' . zen_get_products_name($products_id) . '</a>';
         $messageStack->add_session('header', ERROR_CORRECTIONS_HEADING . ERROR_PRODUCT_QUANTITY_UNITS_SHOPPING_CART . $chk_link . ' ' . PRODUCTS_ORDER_QTY_TEXT . zen_output_string_protected($qty), 'caution');
         $qty = 0;
