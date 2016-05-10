@@ -343,7 +343,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
     $prod_qty = array();
     $grid_add_number = 0;
     if (isset($_POST['product_id']) && is_array($_POST['product_id']) && (function_exists('zen_product_is_sba') ? zen_product_is_sba($_POST['products_id']) : false)) {
-
+        // product is tracked by SBA and has grid layout.
         foreach($_POST['product_id'] as $prid => $qty) {
             $products_id = zen_get_prid($prid);
 
@@ -436,6 +436,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         }
     } else {
       if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
+        // Product has grid layout but is not tracked by SBA.
         $grid_prod_id[0] = null;
         $prod_qty[0] = 0;
         $grid_add_number = 0;
@@ -443,6 +444,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         $_POST['id'] = 0;
         $_POST['cart_quantity'] = 0;
       } else {
+        // Product does not have grid, could be SBA, doesn't have to be.
         $grid_prod_id[] = $_POST['products_id'];
         $grid_id[] = $_POST['id'];
         $prod_qty[] = $_POST['cart_quantity'];
@@ -451,6 +453,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
     }
 
     if (sizeof($grid_id) < 1) {
+        // no grid item, so make the first data record be null.
         $grid_id[0] = null;
 //        $grid_add_number = 1;
     }
@@ -521,9 +524,43 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
     // is not stock dependent (text field) product_id needs to reflect 
     // the appropriate designation as built using the appropriate $attributes.
     //  This would take a refactoring of entered text as if it was absent. mc12345678 01-02-2016
-    
 
-    //$attributes2 is to be a "text free" set of attributes.
+    // Need to get the file related information into the $attributes related data.
+      if (isset($_GET['number_of_uploads']) && $_GET['number_of_uploads'] > 0) {
+        /**
+         * Need the upload class for attribute type that allows user uploads.
+         *
+         */
+        include(DIR_WS_CLASSES . 'upload.php');
+        for ($iFile = 1, $n = $_GET['number_of_uploads']; $iFile <= $n; $i++) {
+          if (zen_not_null($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]]) and ($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] != 'none')) {
+            $products_options_file = new upload('id');
+            $products_options_file->set_destination(DIR_FS_UPLOADS);
+            $products_options_file->set_output_messages('session');
+            if ($products_options_file->parse(TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile])) {
+              $products_image_extension = substr($products_options_file->filename, strrpos($products_options_file->filename, '.'));
+              if ($_SESSION['customer_id']) {
+                $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, customers_id, files_uploaded_name) values('" . zen_session_id() . "', '" . $_SESSION['customer_id'] . "', '" . zen_db_input($products_options_file->filename) . "')");
+              } else {
+                $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, files_uploaded_name) values('" . zen_session_id() . "', '" . zen_db_input($products_options_file->filename) . "')");
+              }
+              $insert_id = $db->Insert_ID();
+              $attributes[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] = $insert_id . ". " . $products_options_file->filename;
+              $products_options_file->set_filename("$insert_id" . $products_image_extension);
+              if (!($products_options_file->save())) {
+                break;
+              }
+            } else {
+              break;
+            }
+          } else { // No file uploaded -- use previous value
+            $attributes[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] = $_POST[TEXT_PREFIX . UPLOAD_PREFIX . $iFile];
+          }
+        }
+      }
+
+
+      //$attributes2 is to be a "text free" set of attributes.
     $product_id = zen_get_uprid($_POST['products_id'], $attributes);
     $attributes2 = array();
 
