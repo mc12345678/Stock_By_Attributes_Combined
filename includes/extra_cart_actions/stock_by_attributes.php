@@ -535,7 +535,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
            *
            */
           include(DIR_WS_CLASSES . 'upload.php');
-          for ($iFile = 1, $n = $_GET['number_of_uploads']; $iFile <= $n; $i++) {
+          for ($iFile = 1, $nFile = $_GET['number_of_uploads']; $iFile <= $nFile; $iFile++) {
             if (zen_not_null($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]]) and ($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] != 'none')) {
               $products_options_file = new upload('id');
               $products_options_file->set_destination(DIR_FS_UPLOADS);
