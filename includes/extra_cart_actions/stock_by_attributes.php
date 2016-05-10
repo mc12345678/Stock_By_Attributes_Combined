@@ -338,11 +338,13 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   //  feature so that all future manipulations work out correctly.
   /* Test to see if is a grid related submission/product*/
   /* Do additional prestage work for grid related submission/product*/
-  $grid_prod_id = array();
-  $grid_id = array();
-  $prod_qty = array();
-  $grid_add_number = 0;
-  if (isset($_POST['product_id']) && is_array($_POST['product_id']) && (function_exists('zen_product_is_sba') ? zen_product_is_sba($_POST['products_id']) : false)) {
+  if (function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])) {
+    $grid_prod_id = array();
+    $grid_id = array();
+    $prod_qty = array();
+    $grid_add_number = 0;
+  }
+  if (isset($_POST['product_id']) && is_array($_POST['product_id']) && function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])) {
         // product is tracked by SBA and has grid layout.
     foreach($_POST['product_id'] as $prid => $qty) {
       $products_id = zen_get_prid($prid);
@@ -433,7 +435,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         $prod_qty[0] = 0;
         $grid_add_number = 0;
       }
-  } else {
+  } elseif (function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])) {
     if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
       // Product has grid layout but is not tracked by SBA.
       $grid_prod_id[0] = null;
@@ -450,34 +452,36 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       $grid_add_number = 1;
     }
   }
+  
+  if (function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])) {
 
-  if (sizeof($grid_id) < 1) {
-    // no grid item, so make the first data record be null.
-    $grid_id[0] = null;
-//    $grid_add_number = 1;
-  }
-  if (sizeof($grid_id) == 1 && is_null($grid_id[0])) {
-    $grid_add_number = 0;
-  }
+    if (sizeof($grid_id) < 1) {
+      // no grid item, so make the first data record be null.
+      $grid_id[0] = null;
+//      $grid_add_number = 1;
+    }
+    if (sizeof($grid_id) == 1 && is_null($grid_id[0])) {
+      $grid_add_number = 0;
+    }
 //        $grid_add_number = 1;
 
-  if (sizeof($prod_qty) < 1) {
-    $prod_qty[0] = 0;
-    $grid_add_number = 0;
-  }
+    if (sizeof($prod_qty) < 1) {
+      $prod_qty[0] = 0;
+      $grid_add_number = 0;
+    }
 
-  if (sizeof($grid_prod_id) < 1) {
-    $grid_prod_id[0] = null;
-    $grid_add_number = 0;
-  }
-  $grid_loop = 0;
-  while ($grid_loop++ <= $grid_add_number) {
-    $_POST['products_id'] = $grid_prod_id[$grid_loop - 1];
-    $_POST['id'] = $grid_id[$grid_loop - 1];
-    $_POST['cart_quantity'] = $prod_qty[$grid_loop - 1];
-    if (isset($_POST['products_id'] ) && is_numeric ( $_POST['products_id'])) {
+    if (sizeof($grid_prod_id) < 1) {
+      $grid_prod_id[0] = null;
+      $grid_add_number = 0;
+    }
+    $grid_loop = 0;
+    while ($grid_loop++ <= $grid_add_number) {
+      $_POST['products_id'] = $grid_prod_id[$grid_loop - 1];
+      $_POST['id'] = $grid_id[$grid_loop - 1];
+      $_POST['cart_quantity'] = $prod_qty[$grid_loop - 1];
+      if (isset($_POST['products_id'] ) && is_numeric ( $_POST['products_id'])) {
 //Loop for each product in the cart
-      if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'A2: FUNCTION ' . __FUNCTION__, 'caution');
+        if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'A2: FUNCTION ' . __FUNCTION__, 'caution');
         $the_list = '';
         $adjust_max= 'false';
         if (isset($_POST['id'])) {
@@ -700,70 +704,71 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
               // iii 030813 added: File uploading: save uploaded files with unique file names
               $real_ids = isset($_POST['id']) ? $_POST['id'] : "";
               if (isset($_GET['number_of_uploads']) && $_GET['number_of_uploads'] > 0) {
-              /**
-               * Need the upload class for attribute type that allows user uploads.
-               *
-               */
-              include(DIR_WS_CLASSES . 'upload.php');
-              for ($i = 1, $n = $_GET['number_of_uploads']; $i <= $n; $i++) {
-                if (zen_not_null($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]]) and ($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] != 'none')) {
-                  $products_options_file = new upload('id');
-                  $products_options_file->set_destination(DIR_FS_UPLOADS);
-                  $products_options_file->set_output_messages('session');
-                  if ($products_options_file->parse(TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i])) {
-                    $products_image_extension = substr($products_options_file->filename, strrpos($products_options_file->filename, '.'));
-                    if ($_SESSION['customer_id']) {
-                      $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, customers_id, files_uploaded_name) values('" . zen_session_id() . "', '" . $_SESSION['customer_id'] . "', '" . zen_db_input($products_options_file->filename) . "')");
+                /**
+                 * Need the upload class for attribute type that allows user uploads.
+                 *
+                 */
+                include(DIR_WS_CLASSES . 'upload.php');
+                for ($i = 1, $n = $_GET['number_of_uploads']; $i <= $n; $i++) {
+                  if (zen_not_null($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]]) and ($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] != 'none')) {
+                    $products_options_file = new upload('id');
+                    $products_options_file->set_destination(DIR_FS_UPLOADS);
+                    $products_options_file->set_output_messages('session');
+                    if ($products_options_file->parse(TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i])) {
+                      $products_image_extension = substr($products_options_file->filename, strrpos($products_options_file->filename, '.'));
+                      if ($_SESSION['customer_id']) {
+                        $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, customers_id, files_uploaded_name) values('" . zen_session_id() . "', '" . $_SESSION['customer_id'] . "', '" . zen_db_input($products_options_file->filename) . "')");
+                      } else {
+                        $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, files_uploaded_name) values('" . zen_session_id() . "', '" . zen_db_input($products_options_file->filename) . "')");
+                      }
+                      $insert_id = $db->Insert_ID();
+                      $real_ids[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] = $insert_id . ". " . $products_options_file->filename;
+                      $products_options_file->set_filename("$insert_id" . $products_image_extension);
+                      if (!($products_options_file->save())) {
+                        break;
+                      }
                     } else {
-                      $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, files_uploaded_name) values('" . zen_session_id() . "', '" . zen_db_input($products_options_file->filename) . "')");
-                    }
-                    $insert_id = $db->Insert_ID();
-                    $real_ids[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] = $insert_id . ". " . $products_options_file->filename;
-                    $products_options_file->set_filename("$insert_id" . $products_image_extension);
-                    if (!($products_options_file->save())) {
                       break;
                     }
-                  } else {
-                    break;
+                  } else { // No file uploaded -- use previous value
+                    $real_ids[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] = $_POST[TEXT_PREFIX . UPLOAD_PREFIX . $i];
                   }
-                } else { // No file uploaded -- use previous value
-                  $real_ids[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] = $_POST[TEXT_PREFIX . UPLOAD_PREFIX . $i];
                 }
               }
-            }
 
-            $_SESSION['cart']->add_cart($_POST['products_id'], $_SESSION['cart']->get_quantity(zen_get_uprid($_POST['products_id'], $real_ids))+($new_qty), $real_ids);
-            // iii 030813 end of changes.
-          } // eof: set error message
-        } // eof: quantity maximum = 1
+              $_SESSION['cart']->add_cart($_POST['products_id'], $_SESSION['cart']->get_quantity(zen_get_uprid($_POST['products_id'], $real_ids))+($new_qty), $real_ids);
+              // iii 030813 end of changes.
+            } // eof: set error message
+          } // eof: quantity maximum = 1
 
-        if ($adjust_max == 'true') {
-          $messageStack->add_session('shopping_cart', ERROR_MAXIMUM_QTY . zen_get_products_name($_POST['products_id']), 'caution');
-          if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'E: FUNCTION ' . __FUNCTION__ . '<br>' . ERROR_MAXIMUM_QTY . zen_get_products_name($_POST['products_id']), 'caution');
-        }
+          if ($adjust_max == 'true') {
+            $messageStack->add_session('shopping_cart', ERROR_MAXIMUM_QTY . zen_get_products_name($_POST['products_id']), 'caution');
+            if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'E: FUNCTION ' . __FUNCTION__ . '<br>' . ERROR_MAXIMUM_QTY . zen_get_products_name($_POST['products_id']), 'caution');
+          }
     
-        // Want to bypass this entire section if not done with addressing all of the products, though also may need to pull out some of
-        //  the actions so that all products are addressed, but basically do not want to redirect away from this operation until the
-        //  last object has been addressed.  Maybe just need to if around the redirects and leave the add_session information
-        if ($the_list == '') {
-          // no errors
+          // Want to bypass this entire section if not done with addressing all of the products, though also may need to pull out some of
+          //  the actions so that all products are addressed, but basically do not want to redirect away from this operation until the
+          //  last object has been addressed.  Maybe just need to if around the redirects and leave the add_session information
+          if ($the_list == '') {
+            // no errors
   // display message if all is good and not on shopping_cart page
-          if (DISPLAY_CART == 'false' && $_GET['main_page'] != FILENAME_SHOPPING_CART && $messageStack->size('shopping_cart') == 0) {
-            $messageStack->add_session('header', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . SUCCESS_ADDED_TO_CART_PRODUCT, 'success');
-            if ($grid_loop == $grid_add_number) {
-              zen_redirect(zen_href_link($goto, zen_get_all_get_params($parameters)));
+            if (DISPLAY_CART == 'false' && $_GET['main_page'] != FILENAME_SHOPPING_CART && $messageStack->size('shopping_cart') == 0) {
+              $messageStack->add_session('header', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . SUCCESS_ADDED_TO_CART_PRODUCT, 'success');
+              if ($grid_loop == $grid_add_number) {
+                zen_redirect(zen_href_link($goto, zen_get_all_get_params($parameters)));
+              }
+            } else {
+              if ($grid_loop == $grid_add_number) {
+                zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+              }
             }
           } else {
-            if ($grid_loop == $grid_add_number) {
-              zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
-            }
+            // errors found with attributes - perhaps display an additional message here, using an observer class to add to the messageStack
+            $_SESSION['cart']->notify('NOTIFIER_CART_OPTIONAL_ATTRIBUTE_ERROR_MESSAGE_HOOK', $_POST, $the_list);
+            $_GET['action'] = '';
           }
-        } else {
-          // errors found with attributes - perhaps display an additional message here, using an observer class to add to the messageStack
-          $_SESSION['cart']->notify('NOTIFIER_CART_OPTIONAL_ATTRIBUTE_ERROR_MESSAGE_HOOK', $_POST, $the_list);
-          $_GET['action'] = '';
         }
       }
-    }
-  } // EOF while(grid_loop++ <= $grid_add_number
+    } // EOF while(grid_loop++ <= $grid_add_number
+  } 
 }
