@@ -719,12 +719,22 @@ function nullDataEntry($fieldtoNULL){
   /*  Ported from rhuseby: (my_stock_id MOD) and modified for SBA customid */
   /*  Added function to support attribute specific part numbers            */
   /* ********************************************************************* */
+  /* 
+   * @return the customid from the live database
+   * @todo develop a customid return function to retrieve information from the sba orders table.
+   * @todo notification message if no attributes are found for a product identified as SBA tracked.
+   */
   function zen_get_customid($products_id, $attributes = null) {
   	global $db;
   	$customid_model_query = null;
   	$customid_query = null;
   	$products_id = zen_get_prid($products_id);
-	$stock_attributes = array();
+  	$stock_attributes = array();
+
+    // This function probably could be factored down a bit to provide better clarity of what is going on and offer options at 
+    //   the end of what to return.  For example, determine the standard products_model response, then the various other
+    //   customid combinations available.  Could do this with an array, one key for each type, to then return the result(s) as 
+    //   desired to be used on the receiving end.
 
     if (!$this->zen_product_is_sba($products_id)) {
       $no_attribute_stock_query = 'SELECT products_model
@@ -734,42 +744,67 @@ function nullDataEntry($fieldtoNULL){
       $customid = $db->Execute($no_attribute_stock_query, false, false, 0, true);
       
       return $customid->fields['products_model'];
-    } 
-  	// check if there are attributes for this product
-	$stock_has_attributes_query = 'select products_attributes_id 
-  											from '.TABLE_PRODUCTS_ATTRIBUTES.' 
-  											where products_id = :products_id:';
+    }
+    
+  	// check if there are attributes for this product. (Doesn't check against option names nor option values)
+ 	  $stock_has_attributes_query = 'SELECT products_attributes_id 
+  											           FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' 
+  											           WHERE products_id = :products_id:';
     $stock_has_attributes_query = $db->bindVars($stock_has_attributes_query, ':products_id:', $products_id, 'integer');
     $stock_has_attributes = $db->Execute($stock_has_attributes_query, false, false, 0, true);
 
-  	if ( $stock_has_attributes->RecordCount() == 0 ) {
-	    //if no attributes return products_model
-		$no_attribute_stock_query = 'select products_model 
-  									 from '.TABLE_PRODUCTS.' 
-  									 where products_id = :products_id:';
-		$no_attribute_stock_query = $db->bindVars($no_attribute_stock_query, ':products_id:', $products_id, 'integer');
+  	if ($stock_has_attributes->EOF || $stock_has_attributes->RecordCount() == 0 ) {
+  		
+  		//if no attributes return products_model.  This ought to not be possible to exist because the SBA table is populated
+  		//  and code is in place to delete SBA table entries when such attribute data is deleted from within ZC. (Doesn't prevent
+  		//  an outside source from making modifications such as a selective restore or import/export of the SBA table.)
+  		// Perhaps a notification message should be shown on the admin if this condition is met.
+			$no_attribute_stock_query = 'SELECT products_model 
+  										             FROM ' . TABLE_PRODUCTS . ' 
+  										             WHERE products_id = :products_id:';
+      $no_attribute_stock_query = $db->bindVars($no_attribute_stock_query, ':products_id:', $products_id, 'integer');
   		$customid = $db->Execute($no_attribute_stock_query, false, false, 0, true);
   		return $customid->fields['products_model'];
   	} 
   	else {
+  		// Product is a SBA tracked product and the product has attributes.  Check to see if the product has any customid's assigned.
+  		$stock_has_customid_query = 'SELECT COUNT(customid) as total
+  		                             FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . '
+  		                             WHERE products_id = :products_id:
+  		                             LIMIT 1';
+  		$stock_has_customid_query = $db->bindVars($stock_has_customid_query, ':products_id:', $products_id, 'integer');
+  		$stock_has_customid = $db->Execute($stock_has_customid_query);
   		
-  		if(is_array($attributes) and sizeof($attributes) > 0) {
+  		// If the product does not have any customid's provide the products_model.
+  		if ($stock_has_customid->fields['total'] == 0) {
+  		  $stock_no_customid_query = 'SELECT products_model
+  		                              FROM ' . TABLE_PRODUCTS . '
+  		                              WHERE products_id = :products_id:';
+  		  $stock_no_customid_query = $db->bindVars($stock_no_customid_query, ':products_id:', $products_id, 'integer');
+  		  $customid = $db->Execute($stock_no_customid_query);
+  		  
+  		  return $customid->fields['products_model'];
+  		}
+  		
+  		if(is_array($attributes) && sizeof($attributes) > 0){
   			// check if attribute stock values have been set for the product
   			// if there are will we continue, otherwise we'll use product level data
-			$attribute_stock = $db->Execute("select stock_id 
-							  					from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
-							  					where products_id = " . (int)$products_id . ";");
+        $attribute_stock = $db->Execute("select stock_id 
+                                         FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
+                                         WHERE products_id = " . (int)$products_id . ";");
   	
   			if ($attribute_stock->RecordCount() > 0) {
   				// search for details for the particular attributes combination
-  				$first_search = 'where options_values_id in ("'.implode('","',$attributes).'")';
+          $first_search = ' WHERE options_values_id IN ('.implode(',',zen_db_prepare_input($attributes)).') ';
   				
   				// obtain the attribute ids
   				$query = 'select products_attributes_id 
-  						  from '.TABLE_PRODUCTS_ATTRIBUTES.' 
-							'.$first_search.' 
-  							and products_id='.$products_id.' 
-  							order by products_attributes_id;';
+  						from '.TABLE_PRODUCTS_ATTRIBUTES.' 
+  								:first_search:
+  								and products_id = :products_id: 
+  								order by products_attributes_id;';
+  				$query = $db->bindVars($query, ':first_search:', $first_search, 'noquotestring');
+  				$query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
   				$attributes_new = $db->Execute($query);
   				
   				while(!$attributes_new->EOF){
@@ -777,7 +812,7 @@ function nullDataEntry($fieldtoNULL){
   					$attributes_new->MoveNext();
   				}
 
-				$stock_attributes_comb = implode(',',$stock_attributes);
+          $stock_attributes_comb = implode(',',$stock_attributes);
   			}
   			
   			//Get product model
@@ -785,31 +820,32 @@ function nullDataEntry($fieldtoNULL){
 						  					from '.TABLE_PRODUCTS.' 
 						  					where products_id = '. (int)$products_id . ';';
 
-  			//Get custom id as products_model
+  			//Get custom id as products_model considering that all of the attributes as a group define the customid.
   			$customid_query = 'select customid as products_model
 		  							from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
 		  							where products_id = :products_id: 
-		  							and stock_attributes in (:stock_attributes:);'; 
-        	$customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
-        	$customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'string');
-  			$customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
-        	if ($attribute_stock->RecordCount() > 0 && !$customid->RecordCount()){ // if a customid does not exist for the combination of attributes then perhaps the attributes are individually listed.
-				$customid_query = 'select customid as products_model
+		  							and stock_attributes in (:stock_attributes:)'; 
+        $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
+        $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'string');
+        $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
+        
+        if ($attribute_stock->RecordCount() > 0 && $customid->RecordCount() == 0 && zen_not_null($stock_attributes_comb)){ // if a customid does not exist for the combination of attributes then perhaps the attributes are individually listed.
+  			  $customid_query = 'select customid as products_model
 		  							from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
 		  							where products_id = :products_id: 
 		  							and stock_attributes in (:stock_attributes:)'; 
-          		$customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
-          		$customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'passthru');
-  		    	$customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
-        	}
+          $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
+          $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'passthru');
+  		    $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
+        }
   		}// If array
   		
 //  		$customid = $db->Execute($customid_query);
-        if($customid->RecordCount() > 0 && $customid->fields['products_model']){
+      if($customid->RecordCount() > 0 && $customid->fields['products_model']){
   		
 	  		//Test to see if a custom ID exists
 	  		//if there are custom IDs with the attribute, then return them.
-	  			$multiplecid = null;
+	  		$multiplecid = null;
 	  			//mc12345678: Alternative to the below would be to build an array of "products_model" then implode
 	  			//  the array on ', '... Both methods would require stepping through each of the
 	  			//  returned values to build the desired structure.  The below does all of the
@@ -819,14 +855,17 @@ function nullDataEntry($fieldtoNULL){
 	  			//  is controllable through some form of "switch".  The maximum flexibility of this is
 	  			//  covered by adding an if statement to the below, otherwise if going to build an array
 	  			//  to then be imploded, separate action would need to take place to eliminate the "blanks".
-	  			while(!$customid->EOF){
-	  				$multiplecid .= $customid->fields['products_model'] . ', ';
-	  				$customid->MoveNext();
-	  			}
-	  			$multiplecid = rtrim($multiplecid, ', ');
+	  			
+	  			// With zen_not_null statement below, only existing customids will be comma separated.  Here is a possible
+	  			// Switch per "product" or store that allows the customid to be merged or presented in parts.
+	  		while(!$customid->EOF && zen_not_null($customid->fields['products_model'])){
+	  			$multiplecid .= $customid->fields['products_model'] . ', ';
+	  			$customid->MoveNext();
+	  		}
+	  		$multiplecid = rtrim($multiplecid, ', ');
 	  			
 	  			//return result for display
-	  			return $multiplecid;
+	  		return $multiplecid;
 	  	
   		}
   		else{
@@ -836,7 +875,8 @@ function nullDataEntry($fieldtoNULL){
   			$customid_model_query = 'select products_model
 						  					from '.TABLE_PRODUCTS.'
 						  					where products_id = :products_id:';
-			$customid_model_query = $db->bindVars($customid_model_query, ':products_id:', $products_id, 'integer');								
+        $customid_model_query = $db->bindVars($customid_model_query, ':products_id:', $products_id, 'integer');								
+        
   			$customid = $db->Execute($customid_model_query);
   			//return result for display
   			return $customid->fields['products_model'];
@@ -862,11 +902,14 @@ function nullDataEntry($fieldtoNULL){
     $SBA_installed = $db->Execute($inSBA_query, false, false, 0, true);
     
     if (!$SBA_installed->EOF && $SBA_installed->RecordCount() > 0) {
-      $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:;';
+      $isSBA_query = 'SELECT COUNT(stock_id) as total 
+                      FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' 
+                      WHERE products_id = :products_id: 
+                      LIMIT 1;';
       $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
       $isSBA = $db->Execute($isSBA_query);
       
-      if (!$isSBA->EOF && $isSBA->RecordCount() > 0) {
+      if ($isSBA->fields['total'] > 0) {
         return true;
       } else {
         return false;
