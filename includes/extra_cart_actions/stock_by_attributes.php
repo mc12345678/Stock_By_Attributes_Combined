@@ -460,7 +460,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       $grid_id[0] = null;
 //      $grid_add_number = 1;
     }
-    if (sizeof($grid_id) == 1 && is_null($grid_id[0])) {
+    if (sizeof($grid_id) == 1 && is_null($grid_id[0]) && (!isset($_GET['number_of_uploads']) || (isset($_GET['number_of_uploads']) && $_GET['number_of_uploads'] == 0))) {
       $grid_add_number = 0;
     }
 //        $grid_add_number = 1;
@@ -534,15 +534,15 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
            * Need the upload class for attribute type that allows user uploads.
            *
            */
-          include(DIR_WS_CLASSES . 'upload.php');
+          //include(DIR_WS_CLASSES . 'upload.php');
           for ($iFile = 1, $nFile = $_GET['number_of_uploads']; $iFile <= $nFile; $iFile++) {
             if (zen_not_null($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]]) and ($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] != 'none')) {
-              $products_options_file = new upload('id');
+              /*$products_options_file = new upload('id');
               $products_options_file->set_destination(DIR_FS_UPLOADS);
               $products_options_file->set_output_messages('session');
               if ($products_options_file->parse(TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile])) {
                 //$products_image_extension = substr($products_options_file->filename, strrpos($products_options_file->filename, '.'));
-                /*if ($_SESSION['customer_id']) {
+                *//*if ($_SESSION['customer_id']) {
                   $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, customers_id, files_uploaded_name) values('" . zen_session_id() . "', '" . $_SESSION['customer_id'] . "', '" . zen_db_input($products_options_file->filename) . "')");
                 } else {
                   $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, files_uploaded_name) values('" . zen_session_id() . "', '" . zen_db_input($products_options_file->filename) . "')");
@@ -550,14 +550,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
                 $insert_id = $db->Insert_ID();*/
                 //  The line below did have $insert_id in place of $iFile on the right side; however, with removal of the
                 //   storage information, that number has been "lost".
-                $attributes[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] = $iFile . ". " . $products_options_file->filename;
+                $attributes[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] = $iFile . ". " /*. $products_options_file->filename*/;
                 //$products_options_file->set_filename("$insert_id" . $products_image_extension);
                 /*if (!($products_options_file->save())) { 
                   break;
                 }*/
-              } else {
+              /*} else {
                 break;
-              }
+              }*/
             } else { // No file uploaded -- use previous value
               $attributes[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] = $_POST[TEXT_PREFIX . UPLOAD_PREFIX . $iFile];
             }
