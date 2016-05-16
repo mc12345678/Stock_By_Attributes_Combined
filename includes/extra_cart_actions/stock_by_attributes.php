@@ -5,7 +5,7 @@
 
 if (!defined('STOCK_SBA_CHECKOUT_SBA_ONLY'))
 {
-  define('STOCK_SBA_CHECKOUT_SBA_ONLY', 'false');
+  define('STOCK_SBA_CHECKOUT_SBA_ONLY', 'true');
 }
 
 //What about: 'multiple_products_add_product' (Needs to be addressed though don't see at the moment why since generally unable to select multiple products each with attributes, perhaps something to consider for later, but let's get serious here at the moment as there are more routine actions to be handled properly first.), 'update_product' (Needs to be addressed), or 'cart' (does a notify action, so may need to address?)actions?
@@ -343,7 +343,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   //  feature so that all future manipulations work out correctly.
   /* Test to see if is a grid related submission/product*/
   /* Do additional prestage work for grid related submission/product*/
-  if ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? false : true) || function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])) {
+  if ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) : true)) {
     $grid_prod_id = array();
     $grid_id = array();
     $prod_qty = array();
@@ -440,7 +440,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         $prod_qty[0] = 0;
         $grid_add_number = 0;
       }
-  } elseif ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? false : true) || function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])) {
+  } elseif ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) : true)) {
     if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
       // Product has grid layout but is not tracked by SBA.
       $grid_prod_id[0] = null;
@@ -458,7 +458,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
     }
   }
   
-  if ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? false : true) || function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])) {
+  if ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) : true)) {
 
     if (sizeof($grid_id) < 1) {
       // no grid item, so make the first data record be null.
