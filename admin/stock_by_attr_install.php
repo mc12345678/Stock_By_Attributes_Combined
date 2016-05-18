@@ -200,6 +200,8 @@ function removeDynDropdownsConfiguration() {
           $msg = ' Error Message: ' . $db->error;
         }
         array_push($resultMmessage, '&bull; Deleted PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK ' . $msg);
+        
+        zen_record_admin_activity('Deleted Dynamic Dropdowns from database via SBA install.', 'warning');
 /*	$sql = "DELETE IGNORE FROM `".TABLE_CONFIGURATION."` WHERE `configuration_key` = 'SBA_SHOW_IMAGE_ON_PRODUCT_INFO'";
 	$db->Execute($sql);
 	if($db->error){	
@@ -336,6 +338,8 @@ function removeSBAconfiguration(){
 	}
 	array_push($resultMmessage, '&bull; Deleted products_options_types_name  ' . $msg);
 	
+	zen_record_admin_activity('Deleted SBA settings from the database via the install file.', 'warning');
+	
 	return;
 }
 
@@ -372,7 +376,7 @@ function removeDynDropdownsAdminPages(){
 		$msg = ' Error Message: ' . $db->error;
 	}
 	array_push($resultMmessage, '&bull; Deleted Dynamic Drop Downs from configuration_group ' . $msg);
-
+  zen_record_admin_activity('Deleted dynamic Drop Downs from the configuration group via install file.', 'warning');
 	  
 }
 
@@ -441,6 +445,7 @@ function dropSBATable(){
 		$msg = ' Error Message: ' . $db->error;
 	}
 	array_push($resultMmessage, '&bull; Deleted table products_with_attributes_stock ' . $msg);
+	zen_record_admin_activity('Deleted the products_with_attributes_stock table from the install file.', 'warning');
 	
 	return;	
 }
@@ -457,6 +462,7 @@ function dropSBAOrdersTable(){
 	$sql = "DROP TABLE IF EXISTS ".TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK;
 	$db->Execute($sql);
 	array_push($resultMmessage, 'Deleted table orders_products_attributes_stock.' );
+	zen_record_admin_activity('Deleted the SBA table orders_products_attributes_stock from install file.', 'warning');
 	
 	return;	
 }
