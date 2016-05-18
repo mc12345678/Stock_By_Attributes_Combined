@@ -343,10 +343,20 @@ function removeDynDropdownsAdminPages(){
 	global $db, $resultMmessage;
 
 	$msg = null;
+	$pages = 'configDynamicDropdownSBA';
+	
 	array_push($resultMmessage, '<br /><b>Clean-Up</b>, Removing Dynamic Dropdowns from admin_pages: ');
 
-  $sql = "DELETE FROM `".TABLE_ADMIN_PAGES."` WHERE page_key = 'configDynamicDropdownSBA'";
-	$db->Execute($sql);
+  if (function_exists('zen_deregister_admin_pages'))
+  {
+    zen_deregister_admin_pages($pages);
+  } else 
+  {
+    $sql = "DELETE FROM `".TABLE_ADMIN_PAGES."` WHERE page_key = :page_key:";
+    $sql = $db->bindVars($sql, ':page_key:', $pages[0], 'string');
+	  $db->Execute($sql);
+	  zen_record_admin_activity('Delete admin pages for page keys: ' . print_r($pages, true), 'warning');
+  }
 	if($db->error){
 		$msg = ' Error Message: ' . $db->error;
 	}
@@ -377,8 +387,18 @@ function removeSBAadminPages(){
 	$msg = null;
 	array_push($resultMmessage, '<br /><b>Clean-Up</b>, Removing from admin_pages: ');
 	
-	$sql = "DELETE FROM`".TABLE_ADMIN_PAGES."` WHERE page_key = 'productsWithAttributesStock'";
-	$db->Execute($sql);
+	$pages = array('productsWithAttributesStock', 'productsWithAttributesStockSetup');
+	
+	if (function_exists('zen_deregister_admin_pages')) 
+	{
+	  zen_deregister_admin_pages($pages);
+	} else 
+	{
+	  $sql = "DELETE FROM `".TABLE_ADMIN_PAGES."` WHERE page_key = :page_key:";
+	  $sql = $db->bindVars($sql, ':page_key:', $pages[0], 'string');
+	  $db->Execute($sql);
+	  zen_record_admin_activity('Deleted admin pages for page keys: ' . print_r($pages[0], true), 'warning');
+	}
 	if($db->error){
 		$msg = ' Error Message: ' . $db->error;
 	}
@@ -387,9 +407,16 @@ function removeSBAadminPages(){
 	/*
 	 DELETE FROM admin_pages  WHERE  page_key = 'productsWithAttributesStockSetup';
 	*/
-	
-	$sql = "DELETE FROM`".TABLE_ADMIN_PAGES."` WHERE page_key = 'productsWithAttributesStockSetup'";
-	$db->Execute($sql);
+	if (function_exists('zen_deregister_admin_pages'))
+	{
+	  // Do nothing, because all were deleted above.
+	} else
+	{
+	  $sql = "DELETE FROM `".TABLE_ADMIN_PAGES."` WHERE page_key = :page_key:";
+	  $sql = $db->bindVars($sql, ':page_key:', $pages[1], 'string');
+	  $db->Execute($sql);
+	  zen_record_admin_activity('Deleted admin pages for page keys: ' . print_r($pages[1], true), 'warning');
+	}
 	if($db->error){
 		$msg = ' Error Message: ' . $db->error;
 	}
@@ -440,19 +467,23 @@ function insertSBAconfigurationMenu(){
 	
 	array_push($resultMmessage, '<br /><b>Adding</b> to admin_pages: ');
 	
-	//get current max sort number used, then add 1 to it.
-	//this will place the new entry 'productsWithAttributesStock' at the bottom of the list
-	$sql = "SELECT ap.sort_order
-			FROM ".TABLE_ADMIN_PAGES." ap
-			WHERE ap.menu_key = 'configuration'
-			order by ap.sort_order desc limit 1";
-	$result = $db->Execute($sql);
-	$result = $result->fields['sort_order'] + 1;
+	if (function_exists('zen_register_admin_page')) {
+	  zen_register_admin_page('productsWithAttributesStockSetup', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', '', 'configuration', 'Y');
+	} else {
+	  //get current max sort number used, then add 1 to it.
+	  //this will place the new entry 'productsWithAttributesStock' at the bottom of the list
+	  $sql = "SELECT ap.sort_order
+		  	FROM ".TABLE_ADMIN_PAGES." ap
+			  WHERE ap.menu_key = 'configuration'
+			  order by ap.sort_order desc limit 1";
+	  $result = $db->Execute($sql);
+	  $result = $result->fields['sort_order'] + 1;
 	
-	$sql = "INSERT INTO `".TABLE_ADMIN_PAGES."` (page_key, language_key, main_page, page_params, menu_key, display_on_menu, sort_order) 
-			VALUES 
-			('productsWithAttributesStockSetup', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', '', 'configuration', 'Y', ".$result.")";
-	$db->Execute($sql);
+	  $sql = "INSERT INTO `".TABLE_ADMIN_PAGES."` (page_key, language_key, main_page, page_params, menu_key, display_on_menu, sort_order) 
+			    VALUES 
+			    ('productsWithAttributesStockSetup', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', '', 'configuration', 'Y', ".$result.")";
+	  $db->Execute($sql);
+	}
 	if($db->error){
 		$msg = ' Error Message: ' . $db->error;
 	}
