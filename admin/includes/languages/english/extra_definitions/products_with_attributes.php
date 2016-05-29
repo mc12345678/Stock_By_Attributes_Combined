@@ -4,6 +4,7 @@
  */
 define('BOX_CATALOG_PRODUCTS_WITH_ATTRIBUTES_STOCK', 'Products with Attributes Stock (aka SBA)');
 define('BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', 'Products with Attributes Stock (aka SBA) Setup');
+define('BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', 'Products with Attributes Stock Ajax');
 define('IMAGE_OPTION_SBA', 'Link to SBA');
 define('TEXT_SBA_EDIT', 'SBA THIS PRODUCT');
 define('TEXT_NO_SBA_EDIT', 'Product Not SBA Tracked');

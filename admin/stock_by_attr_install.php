@@ -475,6 +475,7 @@ function insertSBAconfigurationMenu(){
 	
 	if (function_exists('zen_register_admin_page')) {
 	  zen_register_admin_page('productsWithAttributesStockSetup', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', '', 'configuration', 'Y');
+	  zen_register_admin_page('productsWithAttributesStockAjax', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', '', 'catalog', 'N');
 	} else {
 	  //get current max sort number used, then add 1 to it.
 	  //this will place the new entry 'productsWithAttributesStock' at the bottom of the list
@@ -488,6 +489,10 @@ function insertSBAconfigurationMenu(){
 	  $sql = "INSERT INTO `".TABLE_ADMIN_PAGES."` (page_key, language_key, main_page, page_params, menu_key, display_on_menu, sort_order) 
 			    VALUES 
 			    ('productsWithAttributesStockSetup', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', '', 'configuration', 'Y', ".$result.")";
+	  $db->Execute($sql);
+	  $sql = "INSERT INTO `".TABLE_ADMIN_PAGES."` (page_key, language_key, main_page, page_params, menu_key, display_on_menu, sort_order) 
+			    VALUES 
+			    ('productsWithAttributesStockAjax', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', '', 'catalog', 'N', ".$result.")";
 	  $db->Execute($sql);
 	}
 	if($db->error){
