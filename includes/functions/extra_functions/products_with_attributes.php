@@ -321,6 +321,9 @@ function cartProductCount($products_id){
           $first_search = 'where options_values_id in (' . implode(',', $temp_attributes) . ')';  // This helps make a list of items where the options_values_id is compared to each individual attribute ("x","y","z")
         } else {
           $first_search = 'where options_values_id = ' . implode(',', $temp_attributes);  // This helps make a list of items where the options_values_id is compared to each individual attribute ("x","y","z")
+          if (implode(',', $temp_attributes) == "") {
+            $first_search = 'where options_values_id = 0';  // This helps make a list of items where the options_values_id is compared to each individual attribute ("x","y","z")
+          }
 //            $first_search = 'where options_values_id = "' . $attribute . '"';
         }
 
@@ -780,11 +783,19 @@ Of the attributes provided, determine the number of those attributes that are
     if (sizeof($compArray) > 0) {
 //      $attribute_list = $compArray; // + $attribute_list /*+ $compArray*/;
       if ($how == 'add' && $how != 'addNoText') {
-        $attribute_list = $attribute_list + $compArray;
+        if (is_array($attribute_list) && sizeof($attribute_list) > 0) {
+          $attribute_list = $attribute_list + $compArray;
+        } else {
+          $attribute_list = $compArray;
+        }
       } elseif ($how == 'update') {
         $attribute_list = $compArray;
       } else {
-        $attribute_list = $compArray + $attribute_list;
+        if (is_array($attribute_list) && sizeof($attribute_list) > 0) {
+          $attribute_list = $compArray + $attribute_list;
+        } else {
+          $attribute_list = $compArray;
+        }
       }
     }
 
