@@ -526,6 +526,7 @@ AND   TABLE_NAME   = '".TABLE_CONFIGURATION_GROUP."'";
   	if($db->error){
     	$msg = ' Error Message: ' . $db->error;
     }
+    zen_record_admin_activity('Inserted dynamic Drop Downs into the configuration group via install file.', 'warning');
   	array_push($resultMmessage, '&bull; Inserted into configuration_group Dynamic Drop Downs. ' . $msg);
   }
   
@@ -791,6 +792,7 @@ function insertDynDropdownsConfiguration(){
               &bull; PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK<br /> 
               &bull; STOCK_SET_SBA_NUMRECORDS';
 			array_push($resultMmessage, 'Inserted into configuration: <br />' . $list);
+      zen_record_admin_activity('Inserted dynamic Drop Downs configuration options via install file.', 'warning');
 		}
   
   
@@ -1370,6 +1372,7 @@ function installOptionalSQL1(){
 			$msg = ' Error Message: ' . $db->error;
 			$failed = true;
 		}
+	  zen_record_admin_activity('Inserted SBA optional SQL 1 via the install file.', 'warning');
 		array_push($resultMmessage, 'Optional SQL file complete. ' . $msg);
 	}
 	else{
@@ -1429,6 +1432,7 @@ function installOptionalSQL2(){
 			$failed = true;
 		}
 		array_push($resultMmessage, 'Optional SQL file complete. ' . $msg);
+	  zen_record_admin_activity('Inserted SBA optional SQL 2 via the install file.', 'warning');
 	}
 	else{
 	array_push($resultMmessage, 'Optional SQL file result: Did NOT run, table does not exit.');
@@ -1488,6 +1492,7 @@ function installOptionalSQL3(){
 		$failed = true;
 		}
 		array_push($resultMmessage, 'Optional SQL file complete. ' . $msg);
+	  zen_record_admin_activity('Inserted SBA optional SQL 3 via the install file.', 'warning');
 	}
 	else{
 		array_push($resultMmessage, 'Optional SQL file result: Did NOT run, table does not exit.');
@@ -1545,6 +1550,7 @@ function installOptionalSQL4(){
 		$msg = ' Error Message: ' . $db->error;
 			$failed = true;
 		}
+	  zen_record_admin_activity('Inserted SBA optional SQL 4 via the install file.', 'warning');
 		array_push($resultMmessage, 'Optional SQL file complete. ' . $msg);
 	}
 	else{
@@ -1648,6 +1654,7 @@ function installOptionalSQL5(){
 		$failed = true;
 		}
 		array_push($resultMmessage, 'Optional SQL file complete. ' . $msg);
+	  zen_record_admin_activity('Inserted SBA optional SQL 5 via the install file.', 'warning');
 	}
 	else{
 		array_push($resultMmessage, 'Optional SQL file result: Did NOT run, table does not exist.');
@@ -1901,6 +1908,7 @@ function importSBAtableData(){
 				
 		}
 		array_push($resultMmessage, 'Updated '.$i.' Quantities from: ' . $SBAtableReport);
+	  zen_record_admin_activity('Updated ' . $i . ' Quantities of the table products_with_attributes_stock from: ' . $SBAtableReport, 'warning');
 	}
 	else{
 		array_push($resultMmessage, 'Update FAILED no file found!');
