@@ -3,6 +3,8 @@
  * Stock by Attributes 1.5.4 2016-01-02 mc12345678
  */
 
+$renumber = true;
+
 if (!defined('STOCK_SBA_CHECKOUT_SBA_ONLY'))
 {
   define('STOCK_SBA_CHECKOUT_SBA_ONLY', 'true');
@@ -370,25 +372,35 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         }
       }
 
-      foreach($_POST['attribs'][$prid] as $option_id => $value_id) {
-        if (substr($option_id, 0, strlen(TEXT_PREFIX)) == TEXT_PREFIX) {
-          $option_ref[substr($option_id, strlen(TEXT_PREFIX))] = $option_id;
-          $option_id = substr($option_id, strlen(TEXT_PREFIX));
-        } elseif (substr($option_id, 0, strlen(FILE_PREFIX)) == FILE_PREFIX) {
-          $option_ref[substr($option_id, strlen(FILE_PREFIX))] = $option_id;
-          $option_id = substr($option_id, strlen(FILE_PREFIX));
-        } else {
-          $option_ref[$option_id] = $option_id;
-        }
-        $check_attrib = $db->Execute(	"select pov.products_options_values_name from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov " .
-                                      "where pa.options_values_id = pov.products_options_values_id " .
-                                      "and pa.options_id = '".(int)$option_id . "' " .
-                                      "and pa.products_id = '".(int)$products_id ."' " .
-                                      "and pov.language_id = '".(int)$_SESSION['languages_id']."'");
-        if ($check_attrib->RecordCount() <= 1 && $check_attrib->fields['products_options_values_name'] == '') {
-          unset($_POST['attribs'][$prid][$option_id]);  // Not sure why it matters if the value has a name or not. mc12345678
-        }
-      }
+            if (isset($_GET['number_of_uploads']) && $_GET['number_of_uploads'] > 0) {
+                for ($iFile = 1, $nFile = $_GET['number_of_uploads']; $iFile <= $nFile; $iFile++) {
+                    if (zen_not_null($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]]) and ($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] != 'none')) {
+                        $_POST['attribs'][$prid][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] = $iFile . ". ";
+                    } else { // No file uploaded -- use previous value
+                        $_POST['attribs'][$prid][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] = $_POST[TEXT_PREFIX . UPLOAD_PREFIX . $iFile];
+                    }
+                }
+            }
+
+            foreach($_POST['attribs'][$prid] as $option_id => $value_id) {
+                if (substr($option_id, 0, strlen(TEXT_PREFIX)) == TEXT_PREFIX) {
+                    $option_ref[substr($option_id, strlen(TEXT_PREFIX))] = $option_id;
+                    $option_id = substr($option_id, strlen(TEXT_PREFIX));
+                } elseif (substr($option_id, 0, strlen(FILE_PREFIX)) == FILE_PREFIX) {
+                    $option_ref[substr($option_id, strlen(FILE_PREFIX))] = $option_id;
+                    $option_id = substr($option_id, strlen(FILE_PREFIX));
+                } else {
+                    $option_ref[$option_id] = $option_id;
+                }
+                $check_attrib = $db->Execute(	"select pov.products_options_values_name from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov " .
+                                                "where pa.options_values_id = pov.products_options_values_id " .
+                                                "and pa.options_id = '".(int)$option_id . "' " .
+                                                "and pa.products_id = '".(int)$products_id ."' " .
+                                                "and pov.language_id = '".(int)$_SESSION['languages_id']."'");
+                if ($check_attrib->RecordCount() <= 1 && $check_attrib->fields['products_options_values_name'] == '') {
+                    unset($_POST['attribs'][$prid][$option_id]);  // Not sure why it matters if the value has a name or not. mc12345678
+                }
+            }
       
       if (!is_numeric($_POST['cart_quantity']) || $_POST['cart_quantity'] < 0) {
         // adjust quantity when not a value
@@ -427,25 +439,30 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         while (!$products_options_sequence->EOF) {
           $grid_id2[$option_ref[$products_options_sequence->fields['products_options_id']]] = $_POST['attribs'][$prid][$option_ref[$products_options_sequence->fields['products_options_id']]];
           $products_options_sequence->MoveNext();
+                }
+
+                $grid_id[] = $grid_id2;
+                $prod_qty[] = $qty * $_POST['cart_quantity'];
+                $grid_prod_id[] = $products_id;
+                $grid_add_number++;
+            }
+//            $_SESSION['file_' . $prid] = $file;
+            //$_FILES = $file;
         }
 
-        $grid_id[] = $grid_id2;
-        $prod_qty[] = $qty * $_POST['cart_quantity'];
-        $grid_prod_id[] = $products_id;
-        $grid_add_number++;
+//        $_SESSION['in_loop_grid_id'] = $grid_id;
+//        unset($_SESSION['in_loop_grid_id']);
+        if (sizeof($grid_id) < 1 || sizeof($prod_qty) < 1 || sizeof($grid_prod_id) < 1) {
+          $grid_prod_id[0] = null;
+          $prod_qty[0] = 0;
+          $grid_add_number = 0;
         }
-      }
-      if (sizeof($grid_id) < 1 || sizeof($prod_qty) < 1 || sizeof($grid_prod_id) < 1) {
+  } elseif ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) : true)) {
+      if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
+      // Product has grid layout but is not tracked by SBA.
         $grid_prod_id[0] = null;
         $prod_qty[0] = 0;
         $grid_add_number = 0;
-      }
-  } elseif ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) : true)) {
-    if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
-      // Product has grid layout but is not tracked by SBA.
-      $grid_prod_id[0] = null;
-      $prod_qty[0] = 0;
-      $grid_add_number = 0;
       $_POST['products_id'] = 0;
       $_POST['id'] = 0;
       $_POST['cart_quantity'] = 0;
@@ -455,8 +472,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       $grid_id[] = $_POST['id'];
       $prod_qty[] = $_POST['cart_quantity'];
       $grid_add_number = 1;
+      }
     }
-  }
   
   if ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) : true)) {
 
@@ -480,6 +497,26 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       $grid_add_number = 0;
     }
     $grid_loop = 0;
+//    $_SESSION['before_grid_loop_grid_add_number'] = $grid_add_number;
+//    $_SESSION['before_grid_loop_grid_prod_id'] = $grid_prod_id;
+//    $_SESSION['before_grid_loop_grid_id'] = $grid_id;
+//    $_SESSION['before_grid_loop_grid_cart_qty'] = $prod_qty;
+//    $_SESSION['before_grid_loop'] = $_POST;
+/*    unset($_SESSION['before_grid_loop_grid_add_number']);
+    unset($_SESSION['before_grid_loop_grid_prod_id']);
+    unset($_SESSION['before_grid_loop_grid_id']);
+    unset($_SESSION['before_grid_loop_grid_cart_qty']);
+    unset($_SESSION['before_grid_loop']);*/
+/*    if (isset($_SESSION['file_located'])) {
+      unset($_SESSION['file_located']);
+    }*/
+    if (is_array($fileVar) && array_key_exists('file_located', $fileVar)) {
+      unset($fileVar['file_located']);
+      $fileVar = array();
+    } elseif (!is_array($fileVar)) {
+      $fileVar = array();
+    }
+//    $_SESSION['post2'] = $_POST;
     while ($grid_loop++ <= $grid_add_number) {
       $_POST['products_id'] = $grid_prod_id[$grid_loop - 1];
       $_POST['id'] = $grid_id[$grid_loop - 1];
@@ -513,6 +550,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         $attr_dash = array();
         $attr_id = array();
         $attr_val = array();
+//    $_SESSION['before_dropdown'] = $_POST['id'];
+//    unset($_SESSION['before_dropdown']);
         if((PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2')) {
           /*single dropdown as multiple*/
           $attr_list = explode(',',$_POST['attrcomb']);
@@ -527,6 +566,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
            * 
            */
         }
+//    $_SESSION['before_file'] = $_POST['id'];
+//    unset($_SESSION['before_file']);
         $attributes = (isset($_POST['id']) && zen_not_null($_POST['id'])  ? $_POST['id']  : null );
         // to address product with maleable attributes where the attribute 
         // is not stock dependent (text field) product_id needs to reflect 
@@ -535,6 +576,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 
         // Need to get the file related information into the $attributes related data.
         if (isset($_GET['number_of_uploads']) && $_GET['number_of_uploads'] > 0) {
+          if (is_array($fileVar) && array_key_exists('file_located', $fileVar) && $fileVar['file_located']) {
+            for ($iFile = 1, $nFile = $_GET['number_of_uploads']; $iFile <= $nFile; $iFile++) {
+              //rename($_SESSION['file_location_' . $iFile] . '.baksba', $_SESSION['file_location_' . $iFile]);
+            }
+          }
           /**
            * Need the upload class for attribute type that allows user uploads.
            *
@@ -542,6 +588,21 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
           //include(DIR_WS_CLASSES . 'upload.php');
           for ($iFile = 1, $nFile = $_GET['number_of_uploads']; $iFile <= $nFile; $iFile++) {
             if (zen_not_null($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]]) and ($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] != 'none')) {
+
+             /* if ($grid_loop < $grid_add_number) {
+                // copy the file to another location
+                // Set a flag that will indicate that it should be copied back
+                // Earlier need to copy the file back to this location if the flag is set.
+                // copy();
+                copy($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]], $_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] . '.baksba');
+
+                $_SESSION['file_located'] = true;
+                $_SESSION['file_location_' . $iFile] = $_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]];
+              } else {
+                // Clear flag
+                unset($_SESSION['file_located']);
+//                unset($_SESSION['file_location_' . $iFile]);
+              }
               /*$products_options_file = new upload('id');
               $products_options_file->set_destination(DIR_FS_UPLOADS);
               $products_options_file->set_output_messages('session');
@@ -568,7 +629,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
             }
           }
         }
-
+//$_SESSION['after_file'] = $attributes;
+//unset($_SESSION['after_file']);
 
         //$attributes2 is to be a "text free" set of attributes.
         $product_id = zen_get_uprid($_POST['products_id'], $attributes);
@@ -715,24 +777,99 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
                  * Need the upload class for attribute type that allows user uploads.
                  *
                  */
-                include(DIR_WS_CLASSES . 'upload.php');
+                include_once(DIR_WS_CLASSES . 'upload.php');
+//                $_SESSION['files_'.$grid_loop] = $_FILES;
                 for ($i = 1, $n = $_GET['number_of_uploads']; $i <= $n; $i++) {
                   if (zen_not_null($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]]) and ($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] != 'none')) {
-                    $products_options_file = new upload('id');
-                    $products_options_file->set_destination(DIR_FS_UPLOADS);
-                    $products_options_file->set_output_messages('session');
-                    if ($products_options_file->parse(TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i])) {
+                    if ($grid_loop == 1) {
+                      $products_options_file = new upload('id');
+                      $products_options_file->set_destination(DIR_FS_UPLOADS);
+                      $products_options_file->set_output_messages('session');
+                    }
+                    if ($grid_loop > 1 || $products_options_file->parse(TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i])) {
                       $products_image_extension = substr($products_options_file->filename, strrpos($products_options_file->filename, '.'));
-                      if ($_SESSION['customer_id']) {
-                        $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, customers_id, files_uploaded_name) values('" . zen_session_id() . "', '" . $_SESSION['customer_id'] . "', '" . zen_db_input($products_options_file->filename) . "')");
-                      } else {
-                        $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, files_uploaded_name) values('" . zen_session_id() . "', '" . zen_db_input($products_options_file->filename) . "')");
+                      if ($grid_loop == 1 || $renumber) {
+                        if ($_SESSION['customer_id']) {
+                          $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, customers_id, files_uploaded_name) values('" . zen_session_id() . "', '" . $_SESSION['customer_id'] . "', '" . zen_db_input($products_options_file->filename) . "')");
+                        } else {
+                          $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, files_uploaded_name) values('" . zen_session_id() . "', '" . zen_db_input($products_options_file->filename) . "')");
+                        }
+                        $insert_id = $db->Insert_ID();
                       }
-                      $insert_id = $db->Insert_ID();
+                      if ($grid_loop < $grid_add_number) {
+                // copy the file to another location
+                // Set a flag that will indicate that it should be copied back
+                // Earlier need to copy the file back to this location if the flag is set.
+                // copy();
+//                        copy($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]], $_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $iFile]] . '.baksba');
+
+                        if ($grid_loop == 1) {
+                          $fileVar[$grid_loop][$i]['id'] = $insert_id;
+//                          $fileVar[$grid_loop][$i]['location'] = $products_options_file;
+                          $fileVar[$grid_loop][$i]['name'] = $products_options_file->filename;
+                          $fileVar[$grid_loop][$i]['destination'] = $products_options_file->destination;
+                          $fileVar[$grid_loop][$i]['extension'] = $products_image_extension;
+                          $products_options_file->filename = $fileVar[$grid_loop][$i]['name'];
+                        } else {
+                          $fileVar[$grid_loop][$i]['id'] = $fileVar[$grid_loop - 1][$i]['id'];
+                          if ($renumber) {
+                            $fileVar[$grid_loop][$i]['id'] = $insert_id;
+                          }
+//                          $fileVar[$grid_loop][$i]['location'] = $fileVar[$grid_loop - 1][$i]['location'];
+                          $fileVar[$grid_loop][$i]['name'] = $fileVar[$grid_loop - 1][$i]['name'];
+                          $fileVar[$grid_loop][$i]['destination'] = $fileVar[$grid_loop - 1][$i]['destination'];
+                          $fileVar[$grid_loop][$i]['extension'] = $fileVar[$grid_loop - 1][$i]['extension'];
+//                          $products_options_file = $fileVar[$grid_loop][$i]['location'];
+                          $products_options_file->filename = $fileVar[$grid_loop][$i]['name'];
+                          $products_image_extension = $fileVar[$grid_loop][$i]['extension'];
+                          if (!$renumber) {
+                            $insert_id = $fileVar[$grid_loop][$i]['id'];
+                          }
+//                          $products_options_file->set_filename("$insert_id" . $_SESSION['file_location_name_' . $grid_loop - 1 . '_' . $i]);
+//                          $products_options_file->filename = $_SESSION['file_location_name_' . $grid_loop - 1 . '_' . $i];
+                        }
+                        $fileVar['file_located'] = true;
+//                        $_SESSION['file_located'] = true;
+                      } else {
+                // Clear flag
+                        if ($grid_loop == 1) {
+//                          $_SESSION['file_location_' . $grid_loop . '_' . $i] = $_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]];
+//                          $_SESSION['file_location_' . $grid_loop . '_' . $i] = $products_options_file;
+                        } else {
+                          $fileVar[$grid_loop][$i]['id'] = $fileVar[$grid_loop - 1][$i]['id'];
+                          if ($renumber) {
+                            $fileVar[$grid_loop][$i]['id'] = $insert_id;
+                          }
+//                          $fileVar[$grid_loop][$i]['location'] = $fileVar[$grid_loop - 1][$i]['location'];
+                          $fileVar[$grid_loop][$i]['name'] = $fileVar[$grid_loop - 1][$i]['name'];
+                          $fileVar[$grid_loop][$i]['destination'] = $fileVar[$grid_loop - 1][$i]['destination'];
+                          $fileVar[$grid_loop][$i]['extension'] = $fileVar[$grid_loop - 1][$i]['extension'];
+                          $products_options_file->filename = $fileVar[$grid_loop][$i]['name'];
+                          $products_image_extension = $fileVar[$grid_loop][$i]['extension'];
+                          if (!$renumber) {
+                            $insert_id = $fileVar[$grid_loop][$i]['id'];
+                          }
+                          //unset($fileVar['file_located']);
+                          //if ($i == $n) {
+                          //  unset($fileVar);
+                          //}
+                        }
+                      }
                       $real_ids[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] = $insert_id . ". " . $products_options_file->filename;
                       $products_options_file->set_filename("$insert_id" . $products_image_extension);
-                      if (!($products_options_file->save())) {
+                      if ($grid_loop == 1 && !($products_options_file->save())) {
+                        $fileVar[$grid_loop][$i]['failed'] = true;
                         break;
+                      } else {
+                        if ($grid_loop == 1) {
+                          $fileVar[$grid_loop][$i]['location'] = $products_options_file;
+                        } elseif ($grid_loop > 1 && array_key_exists('failed', $fileVar[$grid_loop - 1][$i]) && $fileVar[$grid_loop - 1][$i]['failed']) {
+                          $fileVar[$grid_loop][$i]['failed'] = $fileVar[$grid_loop - 1][$i]['failed'];
+                          break;
+                        } elseif ($grid_loop > 1 && !array_key_exists('failed', $fileVar[$grid_loop - 1][$i])) {
+                          $fileVar[$grid_loop][$i]['location'] = $products_options_file;
+                          copy($fileVar[$grid_loop - 1][$i]['destination'] . $fileVar[$grid_loop - 1][$i]['id'] . $fileVar[$grid_loop - 1][$i]['extension'], $fileVar[$grid_loop][$i]['destination'] . $fileVar[$grid_loop][$i]['id'] . $fileVar[$grid_loop][$i]['extension']);
+                        }
                       }
                     } else {
                       break;
