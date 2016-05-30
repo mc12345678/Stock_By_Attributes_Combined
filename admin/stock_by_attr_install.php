@@ -391,7 +391,7 @@ function removeSBAadminPages(){
 	$msg = null;
 	array_push($resultMmessage, '<br /><b>Clean-Up</b>, Removing from admin_pages: ');
 	
-	$pages = array('productsWithAttributesStock', 'productsWithAttributesStockSetup');
+	$pages = array('productsWithAttributesStock', 'productsWithAttributesStockSetup', 'productsWithAttributesStock');
 	
 	if (function_exists('zen_deregister_admin_pages')) 
 	{
