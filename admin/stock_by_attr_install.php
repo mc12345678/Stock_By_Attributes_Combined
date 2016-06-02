@@ -596,7 +596,7 @@ function insertSBAproductsOptionsTypes(){
 		WHERE `products_options_types_name` = 'SBA Select List (Dropdown) Basic'; ";
 		$result = $db->Execute($sql);
 
-		if (!$result->EOF && $result->RecordCount >= 1) {
+		if (!$result->EOF && $result->RecordCount() >= 1) {
 			array_push($resultMmessage, '<br /><b>Obtaining</b> current products_options_types: ');
 			$resultGID = $result->fields['products_options_types_id'];
 		} else {
@@ -638,7 +638,9 @@ function insertSBAproductsOptionsTypes(){
 		if($db->error){
 			$msg = ' Error Message: ' . $db->error;
 			$failed = true;
-		}
+		} else {
+      define('PRODUCTS_OPTIONS_TYPE_SELECT_SBA', 'Selection list product option type (SBA)');
+    }
 
 		array_push($resultMmessage, '&bull; Inserted into configuration "Selection list product option type (SBA)" . 
 		' . $msg);
