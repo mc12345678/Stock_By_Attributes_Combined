@@ -639,7 +639,7 @@ function insertSBAproductsOptionsTypes(){
 			$msg = ' Error Message: ' . $db->error;
 			$failed = true;
 		} else {
-		  define('PRODUCTS_OPTIONS_TYPE_SELECT_SBA','Selection list product option type (SBA)');
+		  define('PRODUCTS_OPTIONS_TYPE_SELECT_SBA',$resultGID);
 		}
 \		array_push($resultMmessage, '&bull; Inserted into configuration "Selection list product option type (SBA)" . 
 		' . $msg);
