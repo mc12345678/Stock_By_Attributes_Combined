@@ -23,4 +23,16 @@
 	'autoType' => 'classInstantiate',
 	'className' => 'products_with_attributes_stock_admin',
 	'objectName' => 'products_with_attributes_stock_admin_observe'
-	); 
+	);
+
+$autoLoadConfig[0][] = array(
+	'autoType' => 'class',
+	'loadFile' => 'products_with_attributes_stock.php',
+	'classPath'=> DIR_WS_CLASSES
+);
+$autoLoadConfig[199][] = array(
+	'autoType' => 'classInstantiate',
+	'className' => 'products_with_attributes_stock',
+	'objectName' => 'products_with_attributes_stock_class'
+);
+
