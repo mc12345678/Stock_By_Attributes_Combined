@@ -603,7 +603,7 @@ function insertSBAproductsOptionsTypes(){
 			array_push($resultMmessage, '<br /><b>Finding</b> highest products_options_types value: ');
 			//get current max sort number used, then add 1 to it.
 			//this will place the new entries at the bottom of the list
-			$sql = "SELECT pot.products_options_types_id, products_options_types_name
+			$sql = "SELECT pot.products_options_types_id, pot.products_options_types_name
 			FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " pot	
 			order by pot.products_options_types_id desc limit 1";
 			$result = $db->Execute($sql);
