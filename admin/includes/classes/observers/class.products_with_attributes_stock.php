@@ -39,6 +39,7 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'OPTIONS_NAME_MANAGER_UPDATE_OPTIONS_VALUES_DELETE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME';
+    //$attachNotifier[] = 'ORDER_QUERY_ADMIN_COMPLETE';  // Not ready to implement yet. 2016-06-01
 
     $this->attach($this, $attachNotifier); 
 	}	
@@ -266,6 +267,56 @@ class products_with_attributes_stock_admin extends base {
     }
 
   }
+
+  // ORDER_QUERY_ADMIN_COMPLETE
+  function updateOrderQueryAdminComplete(&$orderClass, $notifier, $paramsArray) {
+    global $db, $products_with_attributes_stock_class;
+    
+    $order_id = $paramsArray['orders_id'];
+    
+    //$orders_products_sba = $db->Execute("select orders_products_attributes_stock_id, orders_products_attributes_id, orders_products_id, stock_id, stock_attribute, customid, products_prid from " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK . " where orders_id = " . (int)$order_id );
+    
+    $orders_products = $db->Execute("select orders_products_id, products_id
+                                     from " . TABLE_ORDERS_PRODUCTS . "
+                                     where orders_id = " . (int)$order_id . "
+                                     order by orders_products_id");
+    $index = 0;
+    //$subindex = 0;
+    $customid = array();
+    
+    while (!$orders_products->EOF) {                                     
+    // Loop through each product in the order
+      $product = $orderClass->products[$index];
+    
+      // If the product has attributes, then need to see what was logged into the orders_products_attributes_stock table.  
+      //    If nothing then is a product that has attributes, but was not tracked by SBA. 
+      //    If something, then retrieve the desired data (customid)
+      if (array_key_exists('attributes', $product) && sizeof($product['attributes']) > 0) {
+        $orders_products_sba_customid = $db->Execute("select orders_products_attributes_stock_id, orders_products_attributes_id, stock_id, stock_attribute, customid, products_prid from " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK . " where orders_id = " . (int)$order_id . " and orders_products_id = " . (int)$orders_products->fields['orders_products_id'] . " order by orders_products_attributes_stock_id");
+      
+        // If the product was tracked by SBA then perform desired work.
+        if ($orders_products_sba_customid->RecordCount() > 0) {
+
+          while (!$orders_products_sba_customid->EOF) {
+            // provide the "list" of customid's such that only the populated customid's are provided (zen_not_null)
+            if (zen_not_null($orders_products_sba_customid->fields['customid'])) {
+              $customid[] = $orders_products_sba_customid->fields['customid'];
+            } 
+          }
+          if (sizeof($customid) > 0) {
+            // Combine the various customids to apply to the ordered product information.
+            // Default method is to combine with a comma between each value when multiple exist.
+            //   If every customid that is and is not present is to be concatenated then above need to add all to the array
+            //    not just those that have data.
+            $orderClass->products[$index]['customid'] = implode(", ", $customid);
+          } // EOF if sizeof
+        } // EOF if orders_products_sba_customid->RecordCount() > 0
+      } // EOF array check if attributes are involved.
+      $index++;
+      $orders_products->MoveNext();
+    } // EOF while loop on products
+  }
+  
     
 //  notify('NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP', array('i'=>$i, 'j'=>$j, 'productsI'=>$order->products[$i], 'prod_img'=>$prod_img), $order->products[$i], $prod_img);
 
@@ -322,6 +373,10 @@ class products_with_attributes_stock_admin extends base {
     if ($notifier == 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME') {
       //, array('current_products_id' => $current_products_id, 'remove_ids' => $remove_downloads_ids, 'options_id'=>$options_id_from, 'options_values_id'=>$options_values_values_id_from));
       $this->updateOptionsValuesManagerDeleteValuesOfOptionname($callingClass, $notifier, $paramsArray);
+    }
+    
+    if ($notifier == 'ORDER_QUERY_ADMIN_COMPLETE') {
+      $this->updateOrderQueryAdminComplete($callingClass, $notifier, $paramsArray);
     }
 
 	} //end update function - mc12345678
