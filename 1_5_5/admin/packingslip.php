@@ -152,8 +152,8 @@
   //include language file
     include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
   //new object from class
-    require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
-    $stock = new products_with_attributes_stock;
+    //require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
+    //$stock = new products_with_attributes_stock;
   // END "Stock by Attributes"
 
     for ($i=0, $n=sizeof($order->products); $i<$n; $i++) {
