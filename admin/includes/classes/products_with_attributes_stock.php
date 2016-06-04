@@ -382,8 +382,8 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
 //Used with jquery to edit qty on stock page and to save
 function saveAttrib(){
 
-	global $db;
-	$stock = new products_with_attributes_stock;
+	global $db, $products_with_attributes_stock_class;
+	$stock = $products_with_attributes_stock_class; // Should replace all cases of $stock with the class variable name.
     $i = 0;
     foreach ($_POST as $key => $value) {
     	$id1 = intval(str_replace('stockid1-', '', $key));//title
@@ -392,7 +392,7 @@ function saveAttrib(){
     	$id4 = intval(str_replace('stockid4-', '', $key));//customid	
 
         if($id1 > 0){
-        	$value = $stock->nullDataEntry($value);
+        	$value = $this->nullDataEntry($value);
         	if(empty($value) || is_null($value)){$value = 'null';}
        		$sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET title = $value WHERE stock_id = " .$id1. " LIMIT 1";
        		$db->execute($sql);
@@ -414,7 +414,7 @@ function saveAttrib(){
         }
         if($id4 > 0){
         	$value = addslashes($value);
-        	$value = $stock->nullDataEntry($value);
+        	$value = $this->nullDataEntry($value);
         	if(empty($value) || is_null($value)){$value = 'null';}
         	$sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET customid = $value WHERE stock_id = " .$id4. " LIMIT 1";
         	$db->execute($sql);
@@ -445,13 +445,13 @@ function updateAttribQty($stock_id = null, $quantity = null){
 //The on duplicate updates an existing record instead of adding a new one
 function insertNewAttribQty($products_id = null, $productAttributeCombo = null, $strAttributes = null, $quantity = 0, $customid = null, $skuTitle = null){
 	global $db;
-	$stock = new products_with_attributes_stock;
-	$productAttributeCombo = $stock->nullDataEntry($productAttributeCombo);//sets proper quoting for input
+	//$stock = $products_with_attributes_stock_class; // Should replace all instance of $stock with the class variable.
+	$productAttributeCombo = $this->nullDataEntry($productAttributeCombo);//sets proper quoting for input
 	$skuTitle = addslashes($skuTitle);
-	$skuTitle = $stock->nullDataEntry($skuTitle);//sets proper quoting for input
+	$skuTitle = $this->nullDataEntry($skuTitle);//sets proper quoting for input
 	$customid = addslashes($customid);
-	$customid = $stock->nullDataEntry($customid);//sets proper quoting for input
-	$strAttributes = $stock->nullDataEntry($strAttributes);//sets proper quoting for input
+	$customid = $this->nullDataEntry($customid);//sets proper quoting for input
+	$strAttributes = $this->nullDataEntry($strAttributes);//sets proper quoting for input
 	
 	//Set quantity to 0 if not valid input
 	if( !is_numeric($quantity) ){
@@ -476,11 +476,11 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
 //The on duplicate updates an existing record instead of adding a new one
 function insertTablePASR($products_id = null, $strAttributes = null, $quantity = null, $customid = null){
 	
-	global $db;
-	$stock = new products_with_attributes_stock;
+	global $db, $products_with_attributes_stock_class;
+	// $stock = $products_with_attributes_stock_class;
 	$customid = addslashes($customid);
-	$customid = $stock->nullDataEntry($customid);//sets proper quoting for input
-	$strAttributes = $stock->nullDataEntry($strAttributes);//sets proper quoting for input
+	$customid = $this->nullDataEntry($customid);//sets proper quoting for input
+	$strAttributes = $this->nullDataEntry($strAttributes);//sets proper quoting for input
 
 	//INSERT INTO `znc_products_attributes_stock_relationship` (`products_id`, `products_attributes_id`, `products_attributes_stock_id`) VALUES (226, 1121, 37);
 	
@@ -495,7 +495,7 @@ function insertTablePASR($products_id = null, $strAttributes = null, $quantity =
 		$result = $db->execute($query);
 		$pasid = $result->fields['products_attributes_stock_id'];
 		$pasid = ($pasid +1);//increment to next value
-		$pasid = $stock->nullDataEntry($pasid);//sets proper quoting for input
+		$pasid = $this->nullDataEntry($pasid);//sets proper quoting for input
 		
 		$query = "insert into ". TABLE_PRODUCTS_ATTRIBUTES_STOCK_RELATIONSHIP ." (`products_id`,`products_attributes_id`, `products_attributes_stock_id`)
 					values ($products_id, $strAttributes, $pasid)
@@ -557,9 +557,9 @@ function insertTablePASR($products_id = null, $strAttributes = null, $quantity =
 function insertTablePAS($products_id = null, $quantity = null, $customid = null){
 
 	global $db;
-	$stock = new products_with_attributes_stock;
+	//$stock = $products_with_attributes_stock_class;
 	$customid = addslashes($customid);
-	$customid = $stock->nullDataEntry($customid);//sets proper quoting for input
+	$customid = $this->nullDataEntry($customid);//sets proper quoting for input
 
 // 	INSERT INTO `znc_products_attributes_stock` (`products_id`, `quantity`, `customid`) VALUES (226, 636, 'test37');
 	
@@ -587,9 +587,9 @@ function insertTablePAS($products_id = null, $quantity = null, $customid = null)
 //Update Custom ID of Attribute using the StockID as a key
 function updateCustomIDAttrib($stockid = null, $customid = null){
 	global $db;
-	$stock = new products_with_attributes_stock;
+	//$stock = $products_with_attributes_stock_class;
 	$customid = addslashes($customid);
-	$customid = $stock->nullDataEntry($customid);//sets proper quoting for input
+	$customid = $this->nullDataEntry($customid);//sets proper quoting for input
 
 	if( $customid && is_numeric($stockid) ){
 		$query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set customid = ' . $customid . ' where stock_id = ' . $stockid . ' limit 1';
@@ -601,10 +601,10 @@ function updateCustomIDAttrib($stockid = null, $customid = null){
 
 //Update  sku Title of Attribute using the StockID as a key
 function updateTitleAttrib($stockid = null, $skuTitle = null){
-	global $db;
-	$stock = new products_with_attributes_stock;
+	global $db, $products_with_attributes_class;
+	$stock = $products_with_attributes_stock_class;
 	$skuTitle = addslashes($skuTitle);
-	$skuTitle = $stock->nullDataEntry($skuTitle);//sets proper quoting for input
+	$skuTitle = $this->nullDataEntry($skuTitle);//sets proper quoting for input
 
 	if( $skuTitle && is_numeric($stockid) ){
 		$query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set title = ' . $skuTitle . ' where stock_id = ' . $stockid . ' limit 1';
