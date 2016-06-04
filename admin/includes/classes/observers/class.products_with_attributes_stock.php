@@ -128,7 +128,7 @@ class products_with_attributes_stock_admin extends base {
 
   // NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP
   function updateNotifyPackingslipInAttribLoop(&$callingClass, $notifier, $paramsArray = array(), &$prod_img = NULL) { 
-    global $customid, $stock, $order, $slipInLoopAttribs;
+    global $customid, $products_with_attributes_stock_class, $order, $slipInLoopAttribs;
     
     $i = $paramsArray['i'];
     $j = $paramsArray['j'];
@@ -141,7 +141,7 @@ class products_with_attributes_stock_admin extends base {
       //create array for use in zen_get_customid
       $slipInLoopAttribs[] = $order->products[$i]['attributes'][$j]['value_id'];
       //get custom ID
-      $customid = $stock->zen_get_customid($order->products[$i]['id'],$slipInLoopAttribs);
+      $customid = $products_with_attributes_with_stock_class->zen_get_customid($order->products[$i]['id'],$slipInLoopAttribs);
       //only display custom ID if exists
       if( !empty($customid) ){
         //add name prefix (this is set in the admin language file)
