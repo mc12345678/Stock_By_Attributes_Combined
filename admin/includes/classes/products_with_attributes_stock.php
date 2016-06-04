@@ -14,7 +14,7 @@ if (!defined('IS_ADMIN_FLAG')) {
     die('Illegal Access');
 }
 
-class products_with_attributes_stock
+class products_with_attributes_stock extends base
 	{	
 		function get_products_attributes($products_id, $languageId=1)
 		{
