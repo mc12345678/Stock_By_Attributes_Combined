@@ -331,7 +331,31 @@ function removeSBAconfiguration(){
 	//DELETE FROM `products_options_types` 
 	array_push($resultMmessage, '<br /><b>Clean-Up</b>, Removing from products_options_types: ');
 	
-	$sql = "DELETE IGNORE FROM `".TABLE_PRODUCTS_OPTIONS_TYPES."` WHERE `products_options_types_name` = 'SBA Select List (Dropdown) Basic'";
+	// Reassign products options that are assigned to the SBA Select List (Dropdown) Basic group to be assigned to a standard Dropdown.
+	
+	$products_options_types_name = 'SBA Select List (Dropdown) Basic';
+	
+	$sql = "SELECT products_options_types_id FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " WHERE products_options_types_name = :products_options_types_name:";
+	$sql = $db->bindVars($sql, ':products_options_types_name:', $products_options_types_name, 'string');
+	
+	$result = $db->Execute($sql);
+	array_push($resultMmessage, '&bull; Moving option types from ' . $products_options_types_name . ' to an equivalent type to prepare for removal.');
+	
+	if ($result->RecordCount() > 0) {
+	  $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " SET products_options_type = :products_options_type_new: WHERE products_options_type = :products_options_type_old:";
+	  $sql = $db->bindVars($sql, ':products_options_types_old:', $result->fields['products_options_types_id'], 'integer');
+	  $sql = $db->bindVars($sql, ':products_options_types_new:', (defined('PRODUCTS_OPTIONS_TYPE_SELECT') ? PRODUCTS_OPTIONS_TYPE_SELECT : 0), 'integer');
+	  
+	  $sql = $db->Execute($sql);
+	  if ($db->error) {
+	    $msg = ' Error Message: ' . $db->error;
+	  }
+	  array_push($resultMmessage, '&bull; Moved option types from ' . $products_options_types_name . ' to an equivalent type.' . $msg);
+	}
+	
+	$sql = "DELETE IGNORE FROM `".TABLE_PRODUCTS_OPTIONS_TYPES."` WHERE `products_options_types_name` = :products_options_types_name:";
+	$sql = $db->bindVars($sql, ':products_options_types_name:', $products_options_types_name, 'string');
+	
 	$db->Execute($sql);
 	if($db->error){
 		$msg = ' Error Message: ' . $db->error;
