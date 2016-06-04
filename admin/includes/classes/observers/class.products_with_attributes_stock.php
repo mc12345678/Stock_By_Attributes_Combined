@@ -24,7 +24,7 @@ class products_with_attributes_stock_admin extends base {
   /*
    * This is the observer for the admin side of SBA currently covering admin/includes/functions/general.php file to support Stock By Attributes when the order is being processed at the end of the purchase.
    */
-  function products_with_attributes_stock_admin() {
+  function __construct() {
 
     $attachNotifier = array();
     $attachNotifier[] = 'NOTIFIER_ADMIN_ZEN_REMOVE_PRODUCT';
