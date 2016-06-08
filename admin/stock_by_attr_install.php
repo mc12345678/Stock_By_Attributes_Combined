@@ -343,8 +343,8 @@ function removeSBAconfiguration(){
 	
 	if ($result->RecordCount() > 0) {
 	  $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " SET products_options_type = :products_options_type_new: WHERE products_options_type = :products_options_type_old:";
-	  $sql = $db->bindVars($sql, ':products_options_types_old:', $result->fields['products_options_types_id'], 'integer');
-	  $sql = $db->bindVars($sql, ':products_options_types_new:', (defined('PRODUCTS_OPTIONS_TYPE_SELECT') ? PRODUCTS_OPTIONS_TYPE_SELECT : 0), 'integer');
+	  $sql = $db->bindVars($sql, ':products_options_type_old:', $result->fields['products_options_types_id'], 'integer');
+	  $sql = $db->bindVars($sql, ':products_options_type_new:', (defined('PRODUCTS_OPTIONS_TYPE_SELECT') ? PRODUCTS_OPTIONS_TYPE_SELECT : 0), 'integer');
 	  
 	  $sql = $db->Execute($sql);
 	  if ($db->error) {
