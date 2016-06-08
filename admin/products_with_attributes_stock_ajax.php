@@ -10,10 +10,11 @@
  
 require('includes/application_top.php');
 require(DIR_WS_CLASSES . 'currencies.php');
-require(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
+//require(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
 include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/products_with_attributes_stock.php'); 
 
-$stock = new products_with_attributes_stock;
+//$stock = new products_with_attributes_stock;
+$stock = $products_with_attributes_stock_class;
 
     if( $_GET['save'] == 1 ){
 		if (isset($_GET['page']) && $_GET['page']) {

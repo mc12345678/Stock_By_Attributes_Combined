@@ -382,8 +382,8 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
 //Used with jquery to edit qty on stock page and to save
 function saveAttrib(){
 
-	global $db, $products_with_attributes_stock_class;
-	$stock = $products_with_attributes_stock_class; // Should replace all cases of $stock with the class variable name.
+	global $db;
+//	$stock = $products_with_attributes_stock_class; // Should replace all cases of $stock with the class variable name.
     $i = 0;
     foreach ($_POST as $key => $value) {
     	$id1 = intval(str_replace('stockid1-', '', $key));//title
@@ -476,7 +476,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
 //The on duplicate updates an existing record instead of adding a new one
 function insertTablePASR($products_id = null, $strAttributes = null, $quantity = null, $customid = null){
 	
-	global $db, $products_with_attributes_stock_class;
+	global $db;
 	// $stock = $products_with_attributes_stock_class;
 	$customid = addslashes($customid);
 	$customid = $this->nullDataEntry($customid);//sets proper quoting for input
@@ -601,8 +601,8 @@ function updateCustomIDAttrib($stockid = null, $customid = null){
 
 //Update  sku Title of Attribute using the StockID as a key
 function updateTitleAttrib($stockid = null, $skuTitle = null){
-	global $db, $products_with_attributes_class;
-	$stock = $products_with_attributes_stock_class;
+	global $db;
+	//$stock = $products_with_attributes_stock_class;
 	$skuTitle = addslashes($skuTitle);
 	$skuTitle = $this->nullDataEntry($skuTitle);//sets proper quoting for input
 

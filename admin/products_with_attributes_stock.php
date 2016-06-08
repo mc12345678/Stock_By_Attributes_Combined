@@ -13,10 +13,11 @@ $SBAversion = 'Version 1.5.4';
 //add required referenced files
 require('includes/application_top.php');
 require(DIR_WS_CLASSES . 'currencies.php');
-require(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
+//require(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
 
 //new object from class
-$stock = new products_with_attributes_stock;
+//$stock = new products_with_attributes_stock;
+$stock = $products_with_attributes_stock_class;
 
 //set language
 if (isset($_SESSION['languages_id'])) {

@@ -160,8 +160,8 @@ function couponpopupWindow(url) {
 	//include language file
 	include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
 	//new object from class
-	require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
-	$stock = new products_with_attributes_stock;
+  //require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
+  //$stock = new products_with_attributes_stock;
 	// END "Stock by Attributes"
 
     $decimals = $currencies->get_decimal_places($order->info['currency']);
@@ -187,7 +187,7 @@ function couponpopupWindow(url) {
             //create array for use in zen_get_customid
             $attributes[] = $order->products[$i]['attributes'][$j]['value_id'];//value_id option_id
             //get custom ID
-            $customid = ' ' . $stock->zen_get_customid($order->products[$i]['id'],$attributes) . ' ';
+            $customid = ' ' . $products_with_attributes_class->zen_get_customid($order->products[$i]['id'],$attributes) . ' ';
             //only display custom ID if exists
             if( !empty($customid) ){
               //add name prefix (this is set in the admin language file)
