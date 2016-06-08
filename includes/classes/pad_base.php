@@ -390,7 +390,8 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
         } else {
           $selected = 0;
         }
-    
+
+        // Want to hide this one if it is display only, Default, and sort order 0.
         $attributes[]=array('oid'=>$products_options_name->fields['products_options_id'],
                             'oname'=>$products_options_name->fields['products_options_name'],
                             'oimgstyle'=>$products_options_name->fields['products_options_images_style'], // rcloke

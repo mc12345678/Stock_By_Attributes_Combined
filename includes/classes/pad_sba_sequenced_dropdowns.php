@@ -273,6 +273,148 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 
 
 /*
+    Method: _build_attributes_array
+  
+    Build an array of the attributes for the product
+  
+    Parameters:
+  
+      $build_stocked        boolean   Flag indicating if stocked attributes should be built.
+      $build_nonstocked     boolean   Flag indicating if non-stocked attribute should be built.
+  
+    Returns:
+  
+      array:                Array of attributes for the product of the form:
+                              'oid'       => integer: products_options_id
+                              'oname'     => string:  products_options_name
+                              'ovals'     => array:   option values for the option id of the form
+                                             'id'    => integer:  products_options_values_id
+                                             'text'  => string:   products_options_values_name
+                              'default'   => integer: products_options_values_id that the product id
+                                                      contains for this option id and should be the
+                                                      default selection when this attribute is drawn.
+                                                      Set to zero if the product id did not contain
+                                                      this option. 
+  
+*/
+    function _build_attributes_array($build_stocked, $build_nonstocked) {
+      global $languages_id;
+      global $currencies;
+      global $cart;
+      global $db;
+    
+      if (!($build_stocked | $build_nonstocked)) return null;
+      
+      if ($build_stocked && $build_nonstocked) {
+        $stocked_where="";
+      }
+      elseif ($build_stocked) {
+        $stocked_where="and popt.products_options_track_stock = 1";
+      }
+      elseif ($build_nonstocked) {
+        $stocked_where="and popt.products_options_track_stock = 0";
+      }
+      
+      //LPAD - Return the string argument, left-padded with the specified string 
+      //example: LPAD(po.products_options_sort_order,11,"0") the field is 11 digits, and is left padded with 0
+      if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
+        $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+      } else {
+        $options_order_by= ' order by popt.products_options_name';
+      }
+//      $products_options_name_query = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_track_stock, popt.products_options_images_style, popt.products_options_type from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id = :products_id: and popt.products_options_id = patrib.options_id and popt.language_id = :languages_id: :stocked_where: order by popt.products_options_sort_order";
+      $products_options_name_query = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_track_stock, popt.products_options_images_style, popt.products_options_type from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id = :products_id: and popt.products_options_id = patrib.options_id and popt.language_id = :languages_id: :stocked_where:" . $options_order_by;
+
+      $products_options_name_query = $db->bindVars($products_options_name_query, ':products_id:', $this->products_id, 'integer');
+      $products_options_name_query = $db->bindVars($products_options_name_query, ':languages_id:', $_SESSION['languages_id'], 'integer');
+      $products_options_name_query = $db->bindVars($products_options_name_query, ':stocked_where:', $stocked_where, 'passthru');
+
+      $products_options_name = $db->Execute($products_options_name_query);
+
+      $attributes=array();
+
+      if (PRODUCTS_OPTIONS_SORT_BY_PRICE == '1') {
+        $order_by = ' order by LPAD(pa.products_options_sort_order,11,"0"), pov.products_options_values_name';
+      } else {
+        $order_by = ' order by LPAD(pa.products_options_sort_order,11,"0"), pa.options_values_price';
+      }
+		
+      while (!$products_options_name->EOF) {
+        $products_options_array = array();
+//        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: order by pa.products_options_sort_order";
+        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix, pa.attributes_display_only, pa.attributes_default, pa.products_options_sort_order from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: :order_by:";
+
+        $products_options_query = $db->bindVars($products_options_query, ':products_id:', $this->products_id, 'integer');
+        $products_options_query = $db->bindVars($products_options_query, ':languages_id:', $_SESSION['languages_id'], 'integer');
+        $products_options_query = $db->bindVars($products_options_query, ':products_options_id:', $products_options_name->fields['products_options_id'], 'integer');
+        $products_options_query = $db->bindVars($products_options_query, ':order_by:', $order_by, 'passthru');
+
+        $products_options = $db->Execute($products_options_query);
+   
+    
+        while (!$products_options->EOF) {
+
+          if (!($products_options->fields['attributes_display_only'] && $products_options->fields['attributes_default'] && $products_options->fields['products_options_sort_order'] == 0)) {
+
+            /**** AGF - add logic to format colours ******/
+            $value_name = $products_options->fields['products_options_values_name'] ;
+
+            //if ( $products_options_name['products_options_name'] = 'Color' ) {
+            // $value_name="<span class=\"col" . $value_name . "\">" . $value_name . "</span>";
+//}
+            $products_options_array[] = array('id' => $products_options->fields['products_options_values_id'], 'text' => $value_name);
+
+            /**** AGF - end of new logic ******/
+
+            // AGF commented out +/- amount to show actual price
+            if ($products_options->fields['options_values_price'] != '0') {
+              $products_options_array[sizeof($products_options_array)-1]['text'] .= /* mc12345678 This TEXT is actually a defined variable and should be used here instead */ ' (' . $products_options->fields['price_prefix'] . $currencies->display_price($products_options->fields['options_values_price'], zen_get_tax_rate($this->products_tax_class_id)) .')' /* mc12345678 This TEXT is actually a defined variable and should be used here instead */;
+            }
+
+            /// Start of Changes- display actual prices instead of +/- Actual Price Pull Down v1.2.3a
+            $new_price ? $original_price = $new_price : $original_price = $this->products_original_price; //// check if set special price note $this variable
+
+            $option_price = $products_options->fields['options_values_price'];
+            if ($products_options->fields['price_prefix'] == "-") // in case price lowers, don't add values, subtract.
+            {
+              $show_price = 0.0 + $original_price - $option_price; // force float (in case) using the 0.0;
+            } else {
+              $show_price = 0.0 + $original_price + $option_price; // force float (in case) using the 0.0;
+            }
+            //  if ($products_options['options_values_price'] != '0') 
+            {
+              $products_options_array[sizeof($products_options_array)-1]['text'] .= ' '; // note $this variable //HW: THIS WAS BROKEN - tax class ID was being used as the tax rate.. so a fixed 8 percent in my case.
+            }
+            // End Of MOD 
+          }
+          $products_options->MoveNext();      
+        }
+
+        if (isset($_GET['products_id']) && zen_not_null($_GET['products_id']) && isset($_SESSION['cart']->contents[$_GET['products_id']]['attributes'][$products_options_name->fields['products_options_id']])) {
+          $selected = $_SESSION['cart']->contents[$_GET['products_id']]['attributes'][$products_options_name->fields['products_options_id']];
+        } else {
+          $selected = 0;
+        }
+    
+        if (sizeof($products_options_array) > 0) {
+          $attributes[]=array('oid'=>$products_options_name->fields['products_options_id'],
+                              'oname'=>$products_options_name->fields['products_options_name'],
+                              'oimgstyle'=>$products_options_name->fields['products_options_images_style'], // rcloke
+                              'ovals'=>$products_options_array,
+                              'otype'=>$products_options_name->fields['products_options_type'],
+                              'default'=>$selected);
+        }
+        $products_options_name->MoveNext();
+      }
+      
+      return $attributes;
+
+   
+      
+    }
+
+
+/*
     Method: _draw_nonstocked_attributes
   
     Draws the product attributes that stock is not tracked for.
