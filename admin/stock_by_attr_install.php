@@ -636,7 +636,7 @@ function insertSBAproductsOptionsTypes(){
 
 		$sql = "SELECT `products_options_types_id` FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " 
 		WHERE `products_options_types_name` = 'SBA Select List (Dropdown) Basic'; ";
-		$result = $db->Execute($sql);
+		$result = $db->Execute($sql, false, false, 0, true);
 
 		if (!$result->EOF && $result->RecordCount() >= 1) {
 			array_push($resultMmessage, '<br /><b>Obtaining</b> current products_options_types: ');
@@ -648,7 +648,7 @@ function insertSBAproductsOptionsTypes(){
 			$sql = "SELECT pot.products_options_types_id, pot.products_options_types_name
 			FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " pot	
 			order by pot.products_options_types_id desc limit 1";
-			$result = $db->Execute($sql);
+			$result = $db->Execute($sql, false, false, 0, true);
 			$resultGID = $result->fields['products_options_types_id'] + 1;
 
 			array_push($resultMmessage, '<br /><b>Adding</b> to products_options_types: ');
@@ -656,7 +656,7 @@ function insertSBAproductsOptionsTypes(){
 			`products_options_types_name`) 
 			VALUES (".$resultGID.", 'SBA Select List (Dropdown) Basic');";
 
-			$db->Execute($sql);
+			$db->Execute($sql, false, false, 0, true);
 
 			if($db->error){
 				$msg = ' Error Message: ' . $db->error;
@@ -675,7 +675,7 @@ function insertSBAproductsOptionsTypes(){
 		 'Numeric value of the radio button product option type',
 		 '6', 0, now(), NULL, NULL);";
 
-		$db->Execute($sql);
+		$db->Execute($sql, false, false, 0, true);
 
 		if($db->error){
 			$msg = ' Error Message: ' . $db->error;
