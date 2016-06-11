@@ -621,9 +621,11 @@ function insertSBAproductsOptionsTypes(){
 	array_push($resultMmessage, '<br /><b>Verifiying</b> products_options_types: ');
 
 	if (!defined('PRODUCTS_OPTIONS_TYPE_SELECT_SBA')) {
+	  $products_options_types_name = 'SBA Select List (Dropdown) Basic';
 
-		$sql = "SELECT `products_options_types_id` FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " 
-		WHERE `products_options_types_name` = 'SBA Select List (Dropdown) Basic'; ";
+		$sql = "SELECT products_options_types_id FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " 
+		WHERE products_options_types_name = :products_options_types_name:";
+		$sql = $db->bindVars($sql, ':products_options_types_name:', $products_options_types_name, 'string');
 		$result = $db->Execute($sql, false, false, 0, true);
 
 		if (!$result->EOF && $result->RecordCount() >= 1) {
@@ -633,16 +635,18 @@ function insertSBAproductsOptionsTypes(){
 			array_push($resultMmessage, '<br /><b>Finding</b> highest products_options_types value: ');
 			//get current max sort number used, then add 1 to it.
 			//this will place the new entries at the bottom of the list
-			$sql = "SELECT pot.products_options_types_id, pot.products_options_types_name
-			FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " pot	
-			order by pot.products_options_types_id desc limit 1";
+			$sql = "SELECT products_options_types_id, products_options_types_name
+			FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " 	
+			ORDER BY products_options_types_id DESC LIMIT 1";
 			$result = $db->Execute($sql, false, false, 0, true);
 			$resultGID = $result->fields['products_options_types_id'] + 1;
 
 			array_push($resultMmessage, '<br /><b>Adding</b> to products_options_types: ');
-			$sql = "INSERT INTO " . TABLE_PRODUCTS_OPTIONS_TYPES . " (`products_options_types_id`, 
-			`products_options_types_name`) 
-			VALUES (".$resultGID.", 'SBA Select List (Dropdown) Basic');";
+			$sql = "INSERT INTO " . TABLE_PRODUCTS_OPTIONS_TYPES . " (products_options_types_id, 
+			products_options_types_name) 
+			VALUES (:resultGID:, :products_options_types_name:)";
+			$sql = $db->bindVars($sql, ':resultGID:', $resultGID, 'integer');
+			$sql = $db->bindVars($sql, ':products_options_types_name:', $products_options_types_name, 'string');
 
 			$db->Execute($sql, false, false, 0, true);
 
@@ -650,7 +654,7 @@ function insertSBAproductsOptionsTypes(){
 				$msg = ' Error Message: ' . $db->error;
 				$failed = true;
 			}
-			array_push($resultMmessage, '&bull; Inserted into products_options_types "SBA Select List (Dropdown) Basic". ' . $msg);
+			array_push($resultMmessage, '&bull; Inserted into products_options_types "' . $products_options_types_name . '". ' . $msg);
 
 		}
 
@@ -659,9 +663,11 @@ function insertSBAproductsOptionsTypes(){
 		$sql = "INSERT INTO " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value,
 		configuration_description, configuration_group_id, sort_order, date_added, use_function, set_function)
 		VALUES
-		('Selection list product option type (SBA)', 'PRODUCTS_OPTIONS_TYPE_SELECT_SBA', ".$resultGID.", 
-		 'Numeric value of the radio button product option type',
-		 '6', 0, now(), NULL, NULL);";
+		('Selection list product option type (SBA)', 'PRODUCTS_OPTIONS_TYPE_SELECT_SBA', :products_options_types_id:, 
+		 'Numeric value of the :products_options_types_name:',
+		 6, 0, NOW(), NULL, NULL)";
+		$sql = $db->bindVars($sql, ':products_options_types_id:', $resultGID, 'integer');
+		$sql = $db->bindVars($sql, ':products_options_types_name:', $products_options_types_name, 'noquotestring');
 
 		$db->Execute($sql, false, false, 0, true);
 
