@@ -48,12 +48,12 @@
     // Added to allow individual stock of different attributes
       unset($attributes);
       if(is_array($products[$i]['attributes'])){
-        $inSBA_query = "select stock_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :productsid:";
+/*        $inSBA_query = "select stock_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :productsid:";
         $inSBA_query = $db->bindVars($inSBA_query, ':productsid:', $products[$i]['id'], 'integer');
         
-        $inSBA_result = $db->Execute($inSBA_query);
+        $inSBA_result = $db->Execute($inSBA_query);*/
 
-        if (sizeof($inSBA_result) > 0 && zen_not_null($inSBA_result)) {
+        if (zen_product_is_sba($products[$i]['id'])) {
           $attributes = $products[$i]['attributes'];
         } else {
           $attributes = null; //Force normal operation if the product is not monitored by SBA.
