@@ -513,6 +513,8 @@ if ($_POST['image_delete'] == 1) {
         {
           $attribute_id = zen_db_prepare_input($_POST['delete_attribute_id']);
 
+          $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE', array('attribute_id' => $attribute_id), $attribute_id);
+
           $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES . "
                       where products_attributes_id = '" . (int)$attribute_id . "'");
 
@@ -520,14 +522,6 @@ if ($_POST['image_delete'] == 1) {
           $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD . "
                       where products_attributes_id = '" . (int)$attribute_id . "'");
 
-  /* START STOCK BY ATTRIBUTES */
-          $stock_ids = zen_get_sba_ids_from_attribute($attribute_id);
-          if (sizeof($stock_ids) > 0) {
-            $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
-                      where stock_id in (" . implode(',', $stock_ids) . ")");
-          }
-  /* END STOCK BY ATTRIBUTES */
-          
         // reset products_price_sorter for searches etc.
           zen_update_products_price_sorter($products_filter);
 
@@ -548,20 +542,16 @@ if ($_POST['image_delete'] == 1) {
         break;
 
       case 'delete_option_name_values':
+  /* START STOCK BY ATTRIBUTES */
+        $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES', array('pID' => $_POST['products_filter'], 'options_id' => $_POST['products_options_id_all']));
+/* END STOCK BY ATTRIBUTES */
+
         $delete_attributes_options_id = $db->Execute("select * from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $_POST['products_filter'] . "' and options_id='" . $_POST['products_options_id_all'] . "'");
         while (!$delete_attributes_options_id->EOF) {
 // remove any attached downloads
           $remove_downloads = $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD . " where products_attributes_id= '" . $delete_attributes_options_id->fields['products_attributes_id'] . "'");
 // remove all option values
           $delete_attributes_options_id_values = $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $_POST['products_filter'] . "' and options_id='" . $_POST['products_options_id_all'] . "'");
-
-  /* START STOCK BY ATTRIBUTES */
-          $stock_ids = zen_get_sba_ids_from_attribute($delete_attributes_options_id->fields['products_attributes_id']);
-          if(sizeof($stock_ids) > 0) {
-            $delete_attributes_stock_options_id_values = $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id='" . $_POST['products_filter'] . "' and stock_id in (" . implode(',', $stock_ids) . ")");
-          }
-/* END STOCK BY ATTRIBUTES */
-          
           $delete_attributes_options_id->MoveNext();
         }
 
