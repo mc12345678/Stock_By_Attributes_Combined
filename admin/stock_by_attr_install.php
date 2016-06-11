@@ -415,40 +415,28 @@ function removeSBAadminPages(){
 	$msg = null;
 	array_push($resultMmessage, '<br /><b>Clean-Up</b>, Removing from admin_pages: ');
 	
-	$pages = array('productsWithAttributesStock', 'productsWithAttributesStockSetup', 'productsWithAttributesStock');
+	$pages = array('productsWithAttributesStock', 'productsWithAttributesStockSetup', 'productsWithAttributesStockAjax');
 	
 	if (function_exists('zen_deregister_admin_pages')) 
 	{
 	  zen_deregister_admin_pages($pages);
+    foreach ($pages as $key=>$page) 
+    {
+      array_push($resultMmessage, '&bull; Deleted ' . $pages[$key]);
+    }
 	} else 
 	{
-	  $sql = "DELETE FROM `".TABLE_ADMIN_PAGES."` WHERE page_key = :page_key:";
-	  $sql = $db->bindVars($sql, ':page_key:', $pages[0], 'string');
-	  $db->Execute($sql);
-	  zen_record_admin_activity('Deleted admin pages for page keys: ' . print_r($pages[0], true), 'warning');
+    foreach ($pages as $key=>$page) {
+  	  $sql = "DELETE FROM `".TABLE_ADMIN_PAGES."` WHERE page_key = :page_key:";
+  	  $sql = $db->bindVars($sql, ':page_key:', $pages[$key], 'string');
+	    $db->Execute($sql);
+	    zen_record_admin_activity('Deleted admin pages for page keys: ' . print_r($pages[$key], true), 'warning');
+    	if($db->error){
+		    $msg = ' Error Message: ' . $db->error;
+    	}
+    	array_push($resultMmessage, '&bull; Deleted ' . $pages[$key] . ' ' . $msg);
+    }
 	}
-	if($db->error){
-		$msg = ' Error Message: ' . $db->error;
-	}
-	array_push($resultMmessage, '&bull; Deleted productsWithAttributesStock ' . $msg);
-
-	/*
-	 DELETE FROM admin_pages  WHERE  page_key = 'productsWithAttributesStockSetup';
-	*/
-	if (function_exists('zen_deregister_admin_pages'))
-	{
-	  // Do nothing, because all were deleted above.
-	} else
-	{
-	  $sql = "DELETE FROM `".TABLE_ADMIN_PAGES."` WHERE page_key = :page_key:";
-	  $sql = $db->bindVars($sql, ':page_key:', $pages[1], 'string');
-	  $db->Execute($sql);
-	  zen_record_admin_activity('Deleted admin pages for page keys: ' . print_r($pages[1], true), 'warning');
-	}
-	if($db->error){
-		$msg = ' Error Message: ' . $db->error;
-	}
-	array_push($resultMmessage, '&bull; Deleted productsWithAttributesStockSetup ' . $msg);
 	
 	return;
 }
