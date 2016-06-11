@@ -2166,6 +2166,7 @@ function instructionsSelectionOptions(){
 				<li>Removal</li>
 					<ul>
 				    <li>Remove All from DB - Removes above changes from the database (DB).</li>
+				    <li>Remove Configuration Settings - Removes the configuration settings from the database but leaves the SBA data table intact.  This supports removing all options added to the program in preparation of performing an install/upgrade to push the configuration settings back to the database.</li>
 				    </ul>
 
 				<li>Optional SQL Scripts</li>
@@ -2373,6 +2374,9 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
 			<optgroup label="Installation">
  			<option value="installAll">Full/Upgrade DB Install</option>
 						
+      <optgroup label="Remove Seetings">
+      <option value="removeSettings">Remove Configuration Settings</option>
+
 			<optgroup label="Removal">
 	 		<option value="removeAll">Remove All from DB</option>
 			
@@ -2430,6 +2434,14 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
 		//Test for proper New file placement
 		checkSBAfileLocation();//Call to check for proper placement of New files	
 		echo showScriptResult('Full Install');//show script result
+	}
+	elseif($action == 'removeSettings'){
+	  removeSBAconfiguration();  // Call function to remove configuration entries.
+	  removeSBAadminPages(); // Call function to remove admin pages entry
+	  removeDynDropdownsConfiguration();
+	  removeDynDropdownsAdminPages();
+	  echo removeSBAfiles(); // show instructions for file removal/reversion to previous state
+	  echo showScriptResult('Remove Configuration Settings')
 	}
 	elseif($action == 'removeAll'){
 		//Clean-up functions to remove database entries
