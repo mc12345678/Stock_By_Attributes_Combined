@@ -39,7 +39,7 @@ if (isset($_SESSION['languages_id'])) {
 
 //action
 if (isset($_GET['action']) && zen_not_null($_GET['action'])) {
-  $action = addslashes(trim($_GET['action']));
+  $action = zen_db_input(trim($_GET['action']));
 } else {
   $action = null;
 }
