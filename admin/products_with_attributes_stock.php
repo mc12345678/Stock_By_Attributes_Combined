@@ -378,7 +378,7 @@ switch ($action) {
       $messageStack->add_session("Product $products_id update failed: $saveResult", 'failure');
     }
 
-    zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $products_id, $request_type));
+    zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . (int)$products_id, $request_type));
 
     break;
 
