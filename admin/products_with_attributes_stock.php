@@ -610,12 +610,11 @@ require(DIR_WS_INCLUDES . 'header.php');
           ?><p>If using "<strong>All - Attributes - Combo</strong>" there must be TWO (or more) attribute groups selected (i.e., Color and Size)
 <hr>
 If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not be saved.<br /><?php echo PWA_SKU_TITLE; ?> should be unique for each attribute and combination.<br />
-                  <strong><?php echo PWA_SKU_TITLE; ?>:</strong> <?php echo zen_draw_input_field('skuTitle'); ?></p>
-<?php
-          echo '<hr>';
+                  <strong><?php echo PWA_SKU_TITLE; ?>:</strong> <?php echo zen_draw_input_field('skuTitle'); ?>
+<hr><?php
 
           echo 'The ' . PWA_CUSTOM_ID . ' will not be saved if <strong>"ALL"</strong> is selected.<br />' . PWA_CUSTOM_ID . ' must be unique for each attribute / combination.<br />
-                  <strong>' . PWA_CUSTOM_ID . ':</strong> ' . zen_draw_input_field('customid') . '</p>' . "\n";
+                  <strong>' . PWA_CUSTOM_ID . ':</strong> ' . zen_draw_input_field('customid') . /*'</p>' .*/ "\n";
           echo '<hr>';
 
           if (count($product_attributes) > 1) {
@@ -680,7 +679,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     break;
 
   case 'confirm':
-    echo '<h3>Confirm ' . $product_name . '</h3>';
+    ?><h3>Confirm <?php echo $product_name; ?></h3><?php 
 
     foreach ($attributes_list as $attributes) {
       echo '<p><strong>' . $attributes['option'] . ': </strong>' . $attributes['value'] . '</p>';
@@ -697,8 +696,8 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
 
   default:
     //return to page (previous edit) data
-    echo '<h4>Stock By Attribute (SBA) Stock Page ' . $SBAversion . '</h4>';
-    echo '<h4><a title="Shortcut to the Stock By Attributtes setup page" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP, '', $request_type) . '">SBA Setup Link</a></h4>';
+    ?><h4>Stock By Attribute (SBA) Stock Page <?php echo $SBAversion; ?></h4>
+    <h4><a title="Shortcut to the Stock By Attributtes setup page" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP, '', $request_type); ?>">SBA Setup Link</a></h4><?php
 
     $seachPID = null;
     $seachBox = null;
