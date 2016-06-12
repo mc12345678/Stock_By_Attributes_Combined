@@ -2374,7 +2374,7 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
 			<optgroup label="Installation">
  			<option value="installAll">Full/Upgrade DB Install</option>
 						
-      <optgroup label="Remove Seetings">
+      <optgroup label="Remove Settings">
       <option value="removeSettings">Remove Configuration Settings</option>
 
 			<optgroup label="Removal">
@@ -2441,7 +2441,7 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
 	  removeDynDropdownsConfiguration();
 	  removeDynDropdownsAdminPages();
 	  echo removeSBAfiles(); // show instructions for file removal/reversion to previous state
-	  echo showScriptResult('Remove Configuration Settings')
+	  echo showScriptResult('Remove Configuration Settings');
 	}
 	elseif($action == 'removeAll'){
 		//Clean-up functions to remove database entries
