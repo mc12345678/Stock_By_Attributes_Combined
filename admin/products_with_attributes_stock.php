@@ -225,9 +225,8 @@ switch ($action) {
         $arrTemp = preg_split("/\,/", $attributes);
         $arrMain = array();
         $intCount = 0;
-        $arrTempCount = sizeof($arrTemp);
 
-        for ($i = 0; $i < $arrTempCount; $i++) {
+        for ($i = 0, $arrTempCount = sizeof($arrTemp); $i < $arrTempCount; $i++) {
           //explode array on |
           $arrTemp1 = preg_split("/\|/", $arrTemp[$i]);
           $arrMain[] = $arrTemp1;
@@ -244,19 +243,16 @@ switch ($action) {
         if ($intVars >= 1) {
           $a = 0;
           while ($a <= $intVars) {
-            $arrMainSize = sizeof($arrMain[$a]);
-
             //adds each attribute (no combinations)
-            for ($i = 0; $i < $arrMainSize; $i++) {
+            for ($i = 0, $arrMainSize = sizeof($arrMain[$a]); $i < $arrMainSize; $i++) {
               $arrNew[] = array($arrMain[$a][$i]);
             }
             $a++;
           }
-          $arrNewSize = sizeof($arrNew);
 
           //loop through the list of variables / attributes
           //add each one to the database
-          for ($i = 0; $i < $arrNewSize; $i++) {
+          for ($i = 0, $arrNewSize = sizeof($arrNew); $i < $arrNewSize; $i++) {
             //used to add multi attribute combinations at one time
             $strAttributes = implode(",", $arrNew[$i]);
             $productAttributeCombo = $products_id . '-' . str_replace(',', '-', $strAttributes);
@@ -268,9 +264,8 @@ switch ($action) {
         $arrTemp = preg_split("/\,/", $attributes);
         $arrMain = array();
         $intCount = 0;
-        $arrTempSize = sizeof($arrTemp);
 
-        for ($i = 0; $i < $arrTempSize; $i++) {
+        for ($i = 0, $arrTempSize = sizeof($arrTemp); $i < $arrTempSize; $i++) {
           //explode array on ;
           $arrTemp1 = preg_split("/\;/", $arrTemp[$i]);
           $arrMain[] = $arrTemp1;
@@ -338,11 +333,10 @@ switch ($action) {
           }
 
           } */
-        $arrNewSize = sizeof($arrNew);
 
         //loop through the list of variables / attributes
         //add each one to the database
-        for ($i = 0; $i < $arrNewSize; $i++) {
+        for ($i = 0, $arrNewSize = sizeof($arrNew); $i < $arrNewSize; $i++) {
           //used to add multi attribute combinations at one time
           sort($arrNew[$i]); // Ensures that values are in order prior to imploding
           $strAttributes = implode(",", $arrNew[$i]);
