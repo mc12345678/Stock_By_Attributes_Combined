@@ -457,7 +457,7 @@ switch ($action) {
              LEFT JOIN " . TABLE_PRODUCTS_OPTIONS . " po on (po.products_options_id = pa.options_id) 
              WHERE pa.products_attributes_id in (:stock_attributes:)
              " . $options_order_by; // ORDER BY po.products_options_sort_order ASC, pov.products_options_values_sort_order ASC;"; // pov.products_options_values_sort_order ASC";
-      $sort_query = $db->bindVars($sort_query, ':stock_attributes', $sql->fields['stock_attributes'], 'noquotestring')
+      $sort_query = $db->bindVars($sort_query, ':stock_attributes:', $sql->fields['stock_attributes'], 'noquotestring');
       $sort = $db->Execute($sort_query);
       if ($sort->RecordCount() > 1) {
         $skip_update = true;
