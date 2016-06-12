@@ -737,13 +737,13 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
                 WHERE d.language_id = ' . $language_id . '
                 order by products_model'; //order by may be changed to: products_id, products_model, products_name
 
-      echo '<form method="get" action="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', $request_type) . '" name="pwas-search">Product Selection List:';
+      echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'get', '', true) . "Product Selection List:";
       echo $searchList = $stock->selectItemID(TABLE_PRODUCTS_ATTRIBUTES, 'pa.products_id', $seachPID, $searchList, 'seachPID', 'seachPID', 'selectSBAlist');
       echo '<input type="submit" value="Search" name="pwas-search-button"/></form>';
     }
 
     echo '<div id="hugo1" style="background-color: green; padding: 2px 10px;"></div>';
-    echo '<form method="get" action="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', $request_type) . '" id="pwas-search" name="pwas-search">Search:  <input id="pwas-filter" type="text" name="search" value="' . $seachBox . '" /><input type="submit" value="Search" id="pwas-search-button" name="pwas-search-button"/></form><span style="margin-right:10px;">&nbsp;</span>';
+    echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'get', 'id="pwas-search"', true) . 'Search:  <input id="pwas-filter" type="text" name="search" value="' . $seachBox . '" /><input type="submit" value="Search" id="pwas-search-button" name="pwas-search-button"/></form><span style="margin-right:10px;">&nbsp;</span>';
     echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', $request_type) . '">Reset</a><span style="margin-right:10px;">&nbsp;</span><a title="Sets sort value for all attributes to match value in the Option Values Manager" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=auto_sort', $request_type) . '">Sort</a>';
     echo '<span style="margin-right:20px;color:red;">&nbsp;&nbsp;&nbsp;&nbsp;' . $SBAsearchbox . '</span>'; //set a option in configuration table
     echo '<span id="loading" style="display: none;"><img src="./images/loading.gif" alt="" /> Loading...</span><hr />';
