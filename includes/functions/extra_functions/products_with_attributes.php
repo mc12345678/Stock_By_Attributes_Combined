@@ -783,7 +783,7 @@ Of the attributes provided, determine the number of those attributes that are
     if (sizeof($compArray) > 0) {
 //      $attribute_list = $compArray; // + $attribute_list /*+ $compArray*/;
       if ($how == 'add' && $how != 'addNoText') {
-        if (is_array($attribute_list) && sizeof($attribute_list) > 0) {
+        if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
           $attribute_list = $attribute_list + $compArray;
         } else {
           $attribute_list = $compArray;
@@ -791,7 +791,7 @@ Of the attributes provided, determine the number of those attributes that are
       } elseif ($how == 'update') {
         $attribute_list = $compArray;
       } else {
-        if (is_array($attribute_list) && sizeof($attribute_list) > 0) {
+        if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
           $attribute_list = $compArray + $attribute_list;
         } else {
           $attribute_list = $compArray;
