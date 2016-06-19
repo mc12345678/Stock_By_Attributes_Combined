@@ -460,7 +460,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
           $prod_qty[0] = 0;
           $grid_add_number = 0;
         }
-  } elseif ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) : true)) {
+  }
+  elseif ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) : true))
+  {
       if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
       // Product has grid layout but is not tracked by SBA.
         $grid_prod_id[0] = null;
