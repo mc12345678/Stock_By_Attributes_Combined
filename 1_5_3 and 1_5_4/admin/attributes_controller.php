@@ -800,7 +800,11 @@ if ($action == 'attributes_preview') {
 <?php                  echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter) . '">' . zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA) . '<br />' . TEXT_SBA_EDIT . '</a>';
 ?>            <?php
             } else {
-              echo TEXT_NO_SBA_EDIT;
+              if (zen_has_product_attributes($products_filter, 'false')) {
+                echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter) . '">' . zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA) . '<br />' . TEXT_NO_SBA_EDIT . '</a>';
+              } else {
+                echo TEXT_NO_SBA_EDIT;
+              }
             }
             ?>
             </td><!-- End SBA -->
