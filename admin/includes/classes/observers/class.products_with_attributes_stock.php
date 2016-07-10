@@ -168,6 +168,9 @@ class products_with_attributes_stock_admin extends base {
   function updateNotifyAttributeControllerDeleteAll(&$callingClass, $notifier, $paramsArray) {
     // , array('pID' => $_POST['products_filter']));
     $pID = $paramsArray['pID'];
+
+    $db->Execute("DELETE IGNORE FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
+         WHERE products_id = " . (int)$pID);
     
   }
   
