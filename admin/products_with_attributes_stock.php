@@ -732,12 +732,12 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
 
     if (STOCK_SBA_SEARCHLIST == 'true') {
       //Product Selection Listing at top of page
-      $searchList = 'select distinct pa.products_id, d.products_name,
+      $searchList = 'select distinct pa.products_id, pd.products_name,
                  p.products_model
                    FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
-                  left join ' . TABLE_PRODUCTS_DESCRIPTION . ' d on (pa.products_id = d.products_id)
+                  left join ' . TABLE_PRODUCTS_DESCRIPTION . ' pd on (pa.products_id = pd.products_id)
                   left join ' . TABLE_PRODUCTS . ' p on (pa.products_id = p.products_id)
-                WHERE d.language_id = ' . $language_id . '
+                WHERE pd.language_id = ' . $language_id . '
                 order by products_model'; //order by may be changed to: products_id, products_model, products_name
 
       echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'get', '', true) . "Product Selection List:";
