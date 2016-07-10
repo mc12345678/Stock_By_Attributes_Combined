@@ -705,9 +705,13 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       $seachPID = doubleval(trim($_GET['updateReturnedPID']));
       $seachBox = doubleval(trim($_GET['updateReturnedPID']));
     } elseif (isset($_GET['search']) || isset($_POST['search'])) {
-      $seachBox = (trim($_GET['search']));
-      if (is_numeric($seachBox)) {
-        $seachPID = doubleval(trim($_GET['search']));
+      $seachBox = trim($_GET['search']);
+      $s = zen_db_input($seachBox);
+      $w = " AND ( p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '$s%' ) ";
+      $query_products = "select distinct pa.products_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_DESCRIPTION . " d, " . TABLE_PRODUCTS . " p WHERE d.language_id='" . $language_id . "' and pa.products_id = d.products_id and pa.products_id = p.products_id " . $w . " order by d.products_name " . $SearchRange . "";
+      $products_answer = $db->Execute($query_products);
+      if (!$products_answer->EOF && $products_answer->RecordCount() == 1 ) {
+        $seachPID = $products_answer->fields['products_id'];
       }
     } elseif (isset($_GET['seachPID'])) {
       $seachPID = doubleval(trim($_GET['seachPID']));
@@ -742,7 +746,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     }
 
     echo '<div id="hugo1" style="background-color: green; padding: 2px 10px;"></div>';
-    echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'get', 'id="pwas-search"', true) . 'Search:  <input id="pwas-filter" type="text" name="search" value="' . $seachBox . '" /><input type="submit" value="Search" id="pwas-search-button" name="pwas-search-button"/></form><span style="margin-right:10px;">&nbsp;</span>';
+    echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'get', 'id="pwas-search2"', true) . 'Search:  <input id="pwas-filter" type="text" name="search" value="' . $seachBox . '" /><input type="submit" value="Search" id="pwas-search-button" name="pwas-search-button"/></form><span style="margin-right:10px;">&nbsp;</span>';
     echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', $request_type) . '">Reset</a><span style="margin-right:10px;">&nbsp;</span><a title="Sets sort value for all attributes to match value in the Option Values Manager" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=auto_sort', $request_type) . '">Sort</a>';
     echo '<span style="margin-right:20px;color:red;">&nbsp;&nbsp;&nbsp;&nbsp;' . $SBAsearchbox . '</span>'; //set a option in configuration table
     echo '<span id="loading" style="display: none;"><img src="./images/loading.gif" alt="" /> Loading...</span><hr />';
