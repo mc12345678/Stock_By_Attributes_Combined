@@ -804,6 +804,8 @@ if ($action == 'attributes_preview') {
                 echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter) . '">' . zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA) . '<br />' . TEXT_NO_SBA_EDIT . '</a>';
               } else {
                 echo TEXT_NO_SBA_EDIT;
+                echo '<br />';
+                echo TEXT_NO_ATTRIBUTES_DEFINED . $products_filter;
               }
             }
             ?>
