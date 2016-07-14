@@ -54,6 +54,7 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT'; // keep
+    $attachNotifier[] = 'NOTIFY_HEADER_END_SHOPPING_CART';
 
   
     $this->attach($this, $attachNotifier);
@@ -630,7 +631,116 @@ class products_with_attributes_stock extends base {
 
     }
   } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
+
+  // NOTIFY_HEADER_END_SHOPPING_CART
+  function updateNotifyHeaderEndShoppingCart(&$callingClass, $notifier, $paramsArray) {
+    global $productArray, $db;
+
+    for ($i = 0, $n = sizeof($productArray); $i < $n; $i++) {
+      if (isset($productArray[$i]['attributes']) && is_array($productArray[$i]['attributes']) && sizeof($productArray[$i]['attributes']) > 0) {
+        $productArray[$i]['attributeImage'] = array();
+
+  // Need to collect all of the option ids that are associated with the
+  // product, then sort them by the normal sort order in reverse.
+
+        /*
+         *        $sql = "select distinct pov.products_options_values_id,
+                        pov.products_options_values_name,
+                        pa.*, p.products_quantity,
+                      " . ($this->_products_options_names_count <= 1 ? " pas.stock_id as pasid, pas.quantity as pasqty, pas.sort,  pas.customid, pas.title, pas.product_attribute_combo, pas.stock_attributes, " : "") . " pas.products_id
+
+                from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
+                left join " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov on (pa.options_values_id = pov.products_options_values_id)
+                left join " . TABLE_PRODUCTS . " p on (pa.products_id = p.products_id)
+
+                left join " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pas on
+                (p.products_id = pas.products_id and FIND_IN_SET(pa.products_attributes_id, pas.stock_attributes) > 0 )
+            where pa.products_id = :products_id:
+            and       pa.options_id = :options_id:
+            and       pov.language_id = :languages_id: " .
+              $order_by;
+
+       $sql = $db->bindVars($sql, ':products_id:', $_GET['products_id'], 'integer');
+       $sql = $db->bindVars($sql, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
+       $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+
+       $products_options = $db->Execute($sql);
+
+         */
+
+        //LPAD - Return the string argument, left-padded with the specified string
+        //example: LPAD(po.products_options_sort_order,11,"0") the field is 11 digits, and is left padded with 0
+        if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
+          $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+        } else {
+          $options_order_by= ' order by popt.products_options_name';
+        }
+
+        //get the option/attribute list
+        $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
+                              popt.products_options_type, popt.products_options_length, popt.products_options_comment,
+                              popt.products_options_size,
+                              popt.products_options_images_per_row,
+                              popt.products_options_images_style,
+                              popt.products_options_rows
+              from        " . TABLE_PRODUCTS_OPTIONS . " popt
+              left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
+              where patrib.products_id= :products_id:
+              and popt.language_id = :languages_id: " .
+            $options_order_by;
+
+        $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
+        $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+        $products_options_names = $db->Execute($sql);
+
+        while (!$products_options_names->EOF) {
+          $sql = "select distinct pa.attributes_image
+                  from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
+                  where     pa.products_id = :products_id:
+                  and       pa.options_id = :options_id:
+                  and       pa.options_values_id = :options_values_id:" .
+              $order_by;
+
+          $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
+          $sql = $db->bindVars($sql, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
+          $sql = $db->bindVars($sql, ':options_values_id:', $productArray[$i]['attributes'][$products_options_names->fields['products_options_id']]['options_values_id'], 'integer');
+
+          $attribute_image = $db->Execute($sql);
+
+          if (!$attribute_image->EOF && $attribute_image->RecordCount() > 0 && zen_not_null($attribute_image->fields['attributes_image'])) {
+            $productArray[$i]['attributeImage'][] = $attribute_image->fields['attributes_image'];
+          }
+          $products_options_names->MoveNext();
+        }
+        if (sizeof($productArray[$i]['attributeImage']) > 0) {
+          $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][sizeof($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');;
+        }
+        unset($productArray[$i]['attributeImage']);
+
+  /*      foreach ($productArray[$i]['attributes'] as $opt_id=>$opt_array) {
+          $sql = "select distinct pa.attributes_image
+                  from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
+                  where     pa.products_id = :products_id:
+                  and       pa.options_id = :options_id:
+                  and       pa.options_values_id = :options_values_id:" .
+              $order_by;
   
+          $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
+          $sql = $db->bindVars($sql, ':options_id:', $opt_id, 'integer');
+          $sql = $db->bindVars($sql, ':options_values_id:', $opt_array['options_values_id'], 'integer');
+
+          $attribute_image = $db->Execute($sql);
+          if (!$attribute_image->EOF && $attribute_image->RecordCount() > 0 && zen_not_null($attribute_image->fields['attributes_image'])) {
+            $productArray[$i]['attributeImage'][] = $attribute_image->fields['attributes_image'];
+          }
+        }
+        if (sizeof($productArray[$i]['attributeImage']) > 0) {
+          $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][sizeof($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');;
+        }
+        unset($productArray[$i]['attributeImage']); */
+      }
+    }
+  }
   
   /*
    * Generic function that is activated when any notifier identified in the observer is called but is not found in one of the above previous specific update functions is encountered as a notifier.
