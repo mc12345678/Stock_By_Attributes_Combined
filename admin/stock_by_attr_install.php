@@ -2262,7 +2262,7 @@ $output = '<pre>
 	--			To: zen_products_options_values.
 
 	-- New version of insert script to support on duplicate entries
-	-- Paste the following into \'SQL Query Executor\' (Tools\Install SQL Patches).					
+  -- Paste the following into \'SQL Query Executor\' (Tools\Install SQL Patches).
 
 								
 	------------------------------------------------------------------------------------------------------
