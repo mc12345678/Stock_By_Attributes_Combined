@@ -171,68 +171,8 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
   if (STOCK_CHECK == 'true') {
     $flagStockCheck = zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes);
  $qtyAvailable = zen_get_products_stock($products[$i]['id'], $attributes);
-    if(false && $inSBA){
-      //check for product used multiple time in cart with different attributes
-      //test for total qty availability for each combination
-      if( cartProductCount($products[$i]['id']) > 1 ){
-        //Build array for use below
-        $duplicatesCOMPARE[$i] = array( 1 => $products[$i]['attributes'], 2 =>$products[$i]['id'], 3 => $products[$i]['quantity'] );
-
-        /*used to find unique entries, keep for reference and tests
-//         foreach($products[$i] as $row){
-//           foreach($row as $val){
-//             //if the value exists and it isn't already in the dupcliates array
-//             //Only add unique values to the array
-//             if(in_array($val, $exists) && !in_array($val, $duplicates)){
-//               $duplicates[] = $val;
-//               $duplicatesTMP[] = array( 1 => $val, 2 =>$products[$i]['id'], 3 => $products[$i]['quantity'] );
-//             }
-//             else{
-//               //cummulatively build the array to test against with each product attribut.
-//               $exists[] = $val;
-//               $existsTMP[] = array( 1 => $val, 2 =>$products[$i]['id'], 3 => $products[$i]['quantity'] );
-//             }
-//           }
-//         }
-        
-        //The following is an attempt to account for duplicate entries of attributes on different products
-        //These attributes are expected to be limited in qty
-        //Skips products that have specific attributes combination qty
-        //This should only affect single attribute entries per product*/
-        foreach($duplicatesCOMPARE as $dupCOMPARE){
-          foreach($dupCOMPARE[1] as $dupC){
-            foreach($products[$i]['attributes'] as $pAttr){
-//               echo 'dupC: ' . $dupC . ' ' . $dupCOMPARE[3] . '<br />';
-//               echo 'pAttr: ' . $pAttr . ' ' . $products[$i]['quantity'] . '<br />';
-//               echo 'Prod ID: ' . $products[$i]['id'] . ' ' . $dupCOMPARE[2] . '<br /><br />';
-
-              if( ($pAttr === $dupC) && ($products[$i]['id'] != $dupCOMPARE[2]) ){
-//                 echo 'Product: ' . $products[$i]['id'] . '<br />';
-//                 echo 'Requested: ' . $products[$i]['quantity'] . '<br />';
-//                 echo zen_get_products_stock($products[$i]['id'], $attributes, 'true') . ' TEST<br />';
-                if( zen_get_products_stock($products[$i]['id'], $attributes, 'true') != 'true' ){
-                  $productsQty = ($productsQty + $dupCOMPARE[3] + $products[$i]['quantity']);
-                  $qtyAvailable = $productsQty;
-//                   echo 'Qty Requested: ' . $productsQty . '<br />';
-//                   echo 'Available qty: ' . zen_get_products_stock($products[$i]['id'], $attributes) . '<br />';
-//                   echo zen_get_products_stock($products[$i]['id'], $attributes, 'true');      
-                  $flagStockCheck = zen_check_stock($products[$i]['id'], $productsQty, $attributes);
-//                   echo 'Flag: ' . $flagStockCheck . '<br /><br /><br />';
-                  $flagAnyOutOfStock = true;
-                  break 3;//this will break three time, to move out of the three loops
-                } // END if zen_get_products_stock != true
-              } // END if compare
-            } // END foreach $products[$i]['attributes']
-          } // END foreach dupCOMPARE[1]
-        } // End foreach duplicatesCOMPARE
-      } //End if CartProductCount > 1
-    } /* End of if $inSBA inside STOCK_CHECK == true */ else {
       // mc12345678 this section is as if SBA is not installed/involved.  Normal response after the expectation to check stock is included. After this section should go straight to the next default ZC action.
       // bof: extra check on stock for mixed YES
-      if ($qtyAvailable - $products[$i]['quantity'] < 0 || $qtyAvailable - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
-          $flagStockCheck = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
-        $flagAnyOutOfStock = true;
-      }
 /*      if ($flagStockCheck != true) {
         //echo zen_get_products_stock($products[$i]['id']) - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) . '<br>';
         if ( zen_get_products_stock($products[$i]['id']) - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
