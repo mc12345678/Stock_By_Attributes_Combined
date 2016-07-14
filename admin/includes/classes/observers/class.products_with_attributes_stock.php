@@ -191,6 +191,7 @@ class products_with_attributes_stock_admin extends base {
       if(sizeof($stock_ids) > 0) {
         $delete_attributes_stock_options_id_values = $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id='" . $pID . "' and stock_id in (" . implode(',', $stock_ids) . ")");
       }
+      $delete_attributes_options_id->MoveNext();
     }
 
   }
@@ -252,6 +253,7 @@ class products_with_attributes_stock_admin extends base {
           $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                         where stock_id in (" . implode(',', $stock_ids) . ")");
         }
+        $remove_attributes_query->MoveNext();
       }
     }
 
@@ -305,6 +307,7 @@ class products_with_attributes_stock_admin extends base {
             if (zen_not_null($orders_products_sba_customid->fields['customid'])) {
               $customid[] = $orders_products_sba_customid->fields['customid'];
             } 
+            $orders_products_sba_customid->MoveNext();
           }
           if (sizeof($customid) > 0) {
             // Combine the various customids to apply to the ordered product information.
