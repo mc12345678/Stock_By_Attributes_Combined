@@ -238,7 +238,7 @@ function cartProductCount($products_id){
     $stock_attributes = '';
     $multi = (sizeof($attribute_list) > 1 ? true : false);
     
-    if (isset($attribute_list) && is_array($attribute_list) && (($k = sizeof($attribute_list)) > 0)) {
+    if (isset($attribute_list) && is_array($attribute_list) && ($k = sizeof($attribute_list) > 0)) {
       if ($from == 'order') {
         for ($j = 0; $j < $k; $j++) {
           if (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.  This is probably the best place to do the review because all aspects of the attribute are available.
