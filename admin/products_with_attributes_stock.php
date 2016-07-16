@@ -136,6 +136,8 @@ switch ($action) {
       }
       $hidden_form .= zen_draw_hidden_field('products_id', $products_id) . "\n";
       $hidden_form .= zen_draw_hidden_field('quantity', $quantity) . "\n";
+      $hidden_form .= zen_draw_hidden_field('customid', $customid) . "\n";
+      $hidden_form .= zen_draw_hidden_field('skuTitle', $skuTitle) . "\n";
       //These are used in the GET thus it must match the same name used in the $_GET[''] calls
       $s_mack_noconfirm .= "products_id=" . $products_id . "&amp;"; //s_mack:noconfirm
       $s_mack_noconfirm .= "quantity=" . $quantity . "&amp;"; //s_mack:noconfirm
@@ -145,6 +147,7 @@ switch ($action) {
       sort($attributes);
       $stock_attributes = implode(',', $attributes);
 
+      $hidden_form .= zen_draw_hidden_field('attributes', $stock_attributes) . "\n";
       $s_mack_noconfirm .='attributes=' . $stock_attributes . '&amp;'; //kuroi: to pass string not array
 
       $query = 'select * 
@@ -704,8 +707,15 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     if (isset($_GET['updateReturnedPID']) || isset($_POST['updateReturnedPID'])) {
       $seachPID = doubleval(trim($_GET['updateReturnedPID']));
       $seachBox = doubleval(trim($_GET['updateReturnedPID']));
+      if (isset($_POST['updateReturnedPID'])) {
+        $seachPID = doubleval(trim($_POST['updateReturnedPID']));
+        $seachBox = doubleval(trim($_POST['updateReturnedPID']));
+      }
     } elseif (isset($_GET['search']) || isset($_POST['search'])) {
       $seachBox = trim($_GET['search']);
+      if (isset($_POST['search'])) {
+        $seachBox = trim($_POST['search']);
+      }
       $s = zen_db_input($seachBox);
       $w = " AND ( p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '$s%' ) ";
       $query_products = "select distinct pa.products_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_DESCRIPTION . " d, " . TABLE_PRODUCTS . " p WHERE d.language_id='" . $language_id . "' and pa.products_id = d.products_id and pa.products_id = p.products_id " . $w . " order by d.products_name " . $SearchRange . "";
@@ -713,9 +723,13 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       if (!$products_answer->EOF && $products_answer->RecordCount() == 1 ) {
         $seachPID = $products_answer->fields['products_id'];
       }
-    } elseif (isset($_GET['seachPID'])) {
+    } elseif (isset($_GET['seachPID']) || isset($_POST['seachPID'])) {
       $seachPID = doubleval(trim($_GET['seachPID']));
       $seachBox = doubleval(trim($_GET['seachPID']));
+      if (isset($_POST['seachPID'])) {
+       $seachPID = doubleval(trim($_POST['seachPID']));
+       $seachBox = doubleval(trim($_POST['seachPID'])); 
+      }
     }
 
     //search box displayed only option
