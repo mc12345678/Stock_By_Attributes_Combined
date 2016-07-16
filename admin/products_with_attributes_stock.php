@@ -627,7 +627,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
           echo zen_draw_pull_down_menu('products_id', $products_array_list) . "\n";
         }
         ?>
-          <p><input type="submit" value="<?php echo PWA_SUBMIT ?>"></p>
+          <p><?php echo zen_draw_input_field('PWA_SUBMIT', PWA_SUBMIT, '', true, 'submit', true); ?></p>
         </form>
           <?php
           break;
@@ -643,7 +643,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
           echo $hidden_form;
           echo '<p><strong>Quantity: </strong>' . zen_draw_input_field('quantity', $_GET['q']) . '</p>' . "\n"; //s_mack:prefill_quantity
           ?>
-        <p><input type="submit" value="<?php echo PWA_SUBMIT ?>"></p>
+        <p><?php echo zen_draw_input_field('PWA_SUBMIT', PWA_SUBMIT, '', true, 'submit', true); ?></p>
       </form>
           <?php
           break;
@@ -657,7 +657,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
               echo zen_draw_hidden_field($key, $value);
             }
             ?>
-        <p><input type="submit" value="<?php echo TEXT_YES ?>" name="confirm"> * <input type="submit" value="<?php echo TEXT_NO ?>" name="confirm"></p>
+        <p><?php echo zen_draw_input_field('confirm', TEXT_YES, '', true, 'submit', true); ?> * <?php echo zen_draw_input_field('confirm', TEXT_NO, '', true, 'submit', true); ?></p>
       </form>
       <?php
     }
@@ -672,7 +672,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
               echo zen_draw_hidden_field($key, $value);
             }
             ?>
-        <p><input type="submit" value="<?php echo TEXT_YES ?>" name="confirm"> * <input type="submit" value="<?php echo TEXT_NO ?>" name="confirm"></p>
+        <p><?php echo zen_draw_input_field('confirm', TEXT_YES, '', true, 'submit', true); ?> * <?php echo zen_draw_input_field('confirm', TEXT_NO, '', true, 'submit', true); ?></p>
       </form>
       <?php
     }
@@ -689,7 +689,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=execute', 'post', '', true) . "\n";
     echo $hidden_form;
     ?>
-    <p><input type="submit" value="<?php echo PWA_SUBMIT ?>"></p>
+    <p><?php echo zen_draw_input_field('PWA_SUBMIT', PWA_SUBMIT, '', true, 'submit', true); ?></p>
     </form>
     <?php
     break;
@@ -742,7 +742,8 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
 
       echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'get', '', true) . "Product Selection List:";
       echo $searchList = $stock->selectItemID(TABLE_PRODUCTS_ATTRIBUTES, 'pa.products_id', $seachPID, $searchList, 'seachPID', 'seachPID', 'selectSBAlist');
-      echo '<input type="submit" value="Search" name="pwas-search-button"/></form>';
+      echo zen_draw_input_field('pwas-search-button', 'Search', '', true, 'submit', true); ?>
+      </form><?php
     }
 
     echo '<div id="hugo1" style="background-color: green; padding: 2px 10px;"></div>';
