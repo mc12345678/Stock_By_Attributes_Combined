@@ -520,7 +520,7 @@ switch ($action) {
 }
 } // EOF zen_not_null($_GET['action'])
 
-global $template_dir; // Why does this variable need to be made global? Isn't it already in the global space?
+  //global $template_dir; // Why does this variable need to be made global? Isn't it already in the global space?
 ?>
 <!doctype html>
 <html <?php echo HTML_PARAMS; ?>>

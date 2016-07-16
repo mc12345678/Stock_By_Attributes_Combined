@@ -33,7 +33,7 @@ class products_with_attributes_stock extends base {
 
   private $_products_options_names_current;
   
-  private $_attrib_grid;
+//  private $_attrib_grid;
 
   
   /*
@@ -48,7 +48,6 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE';
-    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULES_OPTIONS_VALUES_SET';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTION';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
@@ -60,7 +59,7 @@ class products_with_attributes_stock extends base {
     $this->attach($this, $attachNotifier);
 
     $this->_products_options_names_current = 0; // Initialize this variable to 0.
-    $this->_attrib_grid = '';
+//    $this->_attrib_grid = '';
   }  
 
 
@@ -272,54 +271,6 @@ class products_with_attributes_stock extends base {
   }
   
   /*
-   * NOTIFY_ATTRIBUTES_MODULE_OPTIONS_SQL
-   */
-   function updateNotifyAttributesModuleOptionsSQL(&$callingClass, $notifier, $paramsArray) {
-     global $db, $sql, $options_menu_images, $moveSelectedAttribute, $products_options_array, $options_attributes_image, $products_options_names, $products_options_names_count, $stock, $is_SBA_product, $order_by;
-     
-     $options_menu_images = array();
-     $moveSelectedAttribute = false;
-     $products_options_array = array();
-     $options_attributes_image = array();
-     // Could do the calculation here the first time set a variable above as part of the class and then reuse that... instead of the modification to the attributes file...
-     if (!zen_not_null($this->_products_options_names_count)) {
-       $this->_products_options_names_count = $products_options_names->RecordCount();
-     }
-     $products_options_names_count = $products_options_names->RecordCount();
-
-     if (zen_product_is_sba($_GET['products_id'])) {
-       $this->_isSBA = true;
-     } else {
-       $this->_isSBA = false;
-     }
-     
-//     $stock->_isSBA = $this->_isSBA;
-     $is_SBA_product = $this->_isSBA;
-     
-     if ($this->_isSBA) {
-       $sql = "select distinct pov.products_options_values_id,
-                        pov.products_options_values_name,
-                        pa.*, p.products_quantity, 
-                      " . ($this->_products_options_names_count <= 1 ? " pas.stock_id as pasid, pas.quantity as pasqty, pas.sort,  pas.customid, pas.title, pas.product_attribute_combo, pas.stock_attributes, " : "") . " pas.products_id 
-
-                from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
-                left join " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov on (pa.options_values_id = pov.products_options_values_id)
-                left join " . TABLE_PRODUCTS . " p on (pa.products_id = p.products_id)
-                
-                left join " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pas on 
-                (p.products_id = pas.products_id and FIND_IN_SET(pa.products_attributes_id, pas.stock_attributes) > 0 )
-            where pa.products_id = :products_id:
-            and       pa.options_id = :options_id:
-            and       pov.language_id = :languages_id: " .
-              $order_by;
-              
-       $sql = $db->bindVars($sql, ':products_id:', $_GET['products_id'], 'integer');
-       $sql = $db->bindVars($sql, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
-       $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
-     }
-   }
-
-  /*
    * NOTIFY_ATTRIBUTES_MODULE_START_OPTION
    */
    function updateNotifyAttributesModuleStartOption(&$callingClass, $notifier, $paramsArray) {
@@ -370,94 +321,6 @@ class products_with_attributes_stock extends base {
 
        $products_options = $db->Execute($sql);
      }
-   }
-
-   /*
-    * NOTIFY_ATTRIBUTES_MODULES_OPTIONS_VALUES_SET
-    */
-   function updateNotifyAttributesModulesOptionsValuesSet (&$callingClass, $notifier, $paramsArray) {
-     global $db, $options_menu_images, $products_options, $products_options_names, $PWA_STOCK_QTY;
-     
-     if ($this->_isSBA && ( $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA || ((PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' && $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1)))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
-     // START "Stock by Attributes"  SBA
-      //used to find if an attribute is display-only
-      $sqlDO = "select pa.attributes_display_only
-                    from " . TABLE_PRODUCTS_OPTIONS . " po
-                    left join " . TABLE_PRODUCTS_ATTRIBUTES . " pa on (pa.options_id = po.products_options_id)
-                    where pa.products_id=:products_id:
-                     and pa.products_attributes_id = :products_attributes_id: ";
-      $sqlDO = $db->bindVars($sqlDO, ':products_id:', $_GET['products_id'], 'integer');
-      $sqlDO = $db->bindVars($sqlDO, ':products_attributes_id:', $products_options->fields['products_attributes_id'], 'integer');
-      $products_options_DISPLAYONLY = $db->Execute($sqlDO);
-
-      //echo 'ID: ' . $products_options->fields["products_attributes_id"] . ' Stock ID: ' . $products_options->fields['pasid'] . ' QTY: ' . $products_options->fields['pasqty'] . ' Custom ID: ' . $products_options->fields['customid'] . '<br />';//debug line
-      //add out of stock text based on qty
-      if ($products_options->fields['pasqty'] < 1 && STOCK_CHECK == 'true' && $products_options->fields['pasid'] > 0) {
-        //test, only applicable to products with-out the read-only attribute set
-        if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
-          $products_options->fields['products_options_values_name'] = $products_options->fields['products_options_values_name'] . PWA_OUT_OF_STOCK;
-        }
-      }
-
-      //Add qty to atributes based on STOCK_SHOW_ATTRIB_LEVEL_STOCK setting
-      //Only add to Radio, Checkbox, and selection lists 
-      //PRODUCTS_OPTIONS_TYPE_RADIO PRODUCTS_OPTIONS_TYPE_CHECKBOX  
-      //Exclude the following:
-      //PRODUCTS_OPTIONS_TYPE_TEXT PRODUCTS_OPTIONS_TYPE_FILE PRODUCTS_OPTIONS_TYPE_READONLY
-      //PRODUCTS_OPTIONS_TYPE_SELECT_SBA
-      $PWA_STOCK_QTY = null; //initialize variable  
-      if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_TEXT) {
-        if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_FILE) {
-          if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_READONLY) {
-            /*if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA)*/ {
-
-              if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true' && $products_options->fields['pasqty'] > 0) {
-                //test, only applicable to products with-out the read-only attribute set
-                if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
-                  $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options->fields['pasqty'] . ' ';
-                  //show custom ID if flag set to true
-                  if (!empty($products_options->fields['customid']) && (!defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID') || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1') || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2')) {
-                    $PWA_STOCK_QTY .= ' (' . $products_options->fields['customid'] . ') ';
-                  }
-                }
-              } elseif (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true' && $products_options->fields['pasqty'] < 1 && $products_options->fields['pasid'] < 1) {
-                //test, only applicable to products with-out the display-only attribute set
-                if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
-                  //use the qty from the product, unless it is 0, then set to out of stock.
-                  if ($this->_products_options_names_count <= 1) {
-                    if ($products_options->fields['products_quantity'] > 0) {
-                      $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options->fields['products_quantity'] . ' ';
-                    } else {
-                      $products_options->fields['products_options_values_name'] = $products_options->fields['products_options_values_name'] . PWA_OUT_OF_STOCK;
-                    }
-                  }
-
-                  //show custom ID if flag set to true
-                  if (!empty($products_options->fields['customid']) && (!defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID') || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1') || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2')) {
-                    $PWA_STOCK_QTY .= ' (' . $products_options->fields['customid'] . ') ';
-                  }
-                }
-              } elseif (!empty($products_options->fields['customid']) && (!defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID') || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1') || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2')) {
-                //show custom ID if flag set to true
-                //test, only applicable to products with-out the read-only attribute set
-                if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
-                  $PWA_STOCK_QTY .= ' (' . $products_options->fields['customid'] . ') ';
-                }
-              }
-            }
-          }
-        }
-      }
-
-      //create image array for use in select list to rotate visable image on select.
-      if (!empty($products_options->fields['attributes_image'])) {
-        $options_menu_images[] = array('id' => $products_options->fields['products_options_values_id'],
-          'src' => DIR_WS_IMAGES . $products_options->fields['attributes_image']);
-      } else {
-        $options_menu_images[] = array('id' => $products_options->fields['products_options_values_id']);
-      }
-      // END "Stock by Attributes" SBA
-     } // End if _isSBA
    }
 
    /*
@@ -751,16 +614,8 @@ class products_with_attributes_stock extends base {
       updateNotifyAttributesModuleSaleMakerDisplayPricePercentage($callingClass, $notifier, $paramsArray);
     }
   
-    if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_OPTIONS_SQL') {
-      updateNotifyAttributesModuleOptionsSQL($callingClass, $notifier, $paramsArray);
-    }
-    
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_START_OPTION') {
       updateNotifyAttributesModuleStartOption($callingClass, $notifier, $paramsArray);
-    }
-    
-    if ($notifier == 'NOTIFY_ATTRIBUTES_MODULES_OPTIONS_VALUES_SET') {
-      updateNotifyAttributesModulesOptionsValuesSet ($callingClass, $notifier, $paramsArray);
     }
     
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE') {
