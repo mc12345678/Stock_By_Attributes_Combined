@@ -34,6 +34,8 @@ class products_with_attributes_stock extends base {
   private $_products_options_names_current;
   
 //  private $_attrib_grid;
+  
+  private $_noread_done = false;
 
   
   /*
@@ -107,7 +109,7 @@ class products_with_attributes_stock extends base {
       //echo 'ID: ' . $products_options_fields["products_attributes_id"] . ' Stock ID: ' . $products_options_fields['pasid'] . ' QTY: ' . $products_options_fields['pasqty'] . ' Custom ID: ' . $products_options_fields['customid'] . '<br />';//debug line
       //add out of stock text based on qty
       if ($products_options_fields['pasqty'] < 1 && STOCK_CHECK == 'true' && $products_options_fields['pasid'] > 0) {
-        //test, only applicable to products with-out the read-only attribute set
+        //test, only applicable to products with-out the display-only attribute set
         if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
           $products_options_fields['products_options_values_name'] = $products_options_fields['products_options_values_name'] . PWA_OUT_OF_STOCK;
           $products_options_array[sizeof($products_options_array)-1] = array('id' =>
@@ -129,7 +131,7 @@ class products_with_attributes_stock extends base {
             /*if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA)*/ {
 
               if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true' && $products_options_fields['pasqty'] > 0) {
-                //test, only applicable to products with-out the read-only attribute set
+                //test, only applicable to products with-out the display-only attribute set
                 if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
                   $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options_fields['pasqty'] . ' ';
                   //show custom ID if flag set to true
@@ -160,7 +162,7 @@ class products_with_attributes_stock extends base {
                 }
               } elseif (!empty($products_options_fields['customid']) && (!defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID') || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1') || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2')) {
                 //show custom ID if flag set to true
-                //test, only applicable to products with-out the read-only attribute set
+                //test, only applicable to products with-out the display-only attribute set
                 if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
                   $PWA_STOCK_QTY .= ' (' . $products_options_fields['customid'] . ') ';
                 }
@@ -299,10 +301,30 @@ class products_with_attributes_stock extends base {
      $is_SBA_product = $this->_isSBA;
      
      if ($this->_isSBA) {
+       // Want to do a SQL statement to see the quantity of non-READONLY attributes.  If there is only one non-READONLY attribute, then 
+       //   do additional SQL to add the "missing" attributes that would get displayed.  But, do not have the "main" sql modified otherwise
+       //   the display will get all wonky (multiple listings where not desired).  Will need to modify the SQL result for each result applicable to the
+       //   one option_id assuming it is not READONLY.
+       // Understand that already cycling through the product options, therefore if there are multiple options, the current option is not readonly
+       //   and there is only one non-readonly attribute, then that is when the "new" sql needs to be activated to populate the current option...
+       $process_this = false;
+       if (!$this->_noread_done && $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_READONLY && $products_options_names->RecordCount() > 1) {
+         $sql_noread = "SELECT count(distinct products_options_id) AS total
+           FROM " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id = :products_id:
+           AND patrib.options_id = popt.products_options_id
+           AND popt.products_options_type != " . PRODUCTS_OPTIONS_TYPE_READONLY . "
+           AND popt.language_id = :languages_id:";
+         $sql_noread = $db->bindVars($sql_noread, ':products_id:', $_GET['products_id'], 'integer');
+         $sql_noread = $db->bindVars($sql_noread, ':languages_id:', $_SESSION['languages_id'], 'integer');
+         $noread = $db->Execute($sql_noread);
+         $process_this = true;
+         $this->_noread_done = true;
+       }
+         
        $sql = "select distinct pov.products_options_values_id,
                         pov.products_options_values_name,
                         pa.*, p.products_quantity, 
-                      " . ($this->_products_options_names_count <= 1 ? " pas.stock_id as pasid, pas.quantity as pasqty, pas.sort,  pas.customid, pas.title, pas.product_attribute_combo, pas.stock_attributes, " : "") . " pas.products_id 
+                      " . (($this->_products_options_names_count <= 1 || ($process_this == true && isset($noread) && $noread->fields['total'] == 1))? " pas.stock_id as pasid, pas.quantity as pasqty, pas.sort,  pas.customid, pas.title, pas.product_attribute_combo, pas.stock_attributes, " : "") . " pas.products_id 
 
                 from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
                 left join " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov on (pa.options_values_id = pov.products_options_values_id)
@@ -500,9 +522,9 @@ class products_with_attributes_stock extends base {
     global $productArray, $db;
 
     for ($i = 0, $n = sizeof($productArray); $i < $n; $i++) {
-      if (isset($productArray[$i]['attributes']) && is_array($productArray[$i]['attributes']) && sizeof($productArray[$i]['attributes']) > 0) {
+      if (isset($productArray[$i]['attributes']) && is_array($productArray[$i]['attributes']) && sizeof($productArray[$i]['attributes']) > 0 && zen_product_is_sba($productArray[$i]['id'])) {
         $productArray[$i]['attributeImage'] = array();
-
+        
   // Need to collect all of the option ids that are associated with the
   // product, then sort them by the normal sort order in reverse.
 

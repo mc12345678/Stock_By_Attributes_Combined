@@ -20,14 +20,16 @@ class products_with_attributes_stock extends base
 		{
 			global $db;
 			// Added the following to query "and pa.attributes_display_only != 1" This removed display only attributes from the stock selection.
-			$query = '	select pa.products_attributes_id, pa.options_values_price, pa.price_prefix,
+      // Added the following to query "AND po.products_options_type != ' . PRODUCTS_OPTIONS_TYPE_READONLY so that would ignore READONLY attributes.
+      $query = 'select pa.products_attributes_id, pa.options_values_price, pa.price_prefix,
 			 				po.products_options_name, pov.products_options_values_name
 			 			from '.TABLE_PRODUCTS_ATTRIBUTES.' pa
 			 			left join '.TABLE_PRODUCTS_OPTIONS.' po on (pa.options_id = po.products_options_id)
 			 			left join '.TABLE_PRODUCTS_OPTIONS_VALUES.' pov on (pa.options_values_id = pov.products_options_values_id)
 			 			where pa.products_id = "'.$products_id.'" 
 			 				AND po.language_id = "'.$languageId.'" and po.language_id = pov.language_id
-							and pa.attributes_display_only != 1';
+              and pa.attributes_display_only != 1
+              AND po.products_options_type != ' . PRODUCTS_OPTIONS_TYPE_READONLY;
 			
 			$attributes = $db->Execute($query);
 			

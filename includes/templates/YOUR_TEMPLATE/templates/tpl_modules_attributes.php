@@ -34,7 +34,15 @@
        $products_attributes_query = $db->bindVars($products_attributes_query, ':products_id:', $_GET['products_id'], 'integer');
        $products_attributes_query = $db->bindVars($products_attributes_query, ':languages_id:', $_SESSION['languages_id'], 'integer');
        $products_attributes = $db->Execute($products_attributes_query);
-       if ((((defined('PRODINFO_ATTRIBUTE_PLUGIN_MULTI') && ($products_attributes->fields['total'] > 1) && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2')) ? file_exists(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_MULTI . '.php') : ((defined('PRODINFO_ATTRIBUTE_PLUGIN_SINGLE') && ($products_attributes->fields['total'] == 1) && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3')) ? file_exists(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_SINGLE . '.php') : false )) && /*class_exists('pad_base') && */defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && !$inSBA->EOF)) {
+       $products_attributes_noread_query = "SELECT count(distinct products_options_id) AS total 
+         FROM " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id=:products_id:
+         AND patrib.options_id = popt.products_options_id
+         AND popt.products_options_type != '" . PRODUCTS_OPTIONS_TYPE_READONLY . "'
+         AND popt.language_id = :languages_id:"; 
+       $products_attributes_noread_query = $db->bindVars($products_attributes_noread_query, ':products_id:', $_GET['products_id'], 'integer');
+       $products_attributes_noread_query = $db->bindVars($products_attributes_noread_query, ':languages_id:', $_SESSION['languages_id'], 'integer');
+       $products_attributes_noread = $db->Execute($products_attributes_noread_query);
+       if ((((defined('PRODINFO_ATTRIBUTE_PLUGIN_MULTI') && ($products_attributes->fields['total'] > 1) && ($products_attributes->fields['total'] - $products_attributes_noread->fields['total'] === 0) && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2')) ? file_exists(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_MULTI . '.php') : ((defined('PRODINFO_ATTRIBUTE_PLUGIN_SINGLE') && ($products_attributes->fields['total'] == 1 || ($products_attributes->fields['total'] > 1 && $products_attributes_noread->fields['total'] == 1)) && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3')) ? file_exists(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_SINGLE . '.php') : false )) && /*class_exists('pad_base') && */defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && !$inSBA->EOF)) {
          //$products_attributes = $db->Execute("select count(distinct products_options_id) as total from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id='" . (int) $_GET['products_id'] . "' and patrib.options_id = popt.products_options_id and popt.language_id = " . (int) $_SESSION['languages_id'] . "");
 
 
