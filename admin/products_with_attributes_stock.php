@@ -644,7 +644,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
           }
 
           echo $hidden_form;
-          echo '<p><strong>Quantity: </strong>' . zen_draw_input_field('quantity', $_GET['q']) . '</p>' . "\n"; //s_mack:prefill_quantity
+          ?><p><strong>Quantity: </strong><?php echo zen_draw_input_field('quantity', $_GET['q']) . '</p>' . "\n"; //s_mack:prefill_quantity
           ?>
         <p><?php echo zen_draw_input_field('PWA_SUBMIT', PWA_SUBMIT, '', true, 'submit', true); ?></p>
       </form>
@@ -760,15 +760,18 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       </form><?php
     }
 
-    echo '<div id="hugo1" style="background-color: green; padding: 2px 10px;"></div>';
-    echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'get', 'id="pwas-search2"', true) . 'Search:  <input id="pwas-filter" type="text" name="search" value="' . $seachBox . '" /><input type="submit" value="Search" id="pwas-search-button" name="pwas-search-button"/></form><span style="margin-right:10px;">&nbsp;</span>';
-    echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', $request_type) . '">Reset</a><span style="margin-right:10px;">&nbsp;</span><a title="Sets sort value for all attributes to match value in the Option Values Manager" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=auto_sort', $request_type) . '">Sort</a>';
-    echo '<span style="margin-right:20px;color:red;">&nbsp;&nbsp;&nbsp;&nbsp;' . $SBAsearchbox . '</span>'; //set a option in configuration table
-    echo '<span id="loading" style="display: none;"><img src="./images/loading.gif" alt="" /> Loading...</span><hr />';
-    echo '<a class="forward" style="float:right;" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync_all", $request_type) . '"><strong>Sync All Quantities</strong></a><br class="clearBoth" /><hr />';
-    echo '<div id="pwa-table">';
+    ?><div id="hugo1" style="background-color: green; padding: 2px 10px;"></div>
+    <?php echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'get', 'id="pwas-search2"', true); ?>Search:  <?php 
+    echo zen_draw_input_field('search', $seachBox, 'id="pwas-filter"', true, 'text', true);
+    echo zen_draw_input_field('pwas-search-button', 'Search', 'id="pwas-search-button"', true, 'submit', true);
+    ?></form><span style="margin-right:10px;">&nbsp;</span>
+    <a href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', $request_type); ?>">Reset</a><span style="margin-right:10px;">&nbsp;</span><a title="Sets sort value for all attributes to match value in the Option Values Manager" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=auto_sort', $request_type); ?>">Sort</a>
+    <span style="margin-right:20px;color:red;">&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $SBAsearchbox; ?></span><?php /* set an option in configuration table */ ?>
+    <span id="loading" style="display: none;"><img src="./images/loading.gif" alt="" /> Loading...</span><hr />
+    <a class="forward" style="float:right;" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync_all", $request_type); ?>"><strong>Sync All Quantities</strong></a><br class="clearBoth" /><hr />
+    <div id="pwa-table"><?php 
     echo $stock->displayFilteredRows(STOCK_SET_SBA_SEARCHBOX, null, $seachPID);
-    echo '</div>';
+    ?></div><?php
     break;
 }
 }
