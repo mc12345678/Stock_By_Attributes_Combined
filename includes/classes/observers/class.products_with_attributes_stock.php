@@ -77,7 +77,10 @@ class products_with_attributes_stock extends base {
     if ($this->_products_options_names_current == $this->_products_options_names_count) {
       $this->_products_options_names_current = 0;
     }
-
+    // reset or clear the attribute images so that they do not display adjacent/near the product
+    if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO === '2') {
+      $options_attributes_image = array();
+    }
   }
 
   /*
@@ -167,12 +170,24 @@ class products_with_attributes_stock extends base {
         }
       }
 
-      //create image array for use in select list to rotate visable image on select.
+      //create image array for use in select list to rotate visable image on select.  Applicable only to 
+      // product that is stocked by attribute. To apply to other product then must move this down outside
+      // of the end of the End if _isSBA section
       if (!empty($products_options_fields['attributes_image'])) {
         $options_menu_images[] = array('id' => $products_options_fields['products_options_values_id'],
             'src' => DIR_WS_IMAGES . $products_options_fields['attributes_image']);
       } else {
         $options_menu_images[] = array('id' => $products_options_fields['products_options_values_id']);
+      }
+      // Assign the $options_menu_images to either blank (if there is no image for the product) or to the assigned image if there is one.
+      //if ($this->_products_options_names_current == 1) 
+      {
+        $picture = $db->Execute('SELECT p.products_image FROM ' . TABLE_PRODUCTS . ' p WHERE products_id = ' . (int)$_GET['products_id']);
+        if ($picture->EOF || $picture->RecordCount() == 0) {
+          $options_menu_images['product_image'] = '';
+        } else {
+          $options_menu_images['product_image'] = DIR_WS_IMAGES . $picture->fields['products_image'];
+        }
       }
       // END "Stock by Attributes" SBA
     } // End if _isSBA

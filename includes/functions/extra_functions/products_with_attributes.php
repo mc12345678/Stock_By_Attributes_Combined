@@ -41,19 +41,44 @@ function cartProductCount($products_id){
  * Use Jquery to change image 'SBA_ProductImage' on selection change
  */
   function zen_draw_pull_down_menu_SBAmod($name, $values, $default = '', $parameters = '', $required = false, $disable = null, $options_menu_images = null) {
-		
-  	global $template_dir;
-  	$tmp_attribID = trim($name, 'id[]');//used to get the select ID reference to be used in jquery
-  	$field = /*'<script ' . *//*src="'.DIR_WS_TEMPLATES . $template_dir . '/jscript/jquery-1.10.2.min.js"*//* '></script> */
-			  '<script type="text/javascript">
-	  			$(function(){
-					$("#attrib-'.$tmp_attribID.'").on("click", function(){
-						$("#SBA_ProductImage").attr("src", $(this).find(":selected").attr("data-src"));
-					});
-				});
-			</script>';
-  					
-  	$field .= '<select name="' . zen_output_string($name) . '" onclick=""';
+    
+    global $template_dir;
+    $tmp_attribID = trim($name, 'id[]');//used to get the select ID reference to be used in jquery
+    if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO != '0' && (isset($_GET['products_id']) && $_GET['products_id'] != '' ? zen_product_is_sba($_GET['products_id']) : false)) 
+    {
+      $field = /*'<script ' . *//*src="'.DIR_WS_TEMPLATES . $template_dir . '/jscript/jquery-1.10.2.min.js"*//* '></script> */
+        '<script type="text/javascript">
+          $(function(){
+          $("#attrib-'.$tmp_attribID.'").change(function(){
+      if (typeof $(this).find(":selected").attr("data-src") == "undefined") { 
+              $("#SBA_ProductImage").attr("src", "';
+      if (isset($options_menu_images) && is_array($options_menu_images) && array_key_exists('product_image', $options_menu_images)) {
+        if ($options_menu_images['product_image'] == '' and PRODUCTS_IMAGE_NO_IMAGE_STATUS == '1') {
+          $field .= DIR_WS_IMAGES . PRODUCTS_IMAGE_NO_IMAGE;
+        } else {
+          $field .= $options_menu_images['product_image'];
+        }
+      } else {
+        if (PRODUCTS_IMAGE_NO_IMAGE_STATUS == '1') {
+         $field .= DIR_WS_IMAGES . PRODUCTS_IMAGE_NO_IMAGE;
+        }
+      }
+    
+      $field .= '"); 
+             } else { 
+               $("#SBA_ProductImage").attr("src", $(this).find(":selected").attr("data-src"));
+             } 
+             if (typeof $("#productMainImage") != "undefined") {
+               if (typeof $("#productMainImage a[href]") != "undefined") {
+                 $("#productMainImage a[href]").attr("href",$("#SBA_ProductImage").attr("src"));
+               }
+             }
+          });
+        });
+      </script>';
+    }
+    
+    $field .= '<select name="' . zen_output_string($name) . '" onclick=""';
 
     if (zen_not_null($parameters)) {$field .= ' ' . $parameters;}
 

@@ -735,9 +735,9 @@ function insertSBAconfiguration(){
 			'Display the Custom ID value in history, checkout, and order forms:',
 			9,".$result.",now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),'),
 			
-			('SBA Display Attributes Images', 'SBA_SHOW_IMAGE_ON_PRODUCT_INFO', 'false', 
-			'Display the Attribute Image on the product information page:',
-			9,".$result.",now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),'),";
+      ('SBA Display Attributes Images', 'SBA_SHOW_IMAGE_ON_PRODUCT_INFO', '1', 
+    'Allow swap of the attribute image with the main image or prevent the display of the Attribute Image (and allow swap) on the product information page:<br /><br /> Default: 1 (Swap and display)<br />0 - No swap, display image ZC default<br />1 - Swap and display attr img<br />2 - Swap, but hide attribute image',
+      9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\', \'2\'),'),";
 
 	$sql2 ="SELECT c.sort_order
 			FROM ".TABLE_CONFIGURATION." c
