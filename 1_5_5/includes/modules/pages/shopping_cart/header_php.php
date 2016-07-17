@@ -62,9 +62,9 @@ $flagHasCartContents = ($_SESSION['cart']->count_contents() > 0);
 $cartShowTotal = $currencies->format($_SESSION['cart']->show_total());
 
 $flagAnyOutOfStock = false;//initialize flag state
-$flagStockCheck = '';
 $products = $_SESSION['cart']->get_products();
 for ($i=0, $n=sizeof($products); $i<$n; $i++) {
+  $flagStockCheck = '';
   if (($i/2) == floor($i/2)) {
     $rowClass="rowEven";
   } else {
@@ -101,7 +101,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 
     // START "Stock by Attributes"
     // Added to allow individual stock of different attributes
-    $inSBA_query = 'SELECT * 
+    /*$inSBA_query = 'SELECT * 
                     FROM information_schema.tables
                     WHERE table_schema = :your_db: 
                     AND table_name = :table_name:
@@ -115,7 +115,8 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
       $inSBA_result = $db->Execute($inSBA_query);
     }
 
-    $inSBA = (sizeof($inSBA_result) > 0 && !$inSBA_result->EOF);
+    $inSBA = (sizeof($inSBA_result) > 0 && !$inSBA_result->EOF);*/
+    $inSBA = zen_product_is_sba($products[$i]['id']);
     $products_options_type = null;
     // End of "Stock by Attributes"
     foreach ($products[$i]['attributes'] as $option => $value) {
@@ -156,7 +157,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
   } // end if attributes exist
     
       //Clear variables for each loop
-  $flagStockCheck = null;   
+//  $flagStockCheck = null;   
   $stockAvailable = null;
   $lowproductstock = false;
   $customid = null;
@@ -169,25 +170,16 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
     $attributes = null; //Force normal operation if the product is not monitored by SBA.
   }
   if (STOCK_CHECK == 'true') {
-    $flagStockCheck = zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes);
+//    $flagStockCheck = zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes);
  $qtyAvailable = zen_get_products_stock($products[$i]['id'], $attributes);
+     
       // mc12345678 this section is as if SBA is not installed/involved.  Normal response after the expectation to check stock is included. After this section should go straight to the next default ZC action.
       // bof: extra check on stock for mixed YES
-/*      if ($flagStockCheck != true) {
-        //echo zen_get_products_stock($products[$i]['id']) - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) . '<br>';
-        if ( zen_get_products_stock($products[$i]['id']) - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
-          $flagStockCheck = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
-        } else {
-          $flagStockCheck = '';
-        } // End if/else mixed stock
-      } // End flagStockCheck != true*/
-    } //End of ZC Basic Function inside StockCheck == 'true'
-
-      //Below seems appropriate for both ZC standard product as well as for SBA variants, therefore is outside the above "loop".
-// eof: extra check on stock for mixed YES
-/*    if ($flagStockCheck == true) {
+    if ($qtyAvailable - $products[$i]['quantity'] < 0 || $qtyAvailable - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
+      $flagStockCheck = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
       $flagAnyOutOfStock = true;
-    }*/
+    }
+
   } // End of STOCK_CHECK == 'true'
 
   //Set Custom ID variable. //Indepdendent of Stock_check.
