@@ -29,25 +29,25 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   //     3. 
   //     example POST data available on update:
   /*
-  post_info (array)	
+  post_info (array)  
 
     securityToken (string) => HIDDEN as should never post
-    cart_quantity (array)	
+    cart_quantity (array)  
         0 (string) => 6
         1 (string) => 5
         2 (string) => 4
-    products_id (array)	
+    products_id (array)  
         0 (string) => 1073:d03135f8216dddbdd820de243693c9de
         1 (string) => 1073:b4919d80280b711fc9eb17d7e4a1d6dc
         2 (string) => 1073:e1caedf3208ffc17906cc2d9aa396cb4
-    id (array)	
-        1073:d03135f8216dddbdd820de243693c9de (array)	
+    id (array)  
+        1073:d03135f8216dddbdd820de243693c9de (array)  
             txt_10 (string) => test
             9 (string) => 78
-        1073:b4919d80280b711fc9eb17d7e4a1d6dc (array)	
+        1073:b4919d80280b711fc9eb17d7e4a1d6dc (array)  
             txt_10 (string) => test2
             9 (string) => 78
-        1073:e1caedf3208ffc17906cc2d9aa396cb4 (array)	
+        1073:e1caedf3208ffc17906cc2d9aa396cb4 (array)  
             9 (string) => 78
 
   */
@@ -395,7 +395,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
                 } else {
                     $option_ref[$option_id] = $option_id;
                 }
-                $check_attrib = $db->Execute(	"select pov.products_options_values_name from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov " .
+                $check_attrib = $db->Execute(  "select pov.products_options_values_name from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov " .
                                                 "where pa.options_values_id = pov.products_options_values_id " .
                                                 "and pa.options_id = '".(int)$option_id . "' " .
                                                 "and pa.products_id = '".(int)$products_id ."' " .
@@ -463,22 +463,22 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   }
   elseif ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) : true))
   {
-      if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
-      // Product has grid layout but is not tracked by SBA.
-        $grid_prod_id[0] = null;
-        $prod_qty[0] = 0;
-        $grid_add_number = 0;
-        $_POST['products_id'] = 0;
-        $_POST['id'] = 0;
-        $_POST['cart_quantity'] = 0;
-      } else {
-        // Product does not have grid, could be SBA, doesn't have to be.
-        $grid_prod_id[] = $_POST['products_id'];
-        $grid_id[] = $_POST['id'];
-        $prod_qty[] = $_POST['cart_quantity'];
-        $grid_add_number = 1;
-      }
+    if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
+    // Product has grid layout but is not tracked by SBA.
+      $grid_prod_id[0] = null;
+      $prod_qty[0] = 0;
+      $grid_add_number = 0;
+      $_POST['products_id'] = 0;
+      $_POST['id'] = 0;
+      $_POST['cart_quantity'] = 0;
+    } else {
+      // Product does not have grid, could be SBA, doesn't have to be.
+      $grid_prod_id[] = $_POST['products_id'];
+      $grid_id[] = $_POST['id'];
+      $prod_qty[] = $_POST['cart_quantity'];
+      $grid_add_number = 1;
     }
+  }
   
   if ((defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' ? function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id']) : true)) {
 

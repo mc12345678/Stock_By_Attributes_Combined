@@ -83,7 +83,7 @@ $sql = "select count(*) as total
                 pa.options_values_price, pa.price_prefix,
                 pa.products_options_sort_order, pa.product_attribute_is_free, pa.products_attributes_weight, pa.products_attributes_weight_prefix,
                 pa.attributes_default, pa.attributes_discounted, pa.attributes_image
-				p.products_quantity
+        p.products_quantity
                 */
 
                 $sql = "select    pov.products_options_values_id,
