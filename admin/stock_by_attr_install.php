@@ -485,26 +485,29 @@ function insertSBAconfigurationMenu(){
 	
 	array_push($resultMmessage, '<br /><b>Adding</b> to admin_pages: ');
 	
-	if (function_exists('zen_register_admin_page')) {
-	  zen_register_admin_page('productsWithAttributesStockSetup', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', '', 'configuration', 'Y');
-	  zen_register_admin_page('productsWithAttributesStockAjax', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', '', 'catalog', 'N');
-	} else {
-	  //get current max sort number used, then add 1 to it.
-	  //this will place the new entry 'productsWithAttributesStock' at the bottom of the list
-	  $sql = "SELECT ap.sort_order
-		  	FROM ".TABLE_ADMIN_PAGES." ap
-			  WHERE ap.menu_key = 'configuration'
-			  order by ap.sort_order desc limit 1";
-	  $result = $db->Execute($sql);
-	  $result = $result->fields['sort_order'] + 1;
+	// get current max sort number used, then add 1 to it.
+	// this will place the new entry 'productsWithAttributesStock' at the bottom of the list
+	$sql = "SELECT MAX(ap.sort_order) as sort_order_max
+	     FROM " . TABLE_ADMIN_PAGES . " ap
+	     WHERE ap.menu_key = 'configuration'";
+	$result = $db->Execute($sql);
+	$result = $result->fields['sort_order_max'] + 1;
 	
+	if (function_exists('zen_register_admin_page')) {
+	  zen_register_admin_page('productsWithAttributesStockSetup', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', '', 'configuration', 'Y', $result);
+	  $result = $result + 1; // provide an increased sort order for the next non-displayed menu.
+	  zen_register_admin_page('productsWithAttributesStockAjax', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', '', 'catalog', 'N', $result);
+	} else {
 	  $sql = "INSERT INTO `".TABLE_ADMIN_PAGES."` (page_key, language_key, main_page, page_params, menu_key, display_on_menu, sort_order) 
 			    VALUES 
-			    ('productsWithAttributesStockSetup', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', '', 'configuration', 'Y', ".$result.")";
+			    ('productsWithAttributesStockSetup', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP', '', 'configuration', 'Y', :sort_order:)";
+		$sql = $db->bindVars($sql, ':sort_order:', $result, 'integer');
 	  $db->Execute($sql);
+	  $result = $result + 1; // provide an increased sort order for the next non-displayed menu.
 	  $sql = "INSERT INTO `".TABLE_ADMIN_PAGES."` (page_key, language_key, main_page, page_params, menu_key, display_on_menu, sort_order) 
 			    VALUES 
-			    ('productsWithAttributesStockAjax', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', '', 'catalog', 'N', ".$result.")";
+			    ('productsWithAttributesStockAjax', 'BOX_CONFIGURATION_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', 'FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_AJAX', '', 'catalog', 'N', :sort_order:)";
+		$sql = $db->bindVars($sql, ':sort_order:', $result, 'integer');
 	  $db->Execute($sql);
 	}
 	if($db->error){
