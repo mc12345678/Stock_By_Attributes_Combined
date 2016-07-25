@@ -116,7 +116,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
     }
 
     $inSBA = (sizeof($inSBA_result) > 0 && !$inSBA_result->EOF);*/
-    $inSBA = zen_product_is_sba($products[$i]['id']);
+    $inSBA = $pwas_class->zen_product_is_sba($products[$i]['id']);
     $products_options_type = null;
     // End of "Stock by Attributes"
     foreach ($products[$i]['attributes'] as $option => $value) {
@@ -184,7 +184,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 
   //Set Custom ID variable. //Indepdendent of Stock_check.
   if(STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
-    $customid = zen_get_customid($products[$i]['id'], $attributes);
+    $customid = $pwas_class->zen_get_customid($products[$i]['id'], $attributes);
   }
 
   $linkProductsImage = zen_href_link(zen_get_info_page($products[$i]['id']), 'products_id=' . $products[$i]['id']);

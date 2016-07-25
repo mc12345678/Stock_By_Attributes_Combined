@@ -1,4 +1,28 @@
 <?php
+/** 
+ * File contains just the notifier class
+ *
+ * @package classes
+ * @copyright Copyright 2003-2005 Zen Cart Development Team
+ * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
+ * @version $Id: class.notifier.php 3041 2006-02-15 21:56:45Z wilt $
+ */
+/**
+ * class notifier is a concrete implemetation of the abstract base class
+ *
+ * it can be used in procedural (non OOP) code to set up an observer
+ * see the observer/notifier tutorial for more details.
+ *
+ * @package classes
+ */
+if (!defined('IS_ADMIN_FLAG')) {
+  die('Illegal Access');
+}
+
+class products_with_attributes_class_stock extends base {
+
+  private $_isSBA = array();
+  
 /**
  * @package includes/functions/extra_functions
  * products_with_attributes.php
@@ -11,6 +35,10 @@
  * 
  * Stock by Attributes 1.5.4 :  15-11-14 mc12345678
  */
+
+  function __construct() {
+    $this->_isSBA = array();
+  }
 
 //test for multiple entry of same product in customer's shopping cart
 //This does not yet account for multiple quantity of the same product (2 of a specific attribute type, but instead 2 different types of attributes.)
@@ -44,7 +72,7 @@ function cartProductCount($products_id){
     
     global $template_dir;
     $tmp_attribID = trim($name, 'id[]');//used to get the select ID reference to be used in jquery
-    if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO != '0' && (isset($_GET['products_id']) && $_GET['products_id'] != '' ? zen_product_is_sba($_GET['products_id']) : false)) 
+    if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO != '0' && (isset($_GET['products_id']) && $_GET['products_id'] != '' ? $this->zen_product_is_sba($_GET['products_id']) : false)) 
     {
       $field = /*'<script ' . *//*src="'.DIR_WS_TEMPLATES . $template_dir . '/jscript/jquery-1.10.2.min.js"*//* '></script> */
         '<script type="text/javascript">
@@ -248,7 +276,7 @@ function cartProductCount($products_id){
         $attribute_list = $temp_attributes;
       } 
       
-      $stock_attributes_list = zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
+      $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
       
       
 //      $_SESSION['attributes_list_'. (int)$products_id] = $stock_attributes_list;
@@ -260,7 +288,7 @@ function cartProductCount($products_id){
   }
 
   /*
-   * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to zen_get_sba_stock_attribute in order to identify data to help with this search.
+   * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to $this->zen_get_sba_stock_attribute in order to identify data to help with this search.
    * 
    * @access  public
    * @param   integer   $products_id      The product id of the product on which to obtain the stock attribute.
@@ -278,10 +306,10 @@ function cartProductCount($products_id){
 
     $products_id = zen_get_prid($products_id);
 
-//    $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
+//    $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
 
     // If the product is not tracked by SBA, then return null.
-    if (!zen_product_is_sba($products_id)) {
+    if (!$this->zen_product_is_sba($products_id)) {
       return NULL;
     }
 
@@ -303,7 +331,7 @@ function cartProductCount($products_id){
       // check if any attribute stock values have been set for the product in the SBA table, if not do the else part
 
         // prepare to search for details for the particular attribute combination passed as a parameter
-//      if (zen_product_is_sba($products_id)) {
+//      if ($this->zen_product_is_sba($products_id)) {
 
         // prepare to search for details for the particular attribute combination passed as a parameter
 
@@ -393,7 +421,7 @@ function cartProductCount($products_id){
   }
 
   /*
-   * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to zen_get_sba_stock_attribute in order to identify data to help with this search.
+   * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to $this->zen_get_sba_stock_attribute in order to identify data to help with this search.
    * 
    * @access  public
    * @param   integer   $products_id      The product id of the product on which to obtain the stock attribute.
@@ -417,7 +445,7 @@ function cartProductCount($products_id){
   are stock bearing do not intersect and where all of the attributes are present.
   May be best to identify all of the variants that contain at least the 
   attribute(s) provided.  This can be done currently with 
-  zen_get_sba_ids_from_attribute($attribute_id, $products_id, stock_attribute_unique)
+  $this->zen_get_sba_ids_from_attribute($attribute_id, $products_id, stock_attribute_unique)
   
   
   The union of these should be at least all attributes, if
@@ -436,7 +464,7 @@ Of the attributes provided, determine the number of those attributes that are
 
 
 */
-/*      $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
+/*      $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
       $query = 'select stock_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . 
                 ' where `stock_attributes` = :stock_attribute: and products_id = :products_id:';
       $query = $db->bindVars($query, ':stock_attribute:', $stock_attribute, 'string');
@@ -461,12 +489,12 @@ Of the attributes provided, determine the number of those attributes that are
 
     $products_id = zen_get_prid($products_id);
 
-    $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
-    if (!zen_product_is_sba($products_id)) {
+    $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
+    if (!$this->zen_product_is_sba($products_id)) {
       return NULL;
     }
 
-    $stock_attributes_list = zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
+    $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
     // Summary of the above, if the product is not tracked by SBA, then return null.
 
    // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
@@ -624,11 +652,11 @@ Of the attributes provided, determine the number of those attributes that are
     
     $products_id = zen_get_prid($products_id);
 
-    $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
+    $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
 
     // Thinking either don't want to test the attributes here yet unless before this makes sure that the attributes are properly added for a product that only has text attributes and nothing entered.
     //   
-    if (!zen_product_is_sba($products_id)) {
+    if (!$this->zen_product_is_sba($products_id)) {
       return $attribute_list;
     } 
     
@@ -829,7 +857,7 @@ Of the attributes provided, determine the number of those attributes that are
   }
   
   /*
-   * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to zen_get_sba_stock_attribute in order to identify data to help with this search.
+   * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to $this->zen_get_sba_stock_attribute in order to identify data to help with this search.
    * 
    * @access  public
    * @param   integer   $products_id      The product id of the product on which to obtain the stock attribute.
@@ -854,7 +882,7 @@ Of the attributes provided, determine the number of those attributes that are
   are stock bearing do not intersect and where all of the attributes are present.
   May be best to identify all of the variants that contain at least the 
   attribute(s) provided.  This can be done currently with 
-  zen_get_sba_ids_from_attribute($attribute_id, $products_id, stock_attribute_unique)
+  $this->zen_get_sba_ids_from_attribute($attribute_id, $products_id, stock_attribute_unique)
   
   
   The union of these should be at least all attributes, if
@@ -873,7 +901,7 @@ Of the attributes provided, determine the number of those attributes that are
 
 
 */
-/*      $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
+/*      $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
       $query = 'select stock_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . 
                 ' where `stock_attributes` = :stock_attribute: and products_id = :products_id:';
       $query = $db->bindVars($query, ':stock_attribute:', $stock_attribute, 'string');
@@ -924,18 +952,18 @@ Of the attributes provided, determine the number of those attributes that are
 
     // Thinking either don't want to test the attributes here yet unless before this makes sure that the attributes are properly added for a product that only has text attributes and nothing entered.
     //   
-    if ($datatype == 'stock' && !zen_product_is_sba($products_id)) {
+    if ($datatype == 'stock' && !$this->zen_product_is_sba($products_id)) {
       //Used with products that have attributes But the attribute is not listed in the SBA Stock table.
       //Get product level stock quantity
       $stock_query = "select products_quantity from " . TABLE_PRODUCTS . " where products_id = :products_id:";
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
       $stock_values = $db->Execute($stock_query);
       return $stock_values->fields['products_quantity'];
-    } elseif (!zen_product_is_sba($products_id)) {
+    } elseif (!$this->zen_product_is_sba($products_id)) {
       return NULL;
     } 
     
-    $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
+    $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
 
     // NEED TO ENSURE ATTRIBUTES ARE PROPERLY/FULLY PROVIDED REGARDING "TEXT" OR OTHER ZC DELETES ATTRIBUTES.
     
@@ -1094,18 +1122,18 @@ Of the attributes provided, determine the number of those attributes that are
 //              $_SESSION['compArray3'] = $attribute_list;
 //              $_SESSION['compArray2'] = $compArray;
     
-/*    if ($datatype == 'products' && (!zen_product_is_sba($products_id) || !isset($attribute_list) || !is_array($attribute_list) || !(($k = sizeof($attribute_list)) > 0))) {
+/*    if ($datatype == 'products' && (!$this->zen_product_is_sba($products_id) || !isset($attribute_list) || !is_array($attribute_list) || !(($k = sizeof($attribute_list)) > 0))) {
       //Used with products that have attributes But the attribute is not listed in the SBA Stock table.
       //Get product level stock quantity
       $stock_query = "select products_quantity from " . TABLE_PRODUCTS . " where products_id = :products_id:";
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
       $stock_values = $db->Execute($stock_query);
       return $stock_values->fields['products_quantity'];
-    } elseif (!zen_product_is_sba($products_id)) {
+    } elseif (!$this->zen_product_is_sba($products_id)) {
       $return NULL;
     } */
 
-    $stock_attributes_list = zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
+    $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
     // Summary of the above, if the product is not tracked by SBA, then return null.
     // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
 
@@ -1277,7 +1305,7 @@ Of the attributes provided, determine the number of those attributes that are
     $attribute_info = array();
 
     if (isset($attribute_list) && (($k = sizeof($attribute_list)) > 0)) {
-      $attribute_info['stock_attribute'] = zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
+      $attribute_info['stock_attribute'] = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
       $query = 'select stock_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . 
                 ' where `stock_attributes` = "' . $attribute_info['stock_attribute'] . '" and products_id = ' . (int)$products_id;
 
@@ -1417,14 +1445,18 @@ Of the attributes provided, determine the number of those attributes that are
     }*/
   }
 
-  // function zen_is_SBA was removed as it was a duplicate of zen_product_is_sba.  If code
-  // has been written to use that function, please consider using zen_product_is_sba instead.
+  // function zen_is_SBA was removed as it was a duplicate of $this->zen_product_is_sba.  If code
+  // has been written to use that function, please consider using $this->zen_product_is_sba instead.
   
   function zen_product_is_sba($product_id) {
     global $db;
     
     if (!isset($product_id) && !is_numeric(zen_get_prid($product_id))) {
       return null;
+    }
+    
+    if (array_key_exists((int)$product_id, $this->_isSBA)) {
+      return $this->_isSBA[(int)$product_id];
     }
     
     $inSBA_query = 'SELECT * 
@@ -1442,11 +1474,17 @@ Of the attributes provided, determine the number of those attributes that are
       $isSBA = $db->Execute($isSBA_query);
     
       if (!$isSBA->EOF && $isSBA->RecordCount() > 0) {
+        $this->_isSBA[(int)$product_id] = true;
         return true;
       } else {
+        $this->_isSBA[(int)$product_id] = false;
         return false;
       }
     }
 
+    $this->_isSBA[(int)$product_id] = false;
     return false;
   }  
+
+}
+?>

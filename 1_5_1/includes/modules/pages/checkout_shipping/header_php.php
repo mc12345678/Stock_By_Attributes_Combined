@@ -54,7 +54,7 @@
         
         $inSBA_result = $db->Execute($inSBA_query);*/
 
-        if (zen_product_is_sba($products[$i]['id'])) {
+        if ($pwas_class->zen_product_is_sba($products[$i]['id'])) {
     			$attributes = $products[$i]['attributes'];
         } else {
 		      $attributes = null; //Force normal operation if the product is not monitored by SBA.

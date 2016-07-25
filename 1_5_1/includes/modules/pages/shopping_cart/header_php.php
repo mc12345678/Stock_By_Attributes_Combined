@@ -245,7 +245,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 				
 			//Set Custom ID variable.
 			if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
-				$customid = zen_get_customid($products[$i]['id'], $attributes);
+				$customid = $pwas_class->zen_get_customid($products[$i]['id'], $attributes);
 			
   	//Section for products without attributes
   	//Clear variables for each loop

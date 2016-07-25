@@ -207,6 +207,7 @@ class products_with_attributes_stock extends base {
    */
   function updateNotifyAttributesModuleDefaultSwitch(&$callingClass, $notifier, $products_options_names_fields, &$options_name, &$options_menu, &$options_comment, &$options_comment_position, &$options_html_id){
     //global $attrib_grid;
+    global $pwas_class;
 
           switch (true) {
       case ($products_options_names_fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA): // SBA Select List (Dropdown) Basic
@@ -247,7 +248,7 @@ class products_with_attributes_stock extends base {
         //var_dump($products_options_array); //Debug Line
         $options_html_id[] = 'drp-attrib-' . $products_options_names_fields['products_options_id'];
         // added new image rotate ability ($options_menu_images);
-        $options_menu[] = zen_draw_pull_down_menu_SBAmod('id[' . $products_options_names_fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names_fields['products_options_id'] . '"' . ' class="sbaselectlist"', false, $disablebackorder, $options_menu_images) . "\n";
+        $options_menu[] = $pwas_class->zen_draw_pull_down_menu_SBAmod('id[' . $products_options_names_fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names_fields['products_options_id'] . '"' . ' class="sbaselectlist"', false, $disablebackorder, $options_menu_images) . "\n";
         // END "Stock by Attributes" SBA
         
         $options_comment[] = $products_options_names_fields['products_options_comment'];
@@ -279,7 +280,7 @@ class products_with_attributes_stock extends base {
      global $db, $sql, $options_menu_images, $moveSelectedAttribute, 
         $products_options_array, $options_attributes_image, 
         $products_options_names, $products_options_names_count, 
-        $stock, $is_SBA_product, $order_by, $products_options;
+        $stock, $is_SBA_product, $order_by, $products_options, $pwas_class;
      
      $options_menu_images = array();
      $moveSelectedAttribute = false;
@@ -291,7 +292,7 @@ class products_with_attributes_stock extends base {
      }
      $products_options_names_count = $products_options_names->RecordCount();
 
-     if (zen_product_is_sba($_GET['products_id'])) {
+     if ($pwas_class->zen_product_is_sba($_GET['products_id'])) {
        $this->_isSBA = true;
      } else {
        $this->_isSBA = false;
@@ -408,12 +409,14 @@ class products_with_attributes_stock extends base {
    */
   //NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT //Line 716
   function updateNotifyOrderProcessingStockDecrementInit(&$callingClass, $notifier, $paramsArray, & $productI, & $i) {
+    global $pwas_class;
+
     $this->_i = $i;
     $this->_productI = $productI;
-    $this->_orderIsSBA = zen_product_is_sba($this->_productI['id']);
+    $this->_orderIsSBA = $pwas_class->zen_product_is_sba($this->_productI['id']);
     
     if ($this->_orderIsSBA /*&& zen_product_is_sba($this->_productI['id'])*/) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
-      $this->_stock_info = zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order'); // Sorted comma separated list of the attribute_id.
+      $this->_stock_info = $pwas_class->zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order'); // Sorted comma separated list of the attribute_id.
 
       // START "Stock by Attributes"
       $attributeList = null;
@@ -422,7 +425,7 @@ class products_with_attributes_stock extends base {
         foreach($this->_productI['attributes'] as $attributes){
           $attributeList[] = $attributes['value_id'];
         }
-        $customid = zen_get_customid($this->_productI['id'],$attributeList); // Expects that customid would be from a combination product, not individual attributes on a single product.  Should return an array if the values are individual or a single value if all attributes equal a single product.
+        $customid = $pwas_class->zen_get_customid($this->_productI['id'],$attributeList); // Expects that customid would be from a combination product, not individual attributes on a single product.  Should return an array if the values are individual or a single value if all attributes equal a single product.
         $productI['customid'] = $customid;
         $this->_productI['customid'] = $customid;
 //      $productI['model'] = (zen_not_null($customid) ? $customid : $productI['model']);
@@ -437,7 +440,7 @@ class products_with_attributes_stock extends base {
    */
   // Line 739
   function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left){
-    global $db;
+    global $db, $pwas_class;
 
     $this->_stock_values = $stock_values;
 
@@ -450,7 +453,7 @@ class products_with_attributes_stock extends base {
       // mc12345678 If the has attibutes then perform the following work.
       if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) >0){
         // mc12345678 Identify a list of attributes associated with the product
-        $stock_attributes_search = zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
+        $stock_attributes_search = $pwas_class->zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
         
         $get_quantity_query = 'select quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
 
@@ -519,10 +522,10 @@ class products_with_attributes_stock extends base {
 
   // NOTIFY_HEADER_END_SHOPPING_CART
   function updateNotifyHeaderEndShoppingCart(&$callingClass, $notifier, $paramsArray) {
-    global $productArray, $db;
+    global $productArray, $db, $pwas_class;
 
     for ($i = 0, $n = sizeof($productArray); $i < $n; $i++) {
-      if (isset($productArray[$i]['attributes']) && is_array($productArray[$i]['attributes']) && sizeof($productArray[$i]['attributes']) > 0 && zen_product_is_sba($productArray[$i]['id'])) {
+      if (isset($productArray[$i]['attributes']) && is_array($productArray[$i]['attributes']) && sizeof($productArray[$i]['attributes']) > 0 && $pwas_class->zen_product_is_sba($productArray[$i]['id'])) {
         $productArray[$i]['attributeImage'] = array();
         
   // Need to collect all of the option ids that are associated with the

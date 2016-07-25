@@ -18,6 +18,15 @@
 
  $autoLoadConfig[0][] = array(
   'autoType' => 'class',
+  'loadFile' => 'class.products_with_attributes_class_stock.php'
+  );
+ $autoLoadConfig[199][] = array(
+  'autoType' => 'classInstantiate',
+  'className' => 'products_with_attributes_class_stock',
+  'objectName' => 'pwas_class'
+  ); 
+ $autoLoadConfig[0][] = array(
+  'autoType' => 'class',
   'loadFile' => 'observers/class.products_with_attributes_stock.php'
   );
  $autoLoadConfig[199][] = array(
