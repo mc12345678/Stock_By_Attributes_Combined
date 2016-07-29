@@ -56,6 +56,7 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT'; // keep
     $attachNotifier[] = 'NOTIFY_HEADER_END_SHOPPING_CART';
+    $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_SHIPPING';
 
   
     $this->attach($this, $attachNotifier);
@@ -630,6 +631,49 @@ class products_with_attributes_stock extends base {
     }
   }
   
+  // NOTIFY_HEADER_START_CHECKOUT_SHIPPING
+  function updateNotifyHeaderStartCheckoutShipping(&$callingClass, $notifier, $paramsArray) {
+    // Attempt to validate that prepared to address/process SBA related information.  The initial logic here is
+    // from a default ZC includes/modules/pages/checkout_shipping/header_php.php file which could otherwise be modified
+    //  but instead of repeating exactly the contents of that file, it's potential redirects, etc... Just want to validate
+    //  that the cart is ready to handle working with the products.
+    if ($_SESSION['cart']->count_contents() > 0 && isset($_SESSION['customer_id']) && $_SESSION['customer_id'] && zen_get_customer_validate_session($_SESSION['customer_id']) != false) {
+      $_SESSION['valid_to_checkout'] = true;
+      $_SESSION['cart']->get_products(true);
+      if ($_SESSION['valid_to_checkout']) {
+        // Now we are "allowed" to process cart items and specifically to ensure that the product if SBA tracked can 
+        //  move forward in the cart.
+        if ((STOCK_CHECK == 'true') && (STOCK_ALLOW_CHECKOUT != 'true')) {
+          $products = $_SESSION['cart']->get_products();
+          for ($i = 0, $n = sizeof($products); $i < $n; $i++) {
+            unset($attributes);
+            if (is_array[$products[$i]['attributes']]) {
+              if (zen_product_is_sba($products[$i]['id'])) {
+                $attributes = $products[$i]['attributes'];
+              } else {
+                $attributes = null;
+              }
+            } else {
+              $attributes = null;
+            }
+            if (zen_not_null($attributes)) {
+              if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
+                zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+                break;
+              }
+            } else {
+              $qtyAvailable = zen_get_products_stock($products[$i]['id']);
+              if ($qtyAvailable - $products[$i]['quantity'] < 0 || $qtyAvailable - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
+                zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+                break;
+              }
+            }
+          }
+        } // EOF stock check against total quantity.
+      } // EOF valid to checkout.
+    } // EOF opening validation
+  } // EOF function updateNotifyHeaderStartCheckoutShipping 
+  
   /*
    * Generic function that is activated when any notifier identified in the observer is called but is not found in one of the above previous specific update functions is encountered as a notifier.
    */
@@ -708,6 +752,10 @@ class products_with_attributes_stock extends base {
     if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM') {
       updateNotifyOrderDuringCreateAddedAttributeLineItem($callingClass, $notifier, $paramsArray, $paramsArray['orders_products_attributes_id']);
     } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
+    
+    if ($notifier == 'NOTIFY_HEADER_START_CHECKOUT_SHIPPING') {
+      updateNotifyHeaderStartCheckoutShipping($callingClass, $notifier, $paramsArray);
+    } //endif NOTIFY_HEADER_START_CHECKOUT_SHIPPING
   } //end update function - mc12345678
 } //end class - mc12345678
 
