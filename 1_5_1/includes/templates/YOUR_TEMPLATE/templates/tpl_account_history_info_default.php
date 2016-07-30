@@ -55,7 +55,12 @@
 				for ($j = 0, $n2 = sizeof($order->products[$i]['attributes']); $j < $n2; $j++) {
 					if( $tmpCheck != $order->products[$i]['id'] ){
 						$tmpCheck = $order->products[$i]['id'];
-						$customid .= $pwas_class->zen_get_customid($order->products[$i]['id'],$attributes) . ', ';
+
+						$customid .= (isset($_SESSION['pwas_class2'])
+                          && method_exists($_SESSION['pwas_class2'], 'zen_get_customid')
+                          && is_callable(array($_SESSION['pwas_class2'], 'zen_get_customid'))
+                            ? $_SESSION['pwas_class2']->zen_get_customid($order->products[$i]['id'], $attributes)
+                            : function_exists('zen_get_customid') && zen_get_customid($order->products[$i]['id'], $attributes)) . ', ';
 					}
 		       	}
 		       	$customid = rtrim($customid,', ');

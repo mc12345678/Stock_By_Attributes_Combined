@@ -245,7 +245,11 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 				
 			//Set Custom ID variable.
 			if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
-				$customid = $pwas_class->zen_get_customid($products[$i]['id'], $attributes);
+                $customid = isset($_SESSION['pwas_class2'])
+                  && method_exists($_SESSION['pwas_class2'], 'zen_get_customid')
+                  && is_callable(array($_SESSION['pwas_class2'], 'zen_get_customid'))
+                    ? $_SESSION['pwas_class2']->zen_get_customid($products[$i]['id'], $attributes)
+                    : function_exists('zen_get_customid') && zen_get_customid($products[$i]['id'], $attributes);
 			
   	//Section for products without attributes
   	//Clear variables for each loop

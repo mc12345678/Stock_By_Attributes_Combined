@@ -25,6 +25,13 @@
   'className' => 'products_with_attributes_class_stock',
   'objectName' => 'pwas_class'
   ); 
+ $autoLoadConfig[199][] = array(
+  'autoType' => 'classInstantiate',
+  'className' => 'products_with_attributes_class_stock',
+  'objectName' => 'pwas_class2',
+  'checkInstantiated' => true,
+  'classSession'=>true
+  ); 
  $autoLoadConfig[0][] = array(
   'autoType' => 'class',
   'loadFile' => 'observers/class.products_with_attributes_stock.php'

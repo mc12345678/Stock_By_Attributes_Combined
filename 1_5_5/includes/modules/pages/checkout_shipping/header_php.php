@@ -53,7 +53,12 @@
         
         $inSBA_result = $db->Execute($inSBA_query);*/
 
-        if ($pwas_class->zen_product_is_sba($products[$i]['id'])) {
+        if (isset($_SESSION['pwas_class2'])
+        && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
+        && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
+            ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($products[$i]['id']))
+            : function_exists('zen_product_is_sba') && zen_product_is_sba($products[$i]['id'])
+        ) {
           $attributes = $products[$i]['attributes'];
         } else {
           $attributes = null; //Force normal operation if the product is not monitored by SBA.

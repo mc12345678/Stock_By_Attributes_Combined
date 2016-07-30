@@ -116,7 +116,11 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
     }
 
     $inSBA = (sizeof($inSBA_result) > 0 && !$inSBA_result->EOF);*/
-    $inSBA = $pwas_class->zen_product_is_sba($products[$i]['id']);
+    $inSBA = isset($_SESSION['pwas_class2'])
+    && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
+    && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
+        ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($products[$i]['id']))
+        : function_exists('zen_product_is_sba') && zen_product_is_sba($products[$i]['id']);
     $products_options_type = null;
     // End of "Stock by Attributes"
     foreach ($products[$i]['attributes'] as $option => $value) {
@@ -184,7 +188,11 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 
   //Set Custom ID variable. //Indepdendent of Stock_check.
   if(STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
-    $customid = $pwas_class->zen_get_customid($products[$i]['id'], $attributes);
+    $customid = (isset($_SESSION['pwas_class2'])
+      && method_exists($_SESSION['pwas_class2'], 'zen_get_customid')
+      && is_callable(array($_SESSION['pwas_class2'], 'zen_get_customid'))
+          ? $_SESSION['pwas_class2']->zen_get_customid($products[$i]['id'], $attributes)
+          : function_exists('zen_get_customid') && zen_get_customid($products[$i]['id'], $attributes));
   }
 
   $linkProductsImage = zen_href_link(zen_get_info_page($products[$i]['id']), 'products_id=' . $products[$i]['id']);

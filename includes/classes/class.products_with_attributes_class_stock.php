@@ -1448,14 +1448,18 @@ Of the attributes provided, determine the number of those attributes that are
   // function zen_is_SBA was removed as it was a duplicate of $this->zen_product_is_sba.  If code
   // has been written to use that function, please consider using $this->zen_product_is_sba instead.
   
-  function zen_product_is_sba($product_id) {
+  function zen_product_is_sba($product_id, $reset = false) {
     global $db;
     
     if (!isset($product_id) && !is_numeric(zen_get_prid($product_id))) {
       return null;
     }
     
-    if (array_key_exists((int)$product_id, $this->_isSBA)) {
+    // If the product has already been found during this session, then return the
+    //  the result instead of querying the database again unless there is a need
+    //  to "reset" the query result.  An important point of doing this is when 
+    //  dealing with the cart directly so that quantities are updated correctly.
+    if (array_key_exists((int)$product_id, $this->_isSBA) && $reset == false) {
       return $this->_isSBA[(int)$product_id];
     }
     

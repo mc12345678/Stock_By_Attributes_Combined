@@ -179,7 +179,6 @@
       $stock_values = $db->Execute($stock_query);
       return $stock_values->fields['products_quantity'];
     } elseif (is_array($attributes) && sizeof($attributes) > 0) {
-      global $pwas_class;
       //For products with associated attributes, to do the following:
       //	1. Check if the attribute has been added to the SBA Stock Page.
       //	2. Check if the attribute(s) are listed in seperate rows or are combined into a single row.
@@ -187,7 +186,7 @@
 
    /* mc12345678 Comment about the $attribute_stock test is really to see if the product is tracked by SBA. */
       // check if any attribute stock values have been set for the product in the SBA table, if not do the else part
-      return $pwas_class->zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'));
+      return $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'));
 
     }
 
