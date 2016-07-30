@@ -81,7 +81,8 @@ function cartProductCount($products_id){
       if (typeof $(this).find(":selected").attr("data-src") == "undefined") { 
               $("#SBA_ProductImage").attr("src", "';
       if (isset($options_menu_images) && is_array($options_menu_images) && array_key_exists('product_image', $options_menu_images)) {
-        if ($options_menu_images['product_image'] == '' and PRODUCTS_IMAGE_NO_IMAGE_STATUS == '1') {
+        if ($options_menu_images['product_image'] == '' and PRODUCTS_IMAGE_NO_IMAGE_STATUS == '1' 
+             or $options_menu_images['product_image'] == DIR_WS_IMAGES and PRODUCTS_IMAGE_NO_IMAGE_STATUS == '1') {
           $field .= DIR_WS_IMAGES . PRODUCTS_IMAGE_NO_IMAGE;
         } else {
           $field .= $options_menu_images['product_image'];
