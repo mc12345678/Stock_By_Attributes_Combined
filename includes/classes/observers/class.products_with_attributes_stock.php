@@ -523,11 +523,31 @@ class products_with_attributes_stock extends base {
 
   // NOTIFY_HEADER_END_SHOPPING_CART
   function updateNotifyHeaderEndShoppingCart(&$callingClass, $notifier, $paramsArray) {
-    global $productArray, $db; //, $pwas_class;
-
+    global $productArray, $flagAnyOutOfStock, $db;
+    
+    $products = $_SESSION['cart']->get_products();
+    
     for ($i = 0, $n = sizeof($productArray); $i < $n; $i++) {
       if (isset($productArray[$i]['attributes']) && is_array($productArray[$i]['attributes']) && sizeof($productArray[$i]['attributes']) > 0 && $_SESSION['pwas_class2']->zen_product_is_sba($productArray[$i]['id'])) {
         $productArray[$i]['attributeImage'] = array();
+
+        if (STOCK_CHECK == 'true') {
+          $SBAqtyAvailable = zen_get_products_stock($productArray[$i]['id'], $products[$i]['attributes']); // Quantity of product available with the selected attribute(s).
+          $totalQtyAvailable = zen_get_products_stock($productArray[$i]['id']); // Total quantity of product available if all attribute optioned product were added to the cart.
+          if ($SBAqtyAvailable - $products[$i]['quantity'] < 0 || $totalQtyAvailable - $_SESSION['cart']->in_cart_mixed($productArray[$i]['id']) < 0) {
+            $productArray[$i]['flagStockCheck'] = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
+            $flagAnyOutOfStock = true;
+          }
+        }
+        
+        // Ensure that additional stock fields are added at least for SBA product.  If needs to be for all product, then 
+        //  This information should be moved outside of the above if statement.  Did not carry over: $products_options_type
+        //  nor $productsQty = 0; $productsQty = 0 was previously used to identify "duplicates" and is not needed.
+        //  $products_options_type is not yet used for anything else, but was perhaps to address something specific in future
+        //  coding.  It will remain off of here for now.
+        $productArray[$i]['customid'] = (STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? zen_get_customid($productArray[$i]['id'], $products[$i]['attributes']) : null;
+        $productArray[$i]['stockAvailable'] = null;
+        $productArray[$i]['lowproductstock'] = false;
         
   // Need to collect all of the option ids that are associated with the
   // product, then sort them by the normal sort order in reverse.

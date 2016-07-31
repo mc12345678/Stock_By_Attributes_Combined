@@ -116,12 +116,12 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
     }
 
     $inSBA = (sizeof($inSBA_result) > 0 && !$inSBA_result->EOF);*/
-    $inSBA = isset($_SESSION['pwas_class2'])
+   /* $inSBA = isset($_SESSION['pwas_class2'])
     && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
     && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
         ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($products[$i]['id']))
         : function_exists('zen_product_is_sba') && zen_product_is_sba($products[$i]['id']);
-    $products_options_type = null;
+    $products_options_type = null;*/
     // End of "Stock by Attributes"
     foreach ($products[$i]['attributes'] as $option => $value) {
 
@@ -162,7 +162,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
     
       //Clear variables for each loop
 //  $flagStockCheck = null;   
-  $stockAvailable = null;
+/*  $stockAvailable = null;
   $lowproductstock = false;
   $customid = null;
   //unset($attributes); //Unnecessary because reeassigned below.
@@ -172,11 +172,14 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
     $attributes = $products[$i]['attributes']; 
   }  else {
     $attributes = null; //Force normal operation if the product is not monitored by SBA.
-  }
+  }*/
   if (STOCK_CHECK == 'true') {
 //    $flagStockCheck = zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes);
- $qtyAvailable = zen_get_products_stock($products[$i]['id'], $attributes);
-     
+    $qtyAvailable = zen_get_products_stock($products[$i]['id']/*, $attributes*/);
+    // Problem here is that $qtyAvailable defined above, is how many of a selection exists... If SBA, then $qtyAvailable are the quantity of attributes.
+    //  if not SBA then total quantity of product regardless of attributes. Below, $qtyAvailable (single variable) is used to identify whether the total amount
+    //  of the current attribute selection exceeds those available or it is used to indicate that of the total quantity of product whether the mixture exceeds
+    //  the allowed quantity. :/  Lose/lose situation.  So somewhat need an additional variable or an additional check. :/
       // mc12345678 this section is as if SBA is not installed/involved.  Normal response after the expectation to check stock is included. After this section should go straight to the next default ZC action.
       // bof: extra check on stock for mixed YES
     if ($qtyAvailable - $products[$i]['quantity'] < 0 || $qtyAvailable - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
@@ -187,13 +190,13 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
   } // End of STOCK_CHECK == 'true'
 
   //Set Custom ID variable. //Indepdendent of Stock_check.
-  if(STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
+/*  if(STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
     $customid = (isset($_SESSION['pwas_class2'])
       && method_exists($_SESSION['pwas_class2'], 'zen_get_customid')
       && is_callable(array($_SESSION['pwas_class2'], 'zen_get_customid'))
           ? $_SESSION['pwas_class2']->zen_get_customid($products[$i]['id'], $attributes)
           : function_exists('zen_get_customid') && zen_get_customid($products[$i]['id'], $attributes));
-  }
+  }*/
 
   $linkProductsImage = zen_href_link(zen_get_info_page($products[$i]['id']), 'products_id=' . $products[$i]['id']);
   $linkProductsName = zen_href_link(zen_get_info_page($products[$i]['id']), 'products_id=' . $products[$i]['id']);
@@ -221,9 +224,9 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
                             'flagShowFixedQuantity'=>$showFixedQuantity,
                             'linkProductsImage'=>$linkProductsImage,
                             'linkProductsName'=>$linkProductsName,
-                            'stockAvailable'=>$stockAvailable,
+                            /*'stockAvailable'=>$stockAvailable,
                             'lowproductstock'=>$lowproductstock,
-                            'customid'=>$customid,
+                            'customid'=>$customid,*/
                             'productsImage'=>$productsImage,
                             'productsName'=>$productsName,
                             'showFixedQuantity'=>$showFixedQuantity,
