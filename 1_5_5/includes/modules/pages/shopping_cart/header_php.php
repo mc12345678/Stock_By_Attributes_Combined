@@ -89,7 +89,7 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
   $attrArray = false;
   $productsName = $products[$i]['name'];
   // Push all attributes information in an array
-  $inSBA = false;
+  //$inSBA = false;
   if (isset($products[$i]['attributes']) && is_array($products[$i]['attributes'])) {
     if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
       //LPAD - Return the string argument, left-padded with the specified string
