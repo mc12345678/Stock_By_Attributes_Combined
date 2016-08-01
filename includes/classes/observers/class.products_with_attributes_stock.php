@@ -440,7 +440,7 @@ class products_with_attributes_stock extends base {
    * Function that is activated when NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN is encountered as a notifier.
    */
   // Line 739
-  function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left){
+  function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left = 0){
     global $db; //, $pwas_class;
 
     $this->_stock_values = $stock_values;
@@ -465,7 +465,7 @@ class products_with_attributes_stock extends base {
   
         // mc12345678 Update the SBA table to reflect the stock remaining based on the above.
         $attribute_update_query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set quantity='.$attribute_stock_left.' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
-        $db->Execute($attribute_update_query);  
+        $db->Execute($attribute_update_query, false, false, 0, true);  
         $this->_attribute_stock_left = $attribute_stock_left;
       }
     }
