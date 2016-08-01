@@ -349,7 +349,8 @@ class products_with_attributes_stock_admin extends base {
     if ($notifier == 'NOTIFIER_ADMIN_ZEN_REMOVE_PRODUCT'){
       //admin/includes/functions/general.php
       $product_id = $paramsArray['product_id']; //=>$product_id
-      $this->updateNotifierAdminZenRemoveProduct($callingClass, $notifier, $paramsArray, $product_id);
+      $ptc = $paramsArray['ptc'];
+      $this->updateNotifierAdminZenRemoveProduct($callingClass, $notifier, $paramsArray, $product_id, $ptc);
     }
 
     if ($notifier == 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE'){
