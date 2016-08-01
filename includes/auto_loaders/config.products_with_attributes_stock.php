@@ -20,11 +20,12 @@
   'autoType' => 'class',
   'loadFile' => 'class.products_with_attributes_class_stock.php'
   );
- $autoLoadConfig[199][] = array(
+/* $autoLoadConfig[199][] = array(
   'autoType' => 'classInstantiate',
   'className' => 'products_with_attributes_class_stock',
   'objectName' => 'pwas_class'
-  ); 
+  );*/
+// Does it need to load as early as 78? Works there, but shouldn't it be 199?
  $autoLoadConfig[199][] = array(
   'autoType' => 'classInstantiate',
   'className' => 'products_with_attributes_class_stock',
