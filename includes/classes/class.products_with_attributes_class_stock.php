@@ -366,6 +366,13 @@ function cartProductCount($products_id){
             $specAttributes[str_replace($file_prefix,'',$optid)] = $file_value;
           } elseif ($optvalid == 0) {
             $specAttributes[$optid] = $optvalid;
+          } elseif (is_array($optvalid)) {
+            if ($multi == false && sizeof($optvalid) > 1) {
+              $multi = true;
+            }
+            foreach($optvalid as $optid2=>$optvalid2) {
+              $temp_attributes[] = $optvalid2;
+            }
           } elseif (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.  This is probably the best place to do the review because all aspects of the attribute are available.
             $temp_attributes[] = $optvalid;
           }
@@ -1062,6 +1069,10 @@ Of the attributes provided, determine the number of those attributes that are
         $specAttributes[str_replace($file_prefix,'',$optid)] = $file_value;
       } elseif ($optvalid == 0) {
         $specAttributes[$optid] = $optvalid;
+      } elseif (is_array($optvalid)) {
+        foreach ($optvalid as $optid2=>$optvalid2) {
+          $specAttributes[$optid2] = $optvalid2;
+        }
       } elseif (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.  This is probably the best place to do the review because all aspects of the attribute are available.
         $specAttributes[$optid] = $optvalid;
       }
