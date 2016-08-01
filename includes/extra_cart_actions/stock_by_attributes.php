@@ -206,7 +206,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
          * 
          */
       }
-// how many currently in cart for attribute
+// status of if product is tracked as mixed product or not
       $chk_mixed = zen_get_products_quantity_mixed($_POST['products_id'][$i]); // use mixed
 
         if($productIsSBA[$i] && (PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2') /*single dropdown as multiple*/) {
@@ -228,6 +228,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
            * 
            */
         }
+      $chk_current_qty_individual = zen_get_products_stock($_POST['products_id'][$i], $attributes);
       $chk_current_qty = zen_get_products_stock($_POST['products_id'][$i], ($chk_mixed) ? NULL : $attributes);
 //          }
 //          $_SESSION['qty_chk_current_qty_i_'.$i] = $chk_current_qty;
@@ -243,20 +244,46 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
           if (array_key_exists($_POST['products_id'][$j], $sba_add_prods_old)) {
             if ($sba_add_prods_old[$_POST['products_id'][$i]] == $sba_add_prods_old[$_POST['products_id'][$j]]) {
               $chk_current_qty = $chk_current_qty - $_POST['cart_quantity'][$j];
+              $chk_current_qty_individual = $chk_current_qty_individual - $_POST['cart_quantity'][$j];
               $new_qty = $new_qty - $_POST['cart_quantity'][$j];
             }
           }
         }
 //        $chk_current_qty = $sba_add_prods_quantity[$pos] - $_POST['cart_quantity'][$i]
       }
-        if (STOCK_ALLOW_CHECKOUT == 'false' && ($new_qty > $chk_current_qty)) {
+
+      if (STOCK_ALL_CHECKOUT == 'false' && $chk_mixed == false) { // Would say that it would be on this line to add an admin switch for controlling total product quantity versus variant.
+        $chk_current_qty_total = zen_get_products_stock($_POST['products_id'][$i]);
+      } else {
+        $chk_current_qty_total = false;
+      }
+      // Check to see if the quantity rules of the individual stock quantities will take the product out-of-stock
+        if (STOCK_ALLOW_CHECKOUT == 'false' && ($new_qty > $chk_current_qty || $new_qty > $chk_current_qty_individual || ($chk_current_qty_total !== false && $new_qty > $chk_current_qty_total))) {
+          
+          // if the individual product quantity is limiting then use the individual product (attribute) quantity.
+          if ($chk_mixed == true && $new_qty > $chk_current_qty_individual && $chk_current_qty_individual < $chk_current_qty) {
+            $new_qty = $chk_current_qty_individual;
+          } elseif ($chk_mixed == true && $new_qty > $chk_current_qty_individual) { // Continuation of above, but recognizing that the mixed qty
             $new_qty = $chk_current_qty;
+          } elseif ($chk_mixed == true && $new_qty > $chk_current_qty) {
+            $new_qty = $chk_current_qty;
+          } elseif ($chk_mixed == false && $new_qty > $chk_current_qty_individual && ($chk_current_qty_total !== false ? $chk_current_qty_individual < $chk_current_qty_total : true)) {
+            $new_qty = $chk_current_qty_individual; // This value will represent the maximum allowed by this product.
+                                         // This does not take into account if the total quantity of product is
+                                         // less than the quantity available for a variant. :/ This may require
+                                         // an additional admin switch to address.
+          } elseif ($chk_mixed == false && $new_qty > $chk_current_qty_individual) {
+            $new_qty = $chk_current_qty_total;
+          } elseif ($chk_mixed == false && $new_qty > ($chk_current_qty_total !== false ? $chk_current_qty_total : $new_qty)) {
+            $new_qty = $chk_current_qty;
+          }
+          //$new_qty = (min($chk_current_qty, $chk_current_qty_mixed) < 0) ? max($chk_current_qty, $chk_current_qty_mixed) : min($chk_current_qty, $chk_current_qty_mixed);
             $messageStack->add_session('shopping_cart', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id'][$i]), 'caution');
         }
       if (array_key_exists($_POST['products_id'][$i], $sba_add_prods_old) && $productIsSBA[$i]) {
         $pos = array_search($sba_add_prods_old[$_POST['products_id'][$i]], $sba_add_prods);
 //        $sba_add_prods_quantity[$pos] = $sba_add_prods_quantity[$pos] + $_POST['cart_quantity'][$i];
-        if (STOCK_ALLOW_CHECKOUT == 'false' && ($sba_add_prods_quantity[$pos] <= $chk_current_qty)) {
+        if (STOCK_ALLOW_CHECKOUT == 'false' && ($pos === false || ($sba_add_prods_quantity[$pos] <= $chk_current_qty))) {
           $new_qty = $temp_new_qty;
         }
 //        $_SESSION['cart_qty_10_' . $_POST['products_id'][$i]] = $new_qty;
@@ -481,10 +508,10 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
                 $prod_qty[] = $qty * $_POST['cart_quantity'];
                 $grid_prod_id[] = $products_id;
                 $grid_add_number++;
-            }
+            }  // EOF if is numeric
 //            $_SESSION['file_' . $prid] = $file;
             //$_FILES = $file;
-        }
+        } // EOF foreach product_id
 
 //        $_SESSION['in_loop_grid_id'] = $grid_id;
 //        unset($_SESSION['in_loop_grid_id']);
@@ -739,10 +766,10 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
                   ? $_SESSION['pwas_class2']->zen_sba_attribs_no_text($_POST['products_id'], $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'addNoText') 
                   : zen_sba_attribs_no_text($_POST['products_id'], $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'addNoText');
             }
-            if ($addProdIDs != method_exists($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')
-                                 && is_callable(array($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info'))
+            if ($addProdIDs != ((method_exists($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')
+                                 && is_callable(array($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')))
                                    ? $_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'ids')
-                                   : zen_get_sba_attribute_info($product_id, $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'ids')) {
+                                   : zen_get_sba_attribute_info($product_id, $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'ids'))) {
               continue;
             }
 //            $_SESSION['cart']->contents[$prod_id]['attributes'] = zen_sba_attribs_no_text($_POST['products_id'], $_SESSION['cart']->contents[$prod_id]['attributes']);
@@ -752,9 +779,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
               $add_val = $_SESSION['cart']->contents[$product_id]['qty'];
             }
             $_SESSION['cart']->contents[$product_id] = $_SESSION['cart']->contents[$prod_id];
-
-            if (method_exists($_SESSION['pwas_class2'], 'zen_sba_has_text_field')
-                && is_callable(array($_SESSION['pwas_class2'], 'zen_sba_has_text_field')) 
+            
+            if ((method_exists($_SESSION['pwas_class2'], 'zen_sba_has_text_field')
+                && is_callable(array($_SESSION['pwas_class2'], 'zen_sba_has_text_field'))) 
                   ? $_SESSION['pwas_class2']->zen_sba_has_text_field($addProdIDs)
                   : zen_sba_has_text_field($addProdIDs)) {
               $_SESSION['cart']->contents[$product_id]['qty'] +=  $add_val;
@@ -766,8 +793,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         }
 
         $cart_qty = $_SESSION['cart']->get_quantity($product_id);
-        $cart_qty = $_SESSION['cart']->in_cart_mixed($product_id);
-      
+//        $cart_qty = $_SESSION['cart']->in_cart_mixed($product_id);
         if (isset($_SESSION['pwas_class2']) 
             && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
             && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
