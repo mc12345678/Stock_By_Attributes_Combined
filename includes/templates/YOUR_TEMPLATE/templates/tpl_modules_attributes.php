@@ -17,15 +17,15 @@
 <div id="productAttributes">
 <?php
     if ($is_SBA_product /*$stock->_isSBA*/ && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && defined('PRODINFO_ATTRIBUTE_DYNAMIC_STATUS') && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS != '0'
-        && (isset($_SESSION['pwas_class2'])
-        && method_exists($_SESSION['pwas_class2'], 'zen_sba_dd_allowed')
-        && is_callable(array($_SESSION['pwas_class2'], 'zen_sba_dd_allowed'))
-            ? $_SESSION['pwas_class2']->zen_sba_dd_allowed($products_options_names)
-            : function_exists('zen_sba_dd_allowed') 
+        && ((isset($_SESSION['pwas_class2'])
+            && method_exists($_SESSION['pwas_class2'], 'zen_sba_dd_allowed')
+            && is_callable(array($_SESSION['pwas_class2'], 'zen_sba_dd_allowed')))
+              ? $_SESSION['pwas_class2']->zen_sba_dd_allowed($products_options_names)
+              : ((function_exists('zen_sba_dd_allowed')) 
                 ? zen_sba_dd_allowed($products_options_names)
-                : true
+                : true)
             )
-       ) {
+        ) {
       if (!defined('SBA_ZC_DEFAULT')) {
         define('SBA_ZC_DEFAULT','false'); // sets to use the ZC method of HTML tags around attributes.
       }
@@ -33,9 +33,11 @@
       $inSBA_query = $db->bindVars($inSBA_query, ':products_id:', $_GET['products_id'], 'integer');
 
       $inSBA = $db->Execute($inSBA_query); // Determine that product is tracked by SBA
+      $prodInSBA = (!$inSBA->EOF && $inSBA->RecordCount() > 0 ? true : false);
     } else { 
       $inSBA = new queryFactoryResult($db->link);
       $inSBA->EOF = true;
+      $prodInSBA = false;
     }
 
     if ($zv_display_select_option > 0) {
@@ -64,6 +66,7 @@
           $pad = new $class($products_id);
 
           echo $pad->draw();
+          $prodInSBA = true;
         } /* END SBA Multi */ elseif ($products_attributes->fields['total'] > 0) {
           $products_id = (preg_match("/^\d{1,10}(\{\d{1,10}\}\d{1,10})*$/", $_GET['products_id']) ? $_GET['products_id'] : (int) $_GET['products_id']);
           require(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_SINGLE . '.php');
@@ -75,13 +78,14 @@
       else {
          $inSBA = new queryFactoryResult($db->link);
          $inSBA->EOF = true;
+         $prodInSBA = false;
          ?>
 <h3 id="attribsOptionsText"><?php echo TEXT_PRODUCT_OPTIONS; ?></h3>
 <?php } // END NON-SBA SPECIFIC: show please select unless all are readonly ?>
 
 <?php
      } // End display info 
-  if ($inSBA->EOF && $inSBA->RecordCount() < 1) {
+     if (!$prodInSBA /*$inSBA->EOF && $inSBA->RecordCount() < 1*/) {
     for($i=0;$i<sizeof($options_name);$i++) {
 ?>
 <?php
@@ -102,11 +106,9 @@
 <?php if ($options_comment[$i] != '' and $options_comment_position[$i] == '1') { ?>
     <div class="ProductInfoComments"><?php echo $options_comment[$i]; ?></div>
 <?php } // END if Div_options_Comment    
-    } // End FOR options_name 
-      ?>
-
-
-<?php
+       } // End FOR options_name 
+       ?>
+       <?php
        // This displays ALL images regardless of attribute stock levels. Comment-out the "echo" if you want to skip images.
        for ($j = 0, $m = sizeof($options_name); $j < $m; $j++) {
 if ($options_attributes_image[$j] != '') {
