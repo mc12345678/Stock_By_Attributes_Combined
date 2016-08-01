@@ -656,7 +656,7 @@ Of the attributes provided, determine the number of those attributes that are
     $stock_attributes = '';
     $compArray = array();
     
-    $pro_id = $products_id;
+    // $pro_id = $products_id;
     
     $products_id = zen_get_prid($products_id);
 
