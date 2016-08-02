@@ -466,8 +466,9 @@ class products_with_attributes_stock extends base {
         // mc12345678 Update the SBA table to reflect the stock remaining based on the above.
         $attribute_update_query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set quantity='.$attribute_stock_left.' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
         $db->Execute($attribute_update_query, false, false, 0, true);  
-        $this->_attribute_stock_left = $attribute_stock_left;
+        //$this->_attribute_stock_left = $attribute_stock_left;
       }
+      $this->_attribute_stock_left = $attribute_stock_left;
     }
   }
 
@@ -479,7 +480,7 @@ class products_with_attributes_stock extends base {
     //Need to modify the email that is going out regarding low-stock.
     //paramsArray is $i at time of development.
     if ($this->_orderIsSBA /*zen_product_is_sba($this->_productI['id'])*/) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
-      if ($callingClass->email_low_stock == '' && $callingClass->doStockDecrement && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
+      if (/*$callingClass->email_low_stock == '' && */$callingClass->doStockDecrement && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
         // kuroi: trigger and details for attribute low stock email
         $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid'] . ', name ' . $this->_productI['name'] . ', ';
         foreach($this->_productI['attributes'] as $attributes){
