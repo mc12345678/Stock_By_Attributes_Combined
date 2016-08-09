@@ -1057,11 +1057,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   // display message if all is good and not on shopping_cart page
             if (DISPLAY_CART == 'false' && $_GET['main_page'] != FILENAME_SHOPPING_CART && $messageStack->size('shopping_cart') == 0) {
               $messageStack->add_session('header', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . SUCCESS_ADDED_TO_CART_PRODUCT, 'success');
-              if ($grid_loop == $grid_add_number) {
+              if ($grid_loop >= $grid_add_number) {
                 zen_redirect(zen_href_link($goto, zen_get_all_get_params($parameters)));
               }
             } else {
-              if ($grid_loop == $grid_add_number) {
+              if ($grid_loop >= $grid_add_number) {
                 zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
               }
             }
