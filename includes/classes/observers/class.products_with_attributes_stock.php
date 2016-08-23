@@ -668,7 +668,7 @@ class products_with_attributes_stock extends base {
           $products = $_SESSION['cart']->get_products();
           for ($i = 0, $n = sizeof($products); $i < $n; $i++) {
             unset($attributes);
-            if (is_array[$products[$i]['attributes']]) {
+            if (isset($products[$i]) && is_array($products[$i]) && array_key_exists('attributes', $products[$i]) && isset($products[$i]['attributes']) && is_array($products[$i]['attributes'])) {
               if (zen_product_is_sba($products[$i]['id'])) {
                 $attributes = $products[$i]['attributes'];
               } else {
@@ -701,19 +701,19 @@ class products_with_attributes_stock extends base {
   function update(&$callingClass, $notifier, $paramsArray) {
   global $db;
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE') {
-      updateNotifyAttributesModuleSaleMakerDisplayPricePercentage($callingClass, $notifier, $paramsArray);
+      $this->updateNotifyAttributesModuleSaleMakerDisplayPricePercentage($callingClass, $notifier, $paramsArray);
     }
   
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_START_OPTION') {
-      updateNotifyAttributesModuleStartOption($callingClass, $notifier, $paramsArray);
+      $this->updateNotifyAttributesModuleStartOption($callingClass, $notifier, $paramsArray);
     }
     
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE') {
-      updateNotifyAttributesModuleOriginalPrice($callingClass, $notifier, $paramsArray);
+      $this->updateNotifyAttributesModuleOriginalPrice($callingClass, $notifier, $paramsArray);
     }
     
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED') {
-      updateNotifyAttributesModuleAttribSelected($callingClass, $notifier, $paramsArray);
+      $this->updateNotifyAttributesModuleAttribSelected($callingClass, $notifier, $paramsArray);
     }
     
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP') {
@@ -758,8 +758,8 @@ class products_with_attributes_stock extends base {
       $productI = $callingClass->products[$i];
       $this->_stock_values = $paramsArray['stock_values'];
       $stock_values = $this->_stock_values;
-      updateNotifyOrderProcessingStockDecrementInit($callingClass, $notifier, $paramsArray, $productI, $i);
-      updateNotifyOrderProcessingStockDecrementBegin($callingClass, $notifier, $paramsArray, $stock_values, $attribute_stock_left);
+      $this->updateNotifyOrderProcessingStockDecrementInit($callingClass, $notifier, $paramsArray, $productI, $i);
+      $this->updateNotifyOrderProcessingStockDecrementBegin($callingClass, $notifier, $paramsArray, $stock_values, $attribute_stock_left);
     }
 
     /*
@@ -767,15 +767,15 @@ class products_with_attributes_stock extends base {
      */
     // Line 776
     if ($notifier == 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END') {
-      updateNotifyOrderProcessingStockDecrementEnd($callingClass, $notifier, $paramsArray);
+      $this->updateNotifyOrderProcessingStockDecrementEnd($callingClass, $notifier, $paramsArray);
     }
     
     if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM') {
-      updateNotifyOrderDuringCreateAddedAttributeLineItem($callingClass, $notifier, $paramsArray, $paramsArray['orders_products_attributes_id']);
+      $this->updateNotifyOrderDuringCreateAddedAttributeLineItem($callingClass, $notifier, $paramsArray, $paramsArray['orders_products_attributes_id']);
     } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
     
     if ($notifier == 'NOTIFY_HEADER_START_CHECKOUT_SHIPPING') {
-      updateNotifyHeaderStartCheckoutShipping($callingClass, $notifier, $paramsArray);
+      $this->updateNotifyHeaderStartCheckoutShipping($callingClass, $notifier, $paramsArray);
     } //endif NOTIFY_HEADER_START_CHECKOUT_SHIPPING
   } //end update function - mc12345678
 } //end class - mc12345678
