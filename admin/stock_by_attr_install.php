@@ -328,43 +328,50 @@ function removeSBAconfiguration(){
   }
   array_push($resultMmessage, '&bull; Deleted ATTRIBUTES_SBA_DISPLAY_CUSTOMID  ' . $msg);
   
-	//DELETE FROM `products_options_types` 
-	array_push($resultMmessage, '<br /><b>Clean-Up</b>, Removing from products_options_types: ');
-	
-	// Reassign products options that are assigned to the SBA Select List (Dropdown) Basic group to be assigned to a standard Dropdown.
-	
-	$products_options_types_name = 'SBA Select List (Dropdown) Basic';
-	
-	$sql = "SELECT products_options_types_id FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " WHERE products_options_types_name = :products_options_types_name:";
-	$sql = $db->bindVars($sql, ':products_options_types_name:', $products_options_types_name, 'string');
-	
-	$result = $db->Execute($sql);
-	array_push($resultMmessage, '&bull; Moving option types from ' . $products_options_types_name . ' to an equivalent type to prepare for removal.');
-	
-	if ($result->RecordCount() > 0) {
-	  $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " SET products_options_type = :products_options_type_new: WHERE products_options_type = :products_options_type_old:";
-	  $sql = $db->bindVars($sql, ':products_options_type_old:', $result->fields['products_options_types_id'], 'integer');
-	  $sql = $db->bindVars($sql, ':products_options_type_new:', (defined('PRODUCTS_OPTIONS_TYPE_SELECT') ? PRODUCTS_OPTIONS_TYPE_SELECT : 0), 'integer');
-	  
-	  $sql = $db->Execute($sql);
-	  if ($db->error) {
-	    $msg = ' Error Message: ' . $db->error;
-	  }
-	  array_push($resultMmessage, '&bull; Moved option types from ' . $products_options_types_name . ' to an equivalent type.' . $msg);
-	}
-	
-	$sql = "DELETE IGNORE FROM `".TABLE_PRODUCTS_OPTIONS_TYPES."` WHERE `products_options_types_name` = :products_options_types_name:";
-	$sql = $db->bindVars($sql, ':products_options_types_name:', $products_options_types_name, 'string');
-	
-	$db->Execute($sql);
-	if($db->error){
-		$msg = ' Error Message: ' . $db->error;
-	}
-	array_push($resultMmessage, '&bull; Deleted products_options_types_name  ' . $msg);
-	
-	zen_record_admin_activity('Deleted SBA settings from the database via the install file.', 'warning');
-	
-	return;
+  $sql = "DELETE IGNORE FROM `".TABLE_CONFIGURATION."` WHERE `configuration_key` = 'SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO'";
+  $db->Execute($sql);
+  if($db->error){        
+    $msg = ' Error Message: ' . $db->error;
+  }
+  array_push($resultMmessage, '&bull; Deleted SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO  ' . $msg); 
+  
+  //DELETE FROM `products_options_types` 
+  array_push($resultMmessage, '<br /><b>Clean-Up</b>, Removing from products_options_types: ');
+  
+  // Reassign products options that are assigned to the SBA Select List (Dropdown) Basic group to be assigned to a standard Dropdown.
+  
+  $products_options_types_name = 'SBA Select List (Dropdown) Basic';
+  
+  $sql = "SELECT products_options_types_id FROM " . TABLE_PRODUCTS_OPTIONS_TYPES . " WHERE products_options_types_name = :products_options_types_name:";
+  $sql = $db->bindVars($sql, ':products_options_types_name:', $products_options_types_name, 'string');
+  
+  $result = $db->Execute($sql);
+  array_push($resultMmessage, '&bull; Moving option types from ' . $products_options_types_name . ' to an equivalent type to prepare for removal.');
+  
+  if ($result->RecordCount() > 0) {
+    $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " SET products_options_type = :products_options_type_new: WHERE products_options_type = :products_options_type_old:";
+    $sql = $db->bindVars($sql, ':products_options_type_old:', $result->fields['products_options_types_id'], 'integer');
+    $sql = $db->bindVars($sql, ':products_options_type_new:', (defined('PRODUCTS_OPTIONS_TYPE_SELECT') ? PRODUCTS_OPTIONS_TYPE_SELECT : 0), 'integer');
+    
+    $sql = $db->Execute($sql);
+    if ($db->error) {
+      $msg = ' Error Message: ' . $db->error;
+    }
+    array_push($resultMmessage, '&bull; Moved option types from ' . $products_options_types_name . ' to an equivalent type.' . $msg);
+  }
+  
+  $sql = "DELETE IGNORE FROM `".TABLE_PRODUCTS_OPTIONS_TYPES."` WHERE `products_options_types_name` = :products_options_types_name:";
+  $sql = $db->bindVars($sql, ':products_options_types_name:', $products_options_types_name, 'string');
+  
+  $db->Execute($sql);
+  if($db->error){
+    $msg = ' Error Message: ' . $db->error;
+  }
+  array_push($resultMmessage, '&bull; Deleted products_options_types_name  ' . $msg);
+  
+  zen_record_admin_activity('Deleted SBA settings from the database via the install file.', 'warning');
+  
+  return;
 }
 
 function removeDynDropdownsAdminPages(){
@@ -740,7 +747,11 @@ function insertSBAconfiguration(){
 			
       ('SBA Display Attributes Images', 'SBA_SHOW_IMAGE_ON_PRODUCT_INFO', '1', 
     'Allow swap of the attribute image with the main image or prevent the display of the Attribute Image (and allow swap) on the product information page:<br /><br /> Default: 1 (Swap and display)<br />0 - No swap, display image ZC default<br />1 - Swap and display attr img<br />2 - Swap, but hide attribute image',
-      9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\', \'2\'),'),";
+      9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\', \'2\'),'),
+
+      ('SBA Display Non-DD Out-of-Stock Attributes', 'SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO', '1',  
+    'Allow display of attributes that are out-of-stock and are not managed by Dynamic Dropdowns.<br /><br /> Default: 1 (Show out-of-stock attributes)<br />0 - Hide out-of-stock attributes<br />1 - Show out-of-stock attributes',
+      9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\'),'),";
 
 	$sql2 ="SELECT c.sort_order
 			FROM ".TABLE_CONFIGURATION." c
