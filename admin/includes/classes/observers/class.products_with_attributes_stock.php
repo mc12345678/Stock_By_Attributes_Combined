@@ -167,6 +167,9 @@ class products_with_attributes_stock_admin extends base {
   // NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL', array('pID' => $_POST['products_filter']));
   function updateNotifyAttributeControllerDeleteAll(&$callingClass, $notifier, $paramsArray) {
     // , array('pID' => $_POST['products_filter']));
+    
+    global $db;
+    
     $pID = $paramsArray['pID'];
 
     $db->Execute("DELETE IGNORE FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
@@ -244,6 +247,9 @@ class products_with_attributes_stock_admin extends base {
   // OPTIONS_VALUES_MANAGER_DELETE_VALUE', array('value_id' => $value_id));
   function updateOptionsValuesManagerDeleteValue(&$callingClass, $notifier, $paramsArray) {
   // ', array('value_id' => $value_id));
+  
+    global $db;
+    
     $value_id = $paramsArray['value_id'];
     
     $remove_attributes_query = $db->Execute("select products_id, products_attributes_id, options_id, options_values_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where options_values_id ='" . (int)$value_id . "'");
@@ -265,6 +271,9 @@ class products_with_attributes_stock_admin extends base {
   // OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME', array('current_products_id' => $current_products_id, 'remove_ids' => $remove_downloads_ids, 'options_id'=>$options_id_from, 'options_values_id'=>$options_values_values_id_from));
   function updateOptionsValuesManagerDeleteValuesOfOptionname(&$callingClass, $notifier, $paramsArray) {
     // ', array('current_products_id' => $current_products_id, 'remove_ids' => $remove_downloads_ids, 'options_id'=>$options_id_from, 'options_values_id'=>$options_values_values_id_from));
+    
+    global $db;
+    
     $remove_ids = $paramsArray['remove_ids'];
     
     $stock_ids = zen_get_sba_ids_from_attribute($remove_ids);
@@ -330,8 +339,7 @@ class products_with_attributes_stock_admin extends base {
 //  notify('NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP', array('i'=>$i, 'j'=>$j, 'productsI'=>$order->products[$i], 'prod_img'=>$prod_img), $order->products[$i], $prod_img);
 
   function update(&$callingClass, $notifier, $paramsArray) {
-    global $db;
-    
+
     // Duplicate of updateNotifierAdminZenDeleteProductsAttributes
     if ($notifier == 'NOTIFIER_ADMIN_ZEN_DELETE_PRODUCTS_ATTRIBUTES '){
       //admin/includes/functions/general.php
