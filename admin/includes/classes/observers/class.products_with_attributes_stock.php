@@ -199,6 +199,9 @@ class products_with_attributes_stock_admin extends base {
   // OPTIONS_NAME_MANAGER_DELETE_OPTION', array('option_id' => $option_id, 'options_values_id' => (int)$remove_option_values->fields['products_options_values_id']));
   function updateOptionsNameManagerDeleteOption(&$callingClass, $notifier, $paramsArray) {
     //array('option_id' => $option_id, 'options_values_id' => (int)$remove_option_values->fields['products_options_values_id']));
+    
+    global $db;
+    
     $option_id = $paramsArray['option_id'];
     $options_values_id = $paramsArray['options_values_id'];
     
