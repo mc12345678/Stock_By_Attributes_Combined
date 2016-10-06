@@ -68,7 +68,7 @@ function cartProductCount($products_id){
  *
  * Use Jquery to change image 'SBA_ProductImage' on selection change
  */
-  function zen_draw_pull_down_menu_SBAmod($name, $values, $default = '', $parameters = '', $required = false, $disable = null, $options_menu_images = null) {
+  function zen_draw_pull_down_menu_SBAmod($name, $values, $default = '', $parameters = '', $required = false, $disable = array(), $options_menu_images = null) {
     
     global $template_dir;
     $tmp_attribID = trim($name, 'id[]');//used to get the select ID reference to be used in jquery
@@ -123,9 +123,11 @@ function cartProductCount($products_id){
       
       //"Stock by Attributes" // Need to determine this being disabled by a 
       // numerical method rather than a text possessing method.  If PWA_OUTOF_STOCK is not present then the item may not be disabled... :/
-      if( $disable && strpos($values[$i]['text'], trim(PWA_OUT_OF_STOCK)) ){
-        $field .= $disable;
-      }
+
+      // Should see what it takes to get $disable in as an array to point towards the applicable $values item and have the disabled status such as:
+      // if (isset($disable) && is_array($disable) && $disable[$i]) {
+      $field .= $disable[$i]; 
+
       //add image link if available
       if( !empty($options_menu_images[$i]['src']) ){
         $field .= ' data-src="' . $options_menu_images[$i]['src'] . '"';
