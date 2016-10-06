@@ -1492,15 +1492,15 @@ Of the attributes provided, determine the number of those attributes that are
       $isSBA = $db->Execute($isSBA_query);
     
       if (!$isSBA->EOF && $isSBA->RecordCount() > 0) {
-        $this->_isSBA[(int)$product_id] = true;
+//        $this->_isSBA[(int)$product_id] = true;
         return true;
       } else {
-        $this->_isSBA[(int)$product_id] = false;
+//        $this->_isSBA[(int)$product_id] = false;
         return false;
       }
     }
 
-    $this->_isSBA[(int)$product_id] = false;
+//    $this->_isSBA[(int)$product_id] = false;
     return false;
   }  
 
