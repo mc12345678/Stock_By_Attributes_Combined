@@ -1473,9 +1473,9 @@ Of the attributes provided, determine the number of those attributes that are
     //  the result instead of querying the database again unless there is a need
     //  to "reset" the query result.  An important point of doing this is when 
     //  dealing with the cart directly so that quantities are updated correctly.
-    if (array_key_exists((int)$product_id, $this->_isSBA) && $reset == false) {
-      return $this->_isSBA[(int)$product_id];
-    }
+/*    if (array_key_exists((int)$product_id, $this->_isSBA) && $reset == false) {
+      //return $this->_isSBA[(int)$product_id];
+    }*/
     
     $inSBA_query = 'SELECT * 
                     FROM information_schema.tables
