@@ -145,7 +145,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
               left join " . TABLE_PRODUCTS_ATTRIBUTES . " pa ON (pa.options_id = popt.products_options_id)
               where           pa.products_id = :products_id:              
               and             popt.language_id = :languages_id: 
-			  and             popt.products_options_id = :products_options_id: " .
+        and             popt.products_options_id = :products_options_id: " .
             $options_order_by;
     $sql = $db->bindVars($sql, ':products_id:', $this->products_id, 'integer');
     $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
@@ -338,7 +338,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       } else {
         $order_by = ' order by LPAD(pa.products_options_sort_order,11,"0"), pa.options_values_price';
       }
-		
+    
       while (!$products_options_name->EOF) {
         $products_options_array = array();
 //        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: order by pa.products_options_sort_order";
@@ -527,7 +527,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         if ( PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK != 'False') {
           $out.="    var displayshown = false;\n";// . ( PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK == 'False' ? "true" : "false") . ";\n"; //Allow control of the alert to provide it one time only.
         }
-    		$out.="    var opt;\n";
+        $out.="    var opt;\n";
         $out.="    var span=document.getElementById(\"oosmsg\");\n";
         $out.="    while (span.childNodes[0]) {\n";
         $out.="      span.removeChild(span.childNodes[0]);\n";
@@ -607,9 +607,9 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
             $out.="txt" . $attributes[$nextattr]['oid'] . "[opt] + '" . PWA_OUT_OF_STOCK . "'";
           }
           $out.="),opt.substring(1));\n";
-		  if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == sizeof($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
+      if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == sizeof($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
             $out.="          frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length-1].disabled = true;\n";
-		  }
+      }
         }
         $out.="        }\n";
         if ($this->out_of_stock_msgline == 'True') {
@@ -731,7 +731,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.="return true;\n";
       }
     }
-/*	  $out.="if (frm['id[".$attributes[0]['oid']."]'] == 0) {\n";
+/*    $out.="if (frm['id[".$attributes[0]['oid']."]'] == 0) {\n";
       for ($i=0; $i<sizeof($attributes); $i++) {
         $out.="    " . str_repeat("  ",$i);
 //Starts the checks of stock quantity.
@@ -744,8 +744,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         }
         $out.=") {\n";
         $out.="     " . str_repeat("  ",sizeof($attributes)) . "if(frm['id[".$attributes[$j-1]['oid']."]'].value != 0" . /*" && frm['id[".$attributes[sizeof($attributes)-1]['oid']."]'].value != 0" .*//* ") {\n";
-		$out.="     " . str_repeat("  ",sizeof($attributes)+1) . "instk=true;\n";
-		$out.="     " . str_repeat("  ",sizeof($attributes)) . "}\n";
+    $out.="     " . str_repeat("  ",sizeof($attributes)+1) . "instk=true;\n";
+    $out.="     " . str_repeat("  ",sizeof($attributes)) . "}\n";
       }
 //      $out.="    " . str_repeat("  ",sizeof($attributes)) . "instk=true;\n";
       for ($i=sizeof($attributes)-1; $i>0; $i--) {
@@ -757,19 +757,19 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
           $out.="    " . str_repeat("  ",0);
           $out.='if (';
           $out.="frm['id[".$attributes[$j]['oid']."]'].value == 0 && !instk";
-		  for ($i=$j-1; $i>=0; $i--) {
-		    $out.=" && frm['id[".$attributes[$i]['oid']."]'].value != 0";
-			//$out.=" && chkstk()";
-		  }
-		  $out.=") {\n";
+      for ($i=$j-1; $i>=0; $i--) {
+        $out.=" && frm['id[".$attributes[$i]['oid']."]'].value != 0";
+      //$out.=" && chkstk()";
+      }
+      $out.=") {\n";
           $out.="    " . str_repeat("  ",1);
-		  $out.="return true;\n";
+      $out.="return true;\n";
           $out.="    " . str_repeat("  ",0);
           $out.="}\n";
-		}*/
-/*	  $out.="    if (" . ( instk = false && true ? "" : "") . ") {\n";
-	  $out.="      \n";
-	  $out.="    }\n";*/
+    }*/
+/*    $out.="    if (" . ( instk = false && true ? "" : "") . ") {\n";
+    $out.="      \n";
+    $out.="    }\n";*/
 //      $out.="    return instk;\n";
     $out.="  }\n";
 

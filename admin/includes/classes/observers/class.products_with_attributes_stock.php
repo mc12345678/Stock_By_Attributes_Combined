@@ -42,13 +42,13 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'ORDER_QUERY_ADMIN_COMPLETE';  // Not ready to implement yet. 2016-06-01
 
     $this->attach($this, $attachNotifier); 
-	}	
+  }  
 
   /*
    * Function that is activated when NOTIFIER_ADMIN_ZEN_REMOVE_PRODUCT is encountered as a notifier.
    */
   // NOTIFIER_ADMIN_ZEN_REMOVE_PRODUCT  //admin/includes/functions/general.php
-	function updateNotifierAdminZenRemoveProduct(&$callingClass, $notifier, $paramsArray, & $product_id, & $ptc) {
+  function updateNotifierAdminZenRemoveProduct(&$callingClass, $notifier, $paramsArray, & $product_id, & $ptc) {
     global $db;
     $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                   where products_id = '" . (int)$product_id . "'");
@@ -397,5 +397,5 @@ class products_with_attributes_stock_admin extends base {
       $this->updateOrderQueryAdminComplete($callingClass, $notifier, $paramsArray);
     }
 
-	} //end update function - mc12345678
+  } //end update function - mc12345678
 } // EOF Class
