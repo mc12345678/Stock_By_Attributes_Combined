@@ -1417,7 +1417,7 @@ Of the attributes provided, determine the number of those attributes that are
         }
       }
       
-      $products_stock_attributes->MoveNext;
+      $products_stock_attributes->MoveNext();
     }
     
     // If use the above revised array set, then need to reverse the array
