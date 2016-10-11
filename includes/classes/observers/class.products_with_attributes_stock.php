@@ -479,7 +479,14 @@ class products_with_attributes_stock extends base {
    * Function that is activated when NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN is encountered as a notifier.
    */
   // Line 739
-  function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left = 0){
+    /**
+     * @param     $callingClass
+     * @param     $notifier
+     * @param     $paramsArray
+     * @param     $stock_values
+     * @param int $attribute_stock_left
+     */
+    function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left = 0){
     global $db; //, $pwas_class;
 
     $this->_stock_values = $stock_values;
@@ -542,7 +549,12 @@ class products_with_attributes_stock extends base {
    * Function that is activated when NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END is encountered as a notifier.
    */
   // Line 776
-  function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $paramsArray) {
+    /**
+     * @param $callingClass
+     * @param $notifier
+     * @param $paramsArray
+     */
+    function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $paramsArray) {
     //Need to modify the email that is going out regarding low-stock.
     //paramsArray is $i at time of development.
     if ($this->_orderIsSBA /*zen_product_is_sba($this->_productI['id'])*/) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
@@ -562,7 +574,13 @@ class products_with_attributes_stock extends base {
    * Function that is activated when NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM is encountered as a notifier.
    */
 //Line 883
-  function updateNotifyOrderDuringCreateAddedAttributeLineItem(&$callingClass, $notifier, $paramsArray, $opa_insert_id = NULL) {
+    /**
+     * @param      $callingClass
+     * @param      $notifier
+     * @param      $paramsArray
+     * @param null $opa_insert_id
+     */
+    function updateNotifyOrderDuringCreateAddedAttributeLineItem(&$callingClass, $notifier, $paramsArray, $opa_insert_id = NULL) {
     /* First check to see if SBA is installed and if it is then look to see if a value is 
      *  supplied in the stock_id parameter (which should only be populated when a SBA tracked
      *  item is in the order */
@@ -589,7 +607,12 @@ class products_with_attributes_stock extends base {
   } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
 
   // NOTIFY_HEADER_END_SHOPPING_CART
-  function updateNotifyHeaderEndShoppingCart(&$callingClass, $notifier, $paramsArray) {
+    /**
+     * @param $callingClass
+     * @param $notifier
+     * @param $paramsArray
+     */
+    function updateNotifyHeaderEndShoppingCart(&$callingClass, $notifier, $paramsArray) {
     global $productArray, $flagAnyOutOfStock, $db;
     
     $products = $_SESSION['cart']->get_products();
