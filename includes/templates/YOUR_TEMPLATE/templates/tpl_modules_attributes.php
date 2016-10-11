@@ -29,14 +29,22 @@
       if (!defined('SBA_ZC_DEFAULT')) {
         define('SBA_ZC_DEFAULT','false'); // sets to use the ZC method of HTML tags around attributes.
       }
-      $inSBA_query = "select products_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :products_id:";
-      $inSBA_query = $db->bindVars($inSBA_query, ':products_id:', $_GET['products_id'], 'integer');
+//      $inSBA_query = "select products_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :products_id:";
+//      $inSBA_query = $db->bindVars($inSBA_query, ':products_id:', $_GET['products_id'], 'integer');
 
-      $inSBA = $db->Execute($inSBA_query); // Determine that product is tracked by SBA
-      $prodInSBA = (!$inSBA->EOF && $inSBA->RecordCount() > 0 ? true : false);
+//      $inSBA = $db->Execute($inSBA_query); // Determine that product is tracked by SBA
+//      $prodInSBA = (!$inSBA->EOF && $inSBA->RecordCount() > 0 ? true : false);
+      $prodInSBA = (isset($_SESSION['pwas_class2'])
+            && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
+            && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
+              ? $_SESSION['pwas_class2']->zen_product_is_sba($_GET['products_id'])
+              : (function_exists('zen_product_is_sba') 
+                ? zen_product_is_sba($_GET['products_id'])
+                : false)
+            );
     } else { 
-      $inSBA = new queryFactoryResult($db->link);
-      $inSBA->EOF = true;
+//      $inSBA = new queryFactoryResult($db->link);
+//      $inSBA->EOF = true;
       $prodInSBA = false;
     }
 
@@ -63,7 +71,7 @@
               && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3')) 
                ? file_exists(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_SINGLE . '.php') 
                : false )) 
-        && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && !$inSBA->EOF)) {
+        && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && $prodInSBA/*!$inSBA->EOF*/)) {
         //$products_attributes = $db->Execute("select count(distinct products_options_id) as total from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id='" . (int) $_GET['products_id'] . "' and patrib.options_id = popt.products_options_id and popt.language_id = " . (int) $_SESSION['languages_id'] . "");
 
 
@@ -86,8 +94,8 @@
         } //End SBA SINGLE
       } //END SBA Specific
       else {
-         $inSBA = new queryFactoryResult($db->link);
-         $inSBA->EOF = true;
+         //$inSBA = new queryFactoryResult($db->link);
+         //$inSBA->EOF = true;
          $prodInSBA = false;
          ?>
 <h3 id="attribsOptionsText"><?php echo TEXT_PRODUCT_OPTIONS; ?></h3>
