@@ -1350,8 +1350,10 @@ Of the attributes provided, determine the number of those attributes that are
   *  Uses a single attribute to identify all of the SBA variants 
   *    that contain that one attribute.
   *
+   * @todo delete from store side
+   * @todo rework admin side to adjust for this function or its replacement.
   **/
-  function zen_get_sba_ids_from_attribute($products_attributes_id = array(), $products_id = NULL, $stock_attribute_unique = false){
+/*  function zen_get_sba_ids_from_attribute($products_attributes_id = array(), $products_id = NULL, $stock_attribute_unique = false){
     global $db;
     
     if (!is_array($products_attributes_id)){
@@ -1360,13 +1362,13 @@ Of the attributes provided, determine the number of those attributes that are
     $products_stock_attributes = $db->Execute("select stock_id, stock_attributes from " . 
                                               TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . (zen_not_null($products_id) ? " where products_id in (" . implode(',', (int)$products_id) . ")" : "" ));
     $stock_id_list = array();
-    /* The below "search" is one reason that the original tables for SBA should be better refined
+*/    /* The below "search" is one reason that the original tables for SBA should be better refined
      * and not use comma separated items in a field...
      */
-    while (!$products_stock_attributes->EOF) {
+/*    while (!$products_stock_attributes->EOF) {
       $stock_attrib_list = array();
       $stock_attrib_list = explode(',', $products_stock_attributes->fields['stock_attributes']);
-
+*/
 /*
 *     Proposed code to possibly increase speed/optimize operation.
 *     Vision is that duration of the below "search" will be dependent on the
@@ -1407,7 +1409,7 @@ Of the attributes provided, determine the number of those attributes that are
       }
       
       */
-
+/*
       foreach($stock_attrib_list as $stock_attrib){
         if (in_array($stock_attrib, $products_attributes_id)) {
           $stock_id_list[] = $products_stock_attributes->fields['stock_id'];
@@ -1422,7 +1424,7 @@ Of the attributes provided, determine the number of those attributes that are
     // and maintain uniqueness of the values:
     //  $stock_id_list = array_keys($stock_id_list);
     return $stock_id_list;
-  }
+  }*/
 
   function zen_sba_dd_allowed($products_options_names, $data_type = 'attributes') {
 //  if (!is_array($products_options_names)) $products_options_names = array($products_options_names);
@@ -1517,4 +1519,3 @@ Of the attributes provided, determine the number of those attributes that are
   }  
 
 }
-?>
