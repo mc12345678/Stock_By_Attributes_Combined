@@ -759,43 +759,46 @@ Of the attributes provided, determine the number of those attributes that are
                      // May need to check/verify that is okay to be empty.
                      //   For now... Just accept it as empty.
           if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_TEXT) {
-            if ($how == 'add') {
+            /*if ($how == 'add')*/ {
 //              $_SESSION['compArray_before_'.$products_id] = $compArray;
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-              array(($text_prefix . $products_options_names->fields['products_options_id']) => $text_value) + 
+              array((($how == 'add' ? $text_prefix : '') . $products_options_names->fields['products_options_id']) => $text_value) +
               array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true) ;
  //            }
 //              $_SESSION['compArray_after_'.$products_id] = $compArray;
-            } elseif ($how == 'addNoText') {
+            } /*elseif ($how == 'addNoText') {
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-              array((/*$text_prefix .*/ $products_options_names->fields['products_options_id']) => $text_value) + 
+              array((*//*$text_prefix .*//* $products_options_names->fields['products_options_id']) => $text_value) +
+            } /*elseif ($how == 'addNoText') {
+              $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
+              array((*//*$text_prefix .*//* $products_options_names->fields['products_options_id']) => $text_value) +
               array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
             } else {
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-               array((/*$text_prefix .*/ $products_options_names->fields['products_options_id']) => $text_value) + 
+               array((*//*$text_prefix .*//* $products_options_names->fields['products_options_id']) => $text_value) +
                array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
-            }
+            }*/
             $lastIndex = $products_options_names->cursor + 1;
 //                       $_SESSION['key_not_exist_add_' . $_SESSION['key_not_exist']] = $text_prefix . $products_options_names->fields['products_options_id'];
 //                       $_SESSION['key_not_exist_added_' . $_SESSION['key_not_exist']] = $compArray[$text_prefix . $products_options_names->fields['products_options_id']];
           }
           if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_FILE) {
-            if ($how == 'add') {
+            /*if ($how == 'add')*/ {
 //              $_SESSION['compArray_before_'.$products_id] = $compArray;
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-              array(($file_prefix . $products_options_names->fields['products_options_id']) => $file_value) + 
-              array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true) ;
+              array((($how == 'add' ? $file_prefix : '') . $products_options_names->fields['products_options_id']) => $file_value) +
+              array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
  //            }
 //              $_SESSION['compArray_after_'.$products_id] = $compArray;
-            } elseif ($how == 'addNoText') {
+            } /*elseif ($how == 'addNoText') {
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-              array((/*$file_prefix .*/ $products_options_names->fields['products_options_id']) => $file_value) + 
+              array((*//*$file_prefix .*//* $products_options_names->fields['products_options_id']) => $file_value) +
               array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
             } else {
              $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-               array((/*$file_prefix .*/ $products_options_names->fields['products_options_id']) => $file_value) + 
+               array((*//*$file_prefix .*//* $products_options_names->fields['products_options_id']) => $file_value) +
                array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
-            }
+            }*/
             $lastIndex = $products_options_names->cursor + 1;
 //            $compArray[/*$file_prefix . */$products_options_names->fields['products_options_id']] = $file_value;
 //            $compArray[$products_options_names->fields['products_options_id']] = $file_value;
