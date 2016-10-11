@@ -487,27 +487,54 @@ class products_with_attributes_stock extends base {
     if ($this->_orderIsSBA && $stock_values->RecordCount() > 0) {
       // kuroi: Begin Stock by Attributes additions
       // added to update quantities of products with attributes
-      $attribute_search = array();
-      $attribute_stock_left = STOCK_REORDER_LEVEL + 1;  // kuroi: prevent false low stock triggers 
+      // $stock_attributes_search = array();
+      $attribute_stock_left = STOCK_REORDER_LEVEL + 1;  // kuroi: prevent false low stock triggers
+      $this->_attribute_stock_left = $attribute_stock_left;
 
       // mc12345678 If the has attibutes then perform the following work.
-      if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) >0){
+      if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) > 0){
+        // Need to identify which records in the PWAS table need to be updated to remove stock from
+          // them.  Ie. provide a list of attributes and get a list of stock_ids from pwas.
+          // Then process that list of stock_ids to decrement based on their impact on stock.  This
+          // all should be a consistent application.
         // mc12345678 Identify a list of attributes associated with the product
         $stock_attributes_search = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
-        
-        $get_quantity_query = 'select quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
-
+        $stock_attributes_search_new = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($this->_productI['id'], $this->_productI['attributes'], 'order', 'ids');
+          if (isset($stock_attributes_search_new) && $stock_attributes_search_new === false) {
+              
+          } elseif (isset($stock_attributes_search_new) && is_array($stock_attributes_search_new) && count($stock_attributes_search_new) == 0) {
+              
+          } elseif (isset($stock_attributes_search_new) && $stock_attributes_search_new && count($stock_attributes_search_new) > 0) {
+              foreach ($stock_attributes_search_new as $stock_id) {
+                  // @todo: address in PWAS table whether particular variant should be altered with stock quantities.
+                  $get_quantity_query = 'SELECT quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id=' . zen_get_prid($this->_productI['id']) . ' and stock_id=' . (int)$stock_id;
+                  $attribute_stock_available = $db->Execute($get_quantity_query, false, false, 0, true);
+                  if (true) { // Goal here is to identify if the particular attribute/stock item should be affected by a stock change.  If it is not, then this should be false or not performed.
+                      $attribute_stock_left_test = $attribute_stock_available->fields['quantity'] - $this->_productI['qty'];
+                      $attribute_update_query = 'UPDATE ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' SET quantity="'.$attribute_stock_left_test.'" where products_id=' . zen_get_prid($this->_productI['id']) . ' and stock_id=' . (int)$stock_id;
+                      $db->Execute($attribute_update_query, false, false, 0, true);
+                      if ($attribute_stock_left_test < $attribute_stock_left) {
+                          $this->_attribute_stock_left = min($attribute_stock_left_test, $this->_attribute_stock_left);
+                          $attribute_stock_left = $this->_attribute_stock_left;
+                      }
+                  }
+              }
+          }
+          
+/*        $get_quantity_query = 'select quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
+        $get_quantity = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($this->_productI['id'], $this->_productI['attributes'], 'products', 'stock');
+  
         // mc12345678 Identify the stock available from SBA.
         $attribute_stock_available = $db->Execute($get_quantity_query, false, false, 0, true);  
         // mc12345678 Identify the stock remaining for the overall stock by removing the number of the current product from the number available for the attributes_id. 
-        $attribute_stock_left = $attribute_stock_available->fields['quantity'] - $this->_productI['qty'];
+        $attribute_stock_left = *//*$attribute_stock_available->fields['quantity']*//* $get_quantity - $this->_productI['qty'];
   
         // mc12345678 Update the SBA table to reflect the stock remaining based on the above.
         $attribute_update_query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set quantity='.$attribute_stock_left.' where products_id="' . zen_get_prid($this->_productI['id']) . '" and stock_attributes="' . $stock_attributes_search . '"';
         $db->Execute($attribute_update_query, false, false, 0, true);  
-        //$this->_attribute_stock_left = $attribute_stock_left;
+        //$this->_attribute_stock_left = $attribute_stock_left;*/
       }
-      $this->_attribute_stock_left = $attribute_stock_left;
+      $attribute_stock_left = $this->_attribute_stock_left;
     }
   }
 

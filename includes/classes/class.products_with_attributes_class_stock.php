@@ -973,6 +973,15 @@ Of the attributes provided, determine the number of those attributes that are
       return NULL;
     } 
     
+    if ($from == 'order') {
+      foreach ($attribute_list as $attrib_data) {
+        if (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.  This is probably the best place to do the review because all aspects of the attribute are available.
+          $temp_attributes[$attrib_data['option_id']] = $attrib_data['value_id'];
+        }
+      }
+      $attribute_list = $temp_attributes;
+    } 
+
     $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
 
     // NEED TO ENSURE ATTRIBUTES ARE PROPERLY/FULLY PROVIDED REGARDING "TEXT" OR OTHER ZC DELETES ATTRIBUTES.
