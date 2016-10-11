@@ -261,7 +261,7 @@ function cartProductCount($products_id){
    * @returns string    $stock_attributes A comma separated (if >1 attribute) string of the products_attributes_id sorted by products_attributes_id. This is the current set of information stored in the SBA table for stock_attributes.
    */
   function zen_get_sba_stock_attribute($products_id, $attribute_list = array(), $from = 'order'){
-  global $db;
+//  global $db;
 
     $temp_attributes = array();
     $specAttributes = array();
@@ -662,7 +662,7 @@ Of the attributes provided, determine the number of those attributes that are
     
     $products_id = zen_get_prid($products_id);
 
-    $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
+//    $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
 
     // Thinking either don't want to test the attributes here yet unless before this makes sure that the attributes are properly added for a product that only has text attributes and nothing entered.
     //   
@@ -848,7 +848,7 @@ Of the attributes provided, determine the number of those attributes that are
 
     if (sizeof($compArray) > 0) {
 //      $attribute_list = $compArray; // + $attribute_list /*+ $compArray*/;
-      if ($how == 'add' && $how != 'addNoText') {
+      if ($how == 'add'/* && $how != 'addNoText'*/) {
         if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
           $attribute_list = $attribute_list + $compArray;
         } else {
@@ -985,7 +985,7 @@ Of the attributes provided, determine the number of those attributes that are
       $attribute_list = $temp_attributes;
     } 
 
-    $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
+//    $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
 
     // NEED TO ENSURE ATTRIBUTES ARE PROPERLY/FULLY PROVIDED REGARDING "TEXT" OR OTHER ZC DELETES ATTRIBUTES.
     
@@ -1436,7 +1436,7 @@ Of the attributes provided, determine the number of those attributes that are
     //   the data that is default provided ($products_options_names from: 
     //   includes/modules/YOUR_TEMPLATE/attributes.php
     if ($data_type == 'attributes') {
-      $opt_array = array();
+      // $opt_array = array();
       // If there is at least one option name then perform the testing.
       if ($products_options_names->RecordCount() > 0) { 
         $products_options_names->Move(0);

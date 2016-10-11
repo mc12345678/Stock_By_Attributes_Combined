@@ -765,7 +765,7 @@ class products_with_attributes_stock extends base {
    * Generic function that is activated when any notifier identified in the observer is called but is not found in one of the above previous specific update functions is encountered as a notifier.
    */
   function update(&$callingClass, $notifier, $paramsArray) {
-  global $db;
+  //global $db;
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE') {
       $this->updateNotifyAttributesModuleSaleMakerDisplayPricePercentage($callingClass, $notifier, $paramsArray);
     }
