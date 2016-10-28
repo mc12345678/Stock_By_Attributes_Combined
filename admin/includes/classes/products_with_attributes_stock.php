@@ -21,42 +21,82 @@ class products_with_attributes_stock extends base
 			global $db;
 			// Added the following to query "and pa.attributes_display_only != 1" This removed display only attributes from the stock selection.
       // Added the following to query "AND po.products_options_type != ' . PRODUCTS_OPTIONS_TYPE_READONLY so that would ignore READONLY attributes.
-      $query = 'select pa.products_attributes_id, pa.options_values_price, pa.price_prefix,
-			 				po.products_options_name, pov.products_options_values_name
-			 			from '.TABLE_PRODUCTS_ATTRIBUTES.' pa
-			 			left join '.TABLE_PRODUCTS_OPTIONS.' po on (pa.options_id = po.products_options_id)
-			 			left join '.TABLE_PRODUCTS_OPTIONS_VALUES.' pov on (pa.options_values_id = pov.products_options_values_id)
-			 			where pa.products_id = "'.$products_id.'" 
-			 				AND po.language_id = "'.$languageId.'" and po.language_id = pov.language_id
-              and pa.attributes_display_only != 1
-              AND po.products_options_type != ' . PRODUCTS_OPTIONS_TYPE_READONLY;
-			
-			$attributes = $db->Execute($query);
-			
-			if($attributes->RecordCount()>0)
-			{
-				while(!$attributes->EOF)
-				{
-					$attributes_array[$attributes->fields['products_options_name']][] =
-						array('id' => $attributes->fields['products_attributes_id'],
-							  'text' => $attributes->fields['products_options_values_name']
-							  			. ' (' . $attributes->fields['price_prefix']
-										. '$'.zen_round($attributes->fields['options_values_price'],2) . ')' );
-					$attributes->MoveNext();
-				}
-	
-				return $attributes_array;
-	
-			}
-			else
-			{
-				return false;
-			}
-		}
-	
-		function update_parent_products_stock($products_id)
-		{
-			global $db;
+
+      $attributes_array = array();
+      
+      //LPAD - Return the string argument, left-padded with the specified string 
+      //example: LPAD(po.products_options_sort_order,11,"0") the field is 11 digits, and is left padded with 0
+      if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
+        $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+      } else {
+        $options_order_by= ' order by popt.products_options_name';
+      }
+
+      //get the option/attribute list
+      $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
+                              popt.products_options_type 
+              from        " . TABLE_PRODUCTS_OPTIONS . " popt
+              left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
+              where patrib.products_id= :products_id:
+              and popt.language_id = :languages_id: " .
+              $options_order_by;
+
+      $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
+      $sql = $db->bindVars($sql, ':languages_id:', $languageId, 'integer');
+
+      $attributes = $db->Execute($sql);
+      
+      if($attributes->RecordCount() > 0)
+      {
+      
+        if ( PRODUCTS_OPTIONS_SORT_BY_PRICE =='1' ) {
+          $order_by= ' order by LPAD(pa.products_options_sort_order,11,"0"), pov.products_options_values_name';
+        } else {
+          $order_by= ' order by LPAD(pa.products_options_sort_order,11,"0"), pa.options_values_price';
+        }
+        $products_options_array = array();
+      
+        while(!$attributes->EOF)
+        {
+        
+          $sql = "select    pov.products_options_values_id,
+                        pov.products_options_values_name,
+                        pa.*
+              from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov
+              where     pa.products_id = '" . (int)$products_id . "'
+              and       pa.options_id = '" . (int)$attributes->fields['products_options_id'] . "'
+              and       pa.options_values_id = pov.products_options_values_id
+              and       pov.language_id = '" . (int)$languageId . "' " .
+                $order_by;
+
+          $attributes_array_ans= $db->Execute($sql);
+
+          //loop for each option/attribute listed
+
+          while (!$attributes_array_ans->EOF) {
+            $attributes_array[$attributes->fields['products_options_name']][] =
+              array('id' => $attributes_array_ans->fields['products_attributes_id'],
+                  'text' => $attributes_array_ans->fields['products_options_values_name']
+                        . ' (' . $attributes_array_ans->fields['price_prefix']
+                      . '$'.zen_round($attributes_array_ans->fields['options_values_price'],2) . ')' );
+          
+            $attributes_array_ans->MoveNext();
+          }
+          $attributes->MoveNext();
+        }
+  
+        return $attributes_array;
+  
+      }
+      else
+      {
+        return false;
+      }
+    }
+  
+    function update_parent_products_stock($products_id)
+    {
+      global $db;
 
 			$query = 'select sum(quantity) as quantity, products_id from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' where products_id = :products_id:';
       $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
