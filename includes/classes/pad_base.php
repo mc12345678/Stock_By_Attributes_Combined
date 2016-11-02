@@ -182,7 +182,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
 */
     function _draw_table_start() {
       $out ='           <table border="0" cellspacing="0" cellpadding="2">';
-      $out.='            <tr>';
+      $out.='            <tr id="attribsOptionsText">';
       $out.='             <td class="main" colspan="2"><b>' . TEXT_PRODUCT_OPTIONS . '</b></td>';
       $out.='            </tr>';
       return $out;

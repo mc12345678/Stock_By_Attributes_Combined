@@ -75,7 +75,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 */
 
   function _draw_stocked_attributes() {
-    global $db, $options_name;
+    global $db, $options_name, $options_html_id;
 
     $out = '';
     $out2 = '';
@@ -168,8 +168,10 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $out.='<tr><td align="right" class="main"><b>' . $attributes[0]['oname'] . ":</b></td><td class=\"main\"><input type = \"hidden\" name = \"id[" . $attributes[0]['oid'] . "]\"" . " value=\"" . stripslashes($attributes[0]['ovals'][0]['id']) . "\" />" . $attributes[0]['ovals'][0]['text'] . "</td></tr>\n";
       $out2.='<div class="wrapperAttribsOptions">';
     } else {
-      $out.='<tr><td align="right" class="main"><b>' . $attributes[0]['oname'] . ":</b></td><td class=\"main\">" . zen_draw_pull_down_menu('id[' . $attributes[0]['oid'] . ']', array_merge(array(array('id' => 0, 'text' => TEXT_SEQUENCED_FIRST . $attributes[0]['oname'])), $attributes[0]['ovals']), $attributes[0]['default'], "id=\"attrib-" . $attributes[0]['oid'] . "\" onchange=\"i" . $attributes[0]['oid'] . "(this.form);\"") . "</td></tr>\n";
-      $out2.='<div class="wrapperAttribsOptions">';
+      $out.='<tr id="' . $options_html_id[0] . '"><td align="right" class="main"><b>' . $attributes[0]['oname'] . ':</b></td><td class="main">';
+        $out.=zen_draw_pull_down_menu('id[' . $attributes[0]['oid'] . ']', array_merge(array(array('id' => 0, 'text' => TEXT_SEQUENCED_FIRST . $attributes[0]['oname'])), $attributes[0]['ovals']), $attributes[0]['default'], 'id="attrib-' . $attributes[0]['oid'] . '" onchange="i' . $attributes[0]['oid'] . '(this.form);"');
+      $out.='</td></tr>' . "\n";
+      $out2.='<div class="wrapperAttribsOptions" id="' . $options_html_id[0] . '">';
       $out2.='<h4 class="optionName back">';
       $out2.= $options_name[0];
       $out2.='</h4>';
@@ -208,8 +210,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\"><input type = \"hidden\" name = \"id[" . $attributes[$o]['oid'] . "]\"" . " value=\"" . stripslashes($attributes[$o]['ovals'][0]['id']) . "\" />" . $attributes[$o]['ovals'][0]['text'] . "</td></tr>\n";
         $out2.='<div class="wrapperAttribsOptions">';
       } else {
-        $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\">" . zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "id=\"attrib-" . $attributes[$o]['oid'] . "\" onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"") . "</td></tr>\n";
-        $out2.='<div class="wrapperAttribsOptions">';
+        $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">' . zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), "", 'id="attrib-' . $attributes[$o]['oid'] . '" onchange="i' . $attributes[$o]['oid'] . '(this.form);"') . '</td></tr>' . "\n";
+        $out2.='<div class="wrapperAttribsOptions" id="' . $options_html_id[$o] . '">';
         $out2.='<h4 class="optionName back">';
         $out2.= $options_name[$o];
         $out2.='</h4>';
@@ -246,8 +248,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\"><input type = \"hidden\" name = \"id[" . $attributes[$o]['oid'] . "]\"" . " value=\"" . stripslashes($attributes[$o]['ovals'][0]['id']) . "\" />" . $attributes[$o]['ovals'][0]['text'] . "</td></tr>\n";
       $out2.='<div class="wrapperAttribsOptions">';
     } else {
-      $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\">" . zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "id=\"attrib-" . $attributes[$o]['oid'] . "\" onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"") . "</td></tr>\n";
-      $out2.='<div class="wrapperAttribsOptions">';
+      $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">' . zen_draw_pull_down_menu("id[" . $attributes[$o]['oid'] . "]", array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), "", 'id="attrib-' . $attributes[$o]['oid'] . '" onchange="i' . $attributes[$o]['oid'] . '(this.form);"') . "</td></tr>\n";
+      $out2.='<div class="wrapperAttribsOptions" id="' . $options_html_id[$o] . '">';
       $out2.='<h4 class="optionName back">';
       $out2.= $options_name[$o];
       $out2.='</h4>';
