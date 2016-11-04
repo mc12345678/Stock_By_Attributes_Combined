@@ -581,14 +581,19 @@ require(DIR_WS_INCLUDES . 'header.php');
           foreach ($product_attributes as $option_name => $options) {
 
             //get the option/attribute list
-            $sql = "select distinct po.products_options_type, po.products_options_name, pot.products_options_types_name, 
+            $sql = "select distinct popt.products_options_type, popt.products_options_name, pot.products_options_types_name, 
                      pa.attributes_display_only, pa.products_attributes_id
-            from " . TABLE_PRODUCTS_OPTIONS . " po
-              left join " . TABLE_PRODUCTS_ATTRIBUTES . " pa ON (pa.options_id = po.products_options_id)
-              left join " . TABLE_PRODUCTS_OPTIONS_TYPES . " pot ON (po.products_options_type = pot.products_options_types_id)
-            where pa.products_id = $products_id
-              and po.products_options_name = '" . $option_name . "'     
-              and po.language_id = $language_id;";
+            from " . TABLE_PRODUCTS_OPTIONS . " popt
+              left join " . TABLE_PRODUCTS_ATTRIBUTES . " pa ON (pa.options_id = popt.products_options_id)
+              left join " . TABLE_PRODUCTS_OPTIONS_TYPES . " pot ON (popt.products_options_type = pot.products_options_types_id)
+            where pa.products_id = :products_id:
+              and popt.products_options_name = :option_name:     
+              and popt.language_id = :language_id:
+              " /*. $order_by*/;
+
+            $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
+            $sql = $db->bindVars($sql, ':option_name:', $option_name, 'string');
+            $sql = $db->bindVars($sql, ':language_id:', $language_id, 'integer');
             $products_options_type = $db->Execute($sql);
 
             // MULTI
