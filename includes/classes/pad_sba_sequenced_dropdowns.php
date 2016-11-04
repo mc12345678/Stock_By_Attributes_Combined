@@ -165,7 +165,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     if ($attributes[0]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
       // Need to load all readonly option values for this option name that are 
       //  associated with this product.
-      $out.='<tr><td align="right" class="main"><b>' . $attributes[0]['oname'] . ":</b></td><td class=\"main\"><input type = \"hidden\" name = \"id[" . $attributes[0]['oid'] . "]\"" . " value=\"" . stripslashes($attributes[0]['ovals'][0]['id']) . "\" />" . $attributes[0]['ovals'][0]['text'] . "</td></tr>\n";
+      $out.='<tr><td align="right" class="main"><b>' . $attributes[0]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[0]['oid'] . ']"' . ' value="' . stripslashes($attributes[0]['ovals'][0]['id']) . '" />' . $attributes[0]['ovals'][0]['text'] . "</td></tr>\n";
       $out2.='<div class="wrapperAttribsOptions">';
     } else {
       $out.='<tr id="' . $options_html_id[0] . '"><td align="right" class="main"><b>' . $attributes[0]['oname'] . ':</b></td><td class="main">';
@@ -177,7 +177,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $out2.='</h4>';
       $out2.='<div class="back">';
       $out2.="\n";
-      $out2.=zen_draw_pull_down_menu('id[' . $attributes[0]['oid'] . ']', array_merge(array(array('id' => 0, 'text' => TEXT_SEQUENCED_FIRST . $attributes[0]['oname'])), $attributes[0]['ovals']), $attributes[0]['default'], "id=\"" . "attrib-" . $attributes[0]['oid'] . "\" onchange=\"i" . $attributes[0]['oid'] . "(this.form);\"");
+      $out2.=zen_draw_pull_down_menu('id[' . $attributes[0]['oid'] . ']', array_merge(array(array('id' => 0, 'text' => TEXT_SEQUENCED_FIRST . $attributes[0]['oname'])), $attributes[0]['ovals']), $attributes[0]['default'], 'id="' . 'attrib-' . $attributes[0]['oid'] . '" onchange="i' . $attributes[0]['oid'] . '(this.form);"');
       $out2.='</div>';
       $out2.='<br class="clearBoth" />';
       $out2.='</div>';
@@ -199,7 +199,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 
       $options_comment[] = $products_options_names->fields['products_options_comment'];
 
-      $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
+      $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] === '1' ? '1' : '0');
       if ($options_comment[$o] != '' and $options_comment_position[$o] == '0') {
         $out.='<tr><td class="attributesComments">' . $options_comment[$o] . '</td></tr>'; 
         $out2.='<h3 class="attributesComments">' . $options_comment[$o] . '</h3>';
@@ -207,7 +207,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       if ($attributes[$o]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
         // Need to load all readonly option values for this option name that are 
         //  associated with this product.
-        $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\"><input type = \"hidden\" name = \"id[" . $attributes[$o]['oid'] . "]\"" . " value=\"" . stripslashes($attributes[$o]['ovals'][0]['id']) . "\" />" . $attributes[$o]['ovals'][0]['text'] . "</td></tr>\n";
+        $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][0]['id']) . '" />' . $attributes[$o]['ovals'][0]['text'] . '</td></tr>' . "\n";
         $out2.='<div class="wrapperAttribsOptions">';
       } else {
         $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">' . zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), "", 'id="attrib-' . $attributes[$o]['oid'] . '" onchange="i' . $attributes[$o]['oid'] . '(this.form);"') . '</td></tr>' . "\n";
@@ -217,7 +217,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out2.='</h4>';
         $out2.='<div class="back">';
         $out2.="\n";
-        $out2.=zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "id=\"attrib-" . $attributes[$o]['oid'] . "\" onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"");
+        $out2.=zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', 'id="attrib-' . $attributes[$o]['oid'] . '" onchange="i' . $attributes[$o]['oid'] . '(this.form);"');
         $out2.='</div>';
         $out2.='<br class="clearBoth" />';
         $out2.='</div>';
@@ -245,7 +245,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     if ($attributes[$o]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
       // Need to load all readonly option values for this option name that are 
       //  associated with this product.
-      $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ":</b></td><td class=\"main\"><input type = \"hidden\" name = \"id[" . $attributes[$o]['oid'] . "]\"" . " value=\"" . stripslashes($attributes[$o]['ovals'][0]['id']) . "\" />" . $attributes[$o]['ovals'][0]['text'] . "</td></tr>\n";
+      $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][0]['id']) . '" />' . $attributes[$o]['ovals'][0]['text'] . '</td></tr>' . "\n";
       $out2.='<div class="wrapperAttribsOptions">';
     } else {
       $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">' . zen_draw_pull_down_menu("id[" . $attributes[$o]['oid'] . "]", array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), "", 'id="attrib-' . $attributes[$o]['oid'] . '" onchange="i' . $attributes[$o]['oid'] . '(this.form);"') . "</td></tr>\n";
@@ -255,7 +255,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $out2.='</h4>';
       $out2.='<div class="back">';
       $out2.="\n";
-      $out2.=zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', "id=\"attrib-" . $attributes[$o]['oid'] . "\" onchange=\"i" . $attributes[$o]['oid'] . "(this.form);\"");
+      $out2.=zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), '', 'id="attrib-' . $attributes[$o]['oid'] . '" onchange="i' . $attributes[$o]['oid'] . '(this.form);"');
       $out2.='</div>';
       $out2.='<br class="clearBoth" />';
       $out2.='</div>';
@@ -441,15 +441,15 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       {
         $out.='<tr><td align="right" class=main>';
         $out2.='<h4 class="optionName back">';
-        $out.='<b>'.$nonstocked['oname'].":</b>";
-        $out2.='<b>'.$nonstocked['oname'].":</b>";
-        $out.="</td><td class=main>";
+        $out.='<b>'.$nonstocked['oname'].':</b>';
+        $out2.='<b>'.$nonstocked['oname'].':</b>';
+        $out.='</td><td class=main>';
         $out2.='</h4><div class="back">';
         $out2.="\n";
 //        $out.=zen_draw_pull_down_menu('id['.$nonstocked['oid'].']',$nonstocked['ovals'],$nonstocked['default']);
-        $out.=zen_draw_pull_down_menu('id['.$nonstocked['oid'].']',$nonstocked['ovals'],$nonstocked['default'], "id=\"attrib-" . $nonstocked['oid'] . "\" onchange=\"i" . $nonstocked['oid'] . "(this.form);\"");
-        $out2.=zen_draw_pull_down_menu('id['.$nonstocked['oid'].']',$nonstocked['ovals'],$nonstocked['default'], "id=\"attrib-" . $nonstocked['oid'] . "\" onchange=\"i" . $nonstocked['oid'] . "(this.form);\"");
-        $out.="</td></tr>";
+        $out.=zen_draw_pull_down_menu('id['.$nonstocked['oid'].']',$nonstocked['ovals'],$nonstocked['default'], 'id="attrib-' . $nonstocked['oid'] . '" onchange="i' . $nonstocked['oid'] . '(this.form);"');
+        $out2.=zen_draw_pull_down_menu('id['.$nonstocked['oid'].']',$nonstocked['ovals'],$nonstocked['default'], 'id="attrib-' . $nonstocked['oid'] . '" onchange="i' . $nonstocked['oid'] . '(this.form);"');
+        $out.='</td></tr>';
         $out2.='</div><br class="clearBoth" /></div>';
         $out.="\n";
       }
@@ -489,16 +489,16 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     $this->_build_attributes_combinations($attributes, false, 'None', $combinations2, $selected_combination); // This is used to identify what is out of stock by comparison with the above.
 // SBA_ZC_DEFAULT
     if (SBA_ZC_DEFAULT !== 'true') {
-      $out.="<tr><td>&nbsp;</td><td>";
+      $out.='<tr><td>&nbsp;</td><td>';
     }
-    $out.="<span id=\"oosmsg\" class=\"errorBox\"></span>";
+    $out.='<span id="oosmsg" class="errorBox"></span>';
     if (SBA_ZC_DEFAULT !== 'true') {
-      $out.="</td></tr>\n";
-      $out.="<tr><td colspan=\"2\">&nbsp;";
+      $out.='</td></tr>' . "\n";
+      $out.='<tr><td colspan="2">&nbsp;';
     }
     $out.="\n";
 
-    $out.="<script type=\"text/javascript\" language=\"javascript\"><!--\n";
+    $out.='<script type="text/javascript" language="javascript"><!--' . "\n";
     // build javascript array of in stock combinations of the form
     // {optval1:{optval2:{optval3:1,optval3:1}, optval2:{optval3:1}}, optval1:{optval2:{optval3:1}}};
     $out.='var stk = ' . $this->_draw_js_stock_array($combinations) . ';' . "\n";
@@ -508,6 +508,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     // Going to want to add a third stk tracking quantity to account for the availability of entered variants.
     //   Ie. if a variant doesn't exist in the SBA table, then values associated with the sub-selection should not be displayed.
     //      or if displayed should be selectable to display.
+
     // js arrays of possible option values/text for dropdowns
     // do all but the first attribute (its dropdown never changes)
     for ($curattr = 1; $curattr < sizeof($attributes); $curattr++) {
@@ -518,10 +519,60 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       }
       $out = substr($out, 0, strlen($out) - 2) . '};' . "\n";
     }
+    $out.='var chkstk = function (frm) {' . "\n";
+    $out.='    "use strict";' . "\n";
+    // build javascript array of in stock combinations
+    $out.='    var stk3 = ' . $this->_draw_js_stock_array($combinations2) . ';' . "\n";
+//    $out.="    var instk = false;\n";
+    // Begin the cycle 
+    for ($j = 0; $j < sizeof($attributes); $j++) {
+      //Check if the menu selection is the default selection in the menu
+      $out.='    ' . str_repeat("    ", 0);
+      $out.='if (frm["id[' . $attributes[$j]['oid'] . ']"].value === "0") {' . "\n";
+      $out.='    ' . str_repeat("    ", 1);
+      $out.='return true;' . "\n";
+      $out.='    ' . str_repeat("    ", 0);
+      $out.='}' . "\n";
+      $out.='    ' . str_repeat("    ", 0);
+      // Check if the option is defined/has stock.
+      $out.='if (stk3';
+      for ($k = 0; $k <= $j; $k++) {
+        $out.='[' . '"_" + ' . 'frm["id[' . $attributes[$k]['oid'] . ']"].value]';
+      }
+      $out.=' === undefined) {' . "\n";
+      $out.='    ' . str_repeat("    ", 1);
+      $out.='return false;' . "\n";
+      $out.='    ' . str_repeat("    ", 0);
+      $out.='}' . "\n";
+      // If the above have not caused a response, then it is safe to move.
+      if ($j == /*0 <-- used for size-1 to 0 */ sizeof($attributes) - 1 /*<--used for 0 to < size - 1*/) {
+        $out.='    ' . str_repeat("    ", 0);
+        $out.='return true;' . "\n";
+      }
+    }
+
+    $out.='};' . "\n";
+
+    if ($this->out_of_stock_msgline == 'True') {
+      // set/reset out of stock message based on selection
+      $out.='var stkmsg = function (frm) {' . "\n";
+      $out.='    "use strict";' . "\n";
+      $out.='    var instk = chkstk(frm);' . "\n";
+      $out.='    var span = document.getElementById("oosmsg");' . "\n";
+      $out.='    while (span.childNodes[0]) {' . "\n";
+      $out.='        span.removeChild(span.childNodes[0]);' . "\n";
+      $out.='        if (!instk) {' . "\n";
+      $out.='            span.appendChild(document.createTextNode("' . TEXT_OUT_OF_STOCK_MESSAGE . '"));' . "\n";
+      $out.='        } else {' . "\n";
+      $out.='            span.appendChild(document.createTextNode(" "));' . "\n";
+      $out.='        }' . "\n";
+      $out.='    }' . "\n";
+      $out.='};' . "\n";
+    }
 
     // js functions to set next dropdown options when a dropdown selection is made
     // do all but last attribute (nothing needs to happen when it changes except additional validation action to improve the customer experience)
-    for ($curattr = 0; $curattr < sizeof($attributes); $curattr++) {
+    for ($curattr = sizeof($attributes) - 1 ; $curattr >= 0; $curattr-- /* $curattr = 0; $curattr < sizeof($attributes); $curattr++*/) {
       for ($nextattr = $curattr + 1; $nextattr < sizeof($attributes); $nextattr++) {
         if ($attributes[$nextattr]['otype'] != PRODUCTS_OPTIONS_TYPE_READONLY) {
 
@@ -530,17 +581,28 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       }
 
       $attr = $attributes[$curattr];
-      $out.="  function i" . $attr['oid'] . "(frm) {\n";
+
+      $out.='var i' . $attr['oid'] . ' = function (frm) {' . "\n";
+      $out.='    "use strict";' . "\n";
       if ($curattr < sizeof($attributes) - 1) {
-        if ( PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK != 'False') {
-          $out.="    var displayshown = false;\n";// . ( PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK == 'False' ? "true" : "false") . ";\n"; //Allow control of the alert to provide it one time only.
+        if (PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK != 'False') {
+          $out.='    var displayshown = false;' . "\n";// . ( PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK == 'False' ? "true" : "false") . ";\n"; //Allow control of the alert to provide it one time only.
         }
-        $out.="    var opt;\n";
-        $out.="    var span=document.getElementById(\"oosmsg\");\n";
-        $out.="    while (span.childNodes[0]) {\n";
-        $out.="      span.removeChild(span.childNodes[0]);\n";
-        $out.="    }\n";
+        $out.='    var opt;' . "\n";
+        $out.='    var span = document.getElementById("oosmsg");' . "\n";
+        $out.='    while (span.childNodes[0]) {' . "\n";
+        $out.='        span.removeChild(span.childNodes[0]);' . "\n";
+        $out.='    }' . "\n";
         $i = key($attributes);
+        
+        $outArray = '';
+        $outArrayTest = '';
+        for ($i = 0; $i <= $curattr; $i++) {
+          $outArray.='["_" + frm["id[' . $attributes[$i]['oid'] . ']"].value]';
+          $outArrayTest.='frm["id[' . $attributes[$i]['oid'] . ']"] !== undefined && ';
+          $outArrayList[$i] = $outArray;
+        }
+
         for ($i = $curattr + 1; $i < sizeof($attributes); $i++) {
           if ($attributes[$i]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
             // Do not reset the form that is applicable to readonly attributes.
@@ -565,243 +627,195 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
             //     possibly exit the determination of further dropdowns.
             // Do nothing..
           } else {
-            $out.="    frm['id[" . $attributes[$i]['oid'] . "]'].length=1;\n";
+            $out.='    if (' . $outArrayTest . (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True' ? 'stk4' : 'stk2') . $outArray. ' !== undefined) {' . "\n";
+            $out.='        if (frm["id[' . $attributes[$i]['oid'] . ']"] !== undefined) {' . "\n";
+            // Reset the dropdown to have only one item.
+            $out.='            frm["id[' . $attributes[$i]['oid'] . ']"].length = 1;' . "\n";
+            $out.='        }' . "\n";
+            $out.='    }' . "\n";
           }
         }
 //         $out.="    stkmsg(frm);\n";
-        //Loop on all selections available if all stock were included.
-        $out.="    for (opt in stk";
-        $outArray = '';
-        for ($i = 0; $i <= $curattr; $i++) {
-          $outArray.="['_'+frm['id[" . $attributes[$i]['oid'] . "]'].value]";
+        $out.='    if (true) {' . "\n";
+        $out.='        if (frm !== undefined && frm["id[' . $attributes[$nextattr]['oid'] . ']"] !== undefined && frm["id[' . $attributes[$nextattr]['oid'] . ']"].length !== undefined) {' . "\n";
+        $out.='            if (' . $outArrayTest;
+
+        for ($i = 0; $i<=$curattr; $i++) {
+          $out.=(PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True' ? 'stk4' : 'stk2') . $outArrayList[$i] . ' !== undefined';
+          if ($i<$curattr) {
+            $out.=' && ';
+          }
         }
-        $outArrayList[$curattr] = $outArray;
+
+        $out.=') {' . "\n";
+
+        //Loop on all selections available if all stock were included.
+        $out.='                for (opt in ' . (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True' ? 'stk4': 'stk2');
         $out.=$outArray;
-        $out.=") {\n";
+        $out.=') {' . "\n";
         //The following checks to verify that the option exists in the list
         //  Without looking at the sub-selection yet.  Is necessary on 
         //  a product with two or more attributes, where any attribute is
         //  already exhausted before the last selectable attribute.
-        $out.="      if (";
+        $out.='                    if (';
         for ($i = 0; $i<=$curattr; $i++) {
-          $out.="typeof stk2" . $outArrayList[$i] . " != \"undefined\"";
-          if ($i<$curattr){
-            $out.=" && ";
+          $out.='stk2' . $outArrayList[$i] . ' !== undefined';
+          if ($i<$curattr) {
+            $out.=' && ';
           }
         }
-        $out.=") {\n";
-        $out.="        if (typeof stk2";
+        $out.=') {' . "\n";
+        $out.='                        if (stk2';
         $out.=$outArray;
-        $out.="[opt] != \"undefined\") {\n";
+        $out.='[opt] !== undefined && frm["id[' . $attributes[$nextattr]['oid'] . ']"] !== undefined) {' . "\n";
         //  Add the product to the next selectable list item as it is in stock.
-        $out.="          frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length]=new Option(htmlEnDeCode.htmlDecode(txt" . $attributes[$nextattr]['oid'] . "[opt])";
+        $out.='                            frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length] = new Option(htmlEnDeCode.htmlDecode(txt' . $attributes[$nextattr]['oid'] . '[opt])';
         if ($curattr == sizeof($attributes) - 2) {
           if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true') {
-            $out.=" + '" . PWA_STOCK_QTY . "' + stk2";
+            $out.=' + "' . PWA_STOCK_QTY . '" + stk2';
             $out.=$outArray;
-            $out.="[opt]";
+            $out.='[opt]';
           }
         }
-        $out.=",opt.substring(1));\n";
-        $out.="        } else {\n";
+        
+        $out.=', opt.substring(1));' . "\n";
+        $out.='                        }';
+
         if (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True') {
+          $out.=' else {' . "\n"; // EOF else of if typeof stk2 $outArray [opt] && frm['id[]'] not defined.
           //  Add the product to the next selectable list item and identify its out-of-stock status as controlled by the admin panel.  
-          $out.="          frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length]=new Option(htmlEnDeCode.htmlDecode(";
+          $out.='                            frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length] = new Option(htmlEnDeCode.htmlDecode(';
           if (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'None') {
-            $out.="txt" . $attributes[$nextattr]['oid'] . "[opt]";
+            $out.='txt' . $attributes[$nextattr]['oid'] . '[opt]';
           } elseif (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'Left') {
-            $out.="'" . PWA_OUT_OF_STOCK . "' + txt" . $attributes[$nextattr]['oid'] . "[opt]";
+            $out.='"' . PWA_OUT_OF_STOCK . '" + txt' . $attributes[$nextattr]['oid'] . '[opt]';
           } elseif (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'Right') {
-            $out.="txt" . $attributes[$nextattr]['oid'] . "[opt] + '" . PWA_OUT_OF_STOCK . "'";
+            $out.='txt' . $attributes[$nextattr]['oid'] . '[opt] + "' . PWA_OUT_OF_STOCK . '"';
           }
-          $out.="),opt.substring(1));\n";
-      if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == sizeof($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
-            $out.="          frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length-1].disabled = true;\n";
-      }
-        }
-        $out.="        }\n";
-        if ($this->out_of_stock_msgline == 'True') {
-          $out.="        stkmsg(frm);\n";
-        }
-        $out.="      } else {\n";
-        if (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True') {
-          //  Add the product to the next selectable list item and identify its out-of-stock status as controlled by the admin panel.  
-          $out.="        frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length]=new Option(htmlEnDeCode.htmlDecode(";
-          if (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'None') {
-            $out.="txt" . $attributes[$nextattr]['oid'] . "[opt]";
-          } elseif (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'Left') {
-            $out.="'" . PWA_OUT_OF_STOCK . "' + txt" . $attributes[$nextattr]['oid'] . "[opt]";
-          } elseif (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'Right') {
-            $out.="txt" . $attributes[$nextattr]['oid'] . "[opt] + '" . PWA_OUT_OF_STOCK . "'";
-          }
-          $out.="),opt.substring(1));\n";
+          $out.='), opt.substring(1));' . "\n";
           if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == sizeof($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
-            $out.="        frm['id[" . $attributes[$nextattr]['oid'] . "]'].options[frm['id[" . $attributes[$nextattr]['oid'] . "]'].length-1].disabled = true;\n";
+            $out.='                            frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].disabled = true;' . "\n";
+          }
+          $out.='                        }' . "\n";  // EOF else and if typeof stk2 $outArray [opt] && frm['id[]'] not defined.
+        } else {
+          $out.="\n";
+        }
+        
+        if ($this->out_of_stock_msgline == 'True') {
+          $out.='                        stkmsg(frm);' . "\n";
+        }
+        $out.='                    }';
+
+        if (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True') {
+          $out.=' else {' . "\n";
+          //  Add the product to the next selectable list item and identify its out-of-stock status as controlled by the admin panel.  
+          $out.='                        frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length] = new Option(htmlEnDeCode.htmlDecode(';
+          if (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'None') {
+            $out.='txt' . $attributes[$nextattr]['oid'] . '[opt]';
+          } elseif (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'Left') {
+            $out.='"' . PWA_OUT_OF_STOCK . '" + txt' . $attributes[$nextattr]['oid'] . '[opt]';
+          } elseif (PRODINFO_ATTRIBUTE_MARK_OUT_OF_STOCK == 'Right') {
+            $out.='txt' . $attributes[$nextattr]['oid'] . '[opt] + "' . PWA_OUT_OF_STOCK . '"';
+          }
+          $out.='), opt.substring(1));' . "\n";
+          if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == sizeof($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
+            $out.='                        frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].disabled = true;' . "\n";
           }
           if ($this->out_of_stock_msgline == 'True') {
-            $out.="        stkmsg(frm);\n";
+            $out.='                        stkmsg(frm);' . "\n";
           }
           if (PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK != 'False') {
-            $out.="        if (displayshown != true) {\n";
-            $out.="          alert('" . TEXT_JAVA_ALL_SELECT_OUT . "');\n";
-//        $out.="          stkmsg(frm);\n";
-            $out.="          displayshown=true;\n";
-            $out.="        }\n";
+            $out.='                        if (displayshown !== true) {' . "\n";
+            $out.='                            alert("' . TEXT_JAVA_ALL_SELECT_OUT . '");' . "\n";
+            $out.='                            displayshown = true;' . "\n";
+            $out.='                        }' . "\n"; //EOF displayshown !== true
           }
+          $out.='                    }' . "\n"; // EOF else
+        } else {
+          $out.="\n";
         }
-        $out.="      }\n";
-        $out.="    }\n";
+        
+        $out.='                }' . "\n";
+        $out.='            }';
+
+        // Add the out of stock message because there is nothing further to process:
+        if (PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK != 'False') {
+          $out.=' else {' . "\n";
+          $out.='                if (displayshown !== true';
+          // Don't show the out of stock message during processing code when the current location is blank/not selected.
+          // This prevents showing the message when the options are first displayed on page load as well as when 
+          //  the selection is changed back to the "default" message of First/Next select Option Name Text.
+          for ($i = 0; $i <= $curattr; $i++) {
+            $out.=' && frm["id[' . $attributes[$i]['oid'] . ']"].value !== "0"';
+          }
+          $out.=') {' . "\n";
+          $out.='                    alert("' . TEXT_JAVA_ALL_SELECT_OUT . '");' . "\n";
+          $out.='                    displayshown = true;' . "\n";
+          $out.='                }' . "\n"; //EOF displayshown !== true
+          $out.='            }' . "\n";
+        } else {
+          $out.="\n";
+        }
+
+        $out.='        }' . "\n";
+        $out.='    }' . "\n";
       } else {
         if ($this->out_of_stock_msgline == 'True') {
-          $out.="      stkmsg(frm);\n";
+          $out.='    stkmsg(frm);' . "\n";
         }
-        $out.="    if (!chkstk(frm)" . ( PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK == 'False' ? " && false" : "" ) . ") {\n";
-//          $out.="      stkmsg(frm);\n";
-        $out.="      alert('" . TEXT_JAVA_ONE_SELECT_OUT . "');\n";
-        $out.="    } \n"; 
+        if (PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK !== 'False') {
+          $out.='    if (!chkstk(frm)' . ( PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK == 'False' ? ' && false' : '' ) . ') {' . "\n";
+          $out.='        alert("' . TEXT_JAVA_ONE_SELECT_OUT . '");' . "\n";
+          $out.='    }' . "\n"; 
+        }
       }
-      $out.="  }\n";
+      $out.='};' . "\n";
     }
 
     // js to initialize dropdowns to defaults if product id contains attributes (i.e. clicked through to product page from cart)
-    $out.="  i" . $attributes[0]['oid'] . "(document.cart_quantity);\n";
+    $out.='i' . $attributes[0]['oid'] . '(document.cart_quantity);' . "\n";
     for ($o = 1; $o < sizeof($attributes) - 1; $o++) {
       if ($attributes[$o]['default'] != '') {
-        $out.="  document.cart_quantity['id[" . $attributes[$o]['oid'] . "]'].value=" . $attributes[$o]['default'] . ";\n";
-        $out.="  i" . $attributes[$o]['oid'] . "(document.cart_quantity);\n";
+        $out.='document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
+        $out.='i' . $attributes[$o]['oid'] . '(document.cart_quantity);' . "\n";
       } else {
         break;
       }
     }
     if (($o == sizeof($attributes) - 1) && ($attributes[$o]['default'] != '')) {
-      $out.="  document.cart_quantity['id[" . $attributes[$o]['oid'] . "]'].value=" . $attributes[$o]['default'] . ";\n";
+      $out.='document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
     }
 
     // js to not allow add to cart if selections not made
-    $out.="  function chksel(form) {\n";
-    $out.="    var ok=true;\n";
+    $out.='var chksel = function (form) {' . "\n";
+    $out.='    "use strict";' . "\n";
+    $out.='    var ok = true;' . "\n";
+
     foreach ($attributes as $attr) {
-      $out.="    if (form['id[" . $attr['oid'] . "]'].value==0) ok=false;\n";
+      $out.='    if (form["id[' . $attr['oid'] . ']"].value === "0") {' . "\n";
+      $out.='        ok = false;' . "\n";
+      $out.='    }' . "\n";
     }
-    $out.="    if (!ok) {\n";
-    $out.="      alert('" . TEXT_SELECT_OPTIONS . "');\n";
-    $out.="      form.action = '';\n";
-    $out.="      return false;\n";
-    $out.="    } else {\n";
-    $out.=" "; //Need to check stock somewhere in this, perhaps some help from other code?
-    $out.="      return true;\n";
-    $out.="    }\n";
-    $out.="  }\n";
-    $out.="  document.cart_quantity.onsubmit=function () {chksel(this)};\n";
+    
+    $out.='    if (!ok) {' . "\n";
+    $out.='        alert("' . TEXT_SELECT_OPTIONS . '");' . "\n";
+    $out.='        form.action = "";' . "\n";
+    $out.='        return false;' . "\n";
+    $out.='    } else {' . "\n";
+    $out.='' . "\n"; //Need to check stock somewhere in this, perhaps some help from other code?
+    $out.='        return true;' . "\n";
+    $out.='    }' . "\n";
+    $out.='};' . "\n";
+    
+    $out.='document.cart_quantity.addEventListener("submit", function () {' . "\n";
+    $out.='    "use strict";' . "\n";
+    $out.='    chksel(document.cart_quantity);' . "\n";
+    $out.='});' . "\n";
 
-
-    $out.="  function chkstk(frm) {\n";
-
-    // build javascript array of in stock combinations
-    $out.="    var stk3=" . $this->_draw_js_stock_array($combinations2) . ";\n";
-    $out.="    var instk=false;\n";
-
-    // build javascript if statement to test level by level for existence  
-    // Check if every menu selection is back to the baseline.
-    $out.="    " . str_repeat("  ", 0);
-    $out.="if (frm['id[" . $attributes[0]['oid'] . "]'].value == 0";
-    for ($i = 1; $i < sizeof($attributes); $i++) {
-      $out.=" && frm['id[" . $attributes[$i]['oid'] . "]'].value == 0";
-    }
-    $out.=") {\n";
-    $out.="    " . str_repeat("  ", 1);
-    $out.="instk = true;\n";
-    $out.="    " . str_repeat("  ", 0);
-    $out.="}\n";
-    // Begin the cycle 
-    for ($j = 0; $j < sizeof($attributes); $j++) {
-      //Check if the menu selection is the default selection in the menu
-      $out.="    " . str_repeat("  ", $j);
-      $out.="if (frm['id[" . $attributes[$j]['oid'] . "]'].value == 0) {\n";
-      $out.="    " . str_repeat("  ", $j + 1);
-      $out.="return true;\n";
-      $out.="    " . str_repeat("  ", $j);
-      $out.="}\n";
-      $out.="    " . str_repeat("  ", $j);
-      // Check if the option is defined/has stock.
-      $out.="if (typeof stk3";
-      for ($k = 0; $k <= $j; $k++) {
-        $out.="[" . "'_'+"  . "frm['id[" . $attributes[$k]['oid'] . "]'].value]";
-      }
-      $out.=" == \"undefined\") {\n";
-      $out.="    " . str_repeat("  ", $j + 1);
-      $out.="return false;\n";
-      $out.="    " . str_repeat("  ", $j);
-      $out.="}\n";
-      // If the above have not caused a response, then it is safe to move.
-      if ($j == sizeof($attributes) - 1) {
-        $out.="    " . str_repeat("  ", $j + 1);
-        $out.="return true;\n";
-      }
-    }
-/*    $out.="if (frm['id[".$attributes[0]['oid']."]'] == 0) {\n";
-      for ($i=0; $i<sizeof($attributes); $i++) {
-        $out.="    " . str_repeat("  ",$i);
-//Starts the checks of stock quantity.
-//        $out.='if (stk3';
-
-
-        $out.='if (stk3';
-        for ($j=0; $j<=$i; $j++) {
-          $out.="[frm['id[".$attributes[$j]['oid']."]'].value]";
-        }
-        $out.=") {\n";
-        $out.="     " . str_repeat("  ",sizeof($attributes)) . "if(frm['id[".$attributes[$j-1]['oid']."]'].value != 0" . /*" && frm['id[".$attributes[sizeof($attributes)-1]['oid']."]'].value != 0" .*//* ") {\n";
-    $out.="     " . str_repeat("  ",sizeof($attributes)+1) . "instk=true;\n";
-    $out.="     " . str_repeat("  ",sizeof($attributes)) . "}\n";
-      }
-//      $out.="    " . str_repeat("  ",sizeof($attributes)) . "instk=true;\n";
-      for ($i=sizeof($attributes)-1; $i>0; $i--) {
-        $out.="    " . str_repeat("  ",$i) . "}\n";
-      }
-      $out.="    }\n";
-      $out.="}\n";
-        for ($j=sizeof($attributes)-1; $j>=0; $j--) {
-          $out.="    " . str_repeat("  ",0);
-          $out.='if (';
-          $out.="frm['id[".$attributes[$j]['oid']."]'].value == 0 && !instk";
-      for ($i=$j-1; $i>=0; $i--) {
-        $out.=" && frm['id[".$attributes[$i]['oid']."]'].value != 0";
-      //$out.=" && chkstk()";
-      }
-      $out.=") {\n";
-          $out.="    " . str_repeat("  ",1);
-      $out.="return true;\n";
-          $out.="    " . str_repeat("  ",0);
-          $out.="}\n";
-    }*/
-/*    $out.="    if (" . ( instk = false && true ? "" : "") . ") {\n";
-    $out.="      \n";
-    $out.="    }\n";*/
-//      $out.="    return instk;\n";
-    $out.="  }\n";
-
-    if ($this->out_of_stock_msgline == 'True') {
-      // set/reset out of stock message based on selection
-      $out.="  function stkmsg(frm) {\n";
-      $out.="    var instk=chkstk(frm);\n";
-      $out.="    var span=document.getElementById(\"oosmsg\");\n";
-      $out.="    while (span.childNodes[0])\n";
-      $out.="      span.removeChild(span.childNodes[0]);\n";
-      $out.="    if (!instk) {\n";
-      $out.="      span.appendChild(document.createTextNode(\"" . TEXT_OUT_OF_STOCK_MESSAGE . "\"));\n";
-//        $out.="      alert('" . TEXT_JAVA_ONE_SELECT_OUT . "');\n";
-      $out.="    } else {\n";
-      $out.="      span.appendChild(document.createTextNode(\" \"));\n";
-      $out.="    }\n";
-      $out.="  }\n";
-      //initialize out of stock message
-//          $out.="  stkmsg(document.cart_quantity);\n";
-    }
-    $out.="//--></script>\n";
+    $out.='//--></script>' . "\n";
     $out.="\n";
     if (SBA_ZC_DEFAULT !== 'true') {
-      $out.="</td></tr>\n"; // Removed extra: </td></tr>
+      $out.='</td></tr>' . "\n"; // Removed extra: </td></tr>
     }
 
     return $out;
@@ -998,11 +1012,11 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         entityToChar = {};
         // add the default set
         addCharacterEntities({
-            \'&amp;\'     :   \'&\',
-            \'&gt;\'      :   \'>\',
-            \'&lt;\'      :   \'<\',
-            \'&quot;\'    :   \'"\',
-            \'&#39;\'     :   "\'"
+            "&amp;"     :   "&",
+            "&gt;"      :   ">",
+            "&lt;"      :   "<",
+            "&quot;"    :   "\"",
+            "&#39;"     :   "\'"
         });
     }
 
@@ -1017,8 +1031,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
             charKeys.push(echar);
             entityKeys.push(key);
         }
-        charToEntityRegex = new RegExp(\'(\' + charKeys.join(\'|\') + \')\', \'g\');
-        entityToCharRegex = new RegExp(\'(\' + entityKeys.join(\'|\') + \'|&#[0-9]{1,5};\' + \')\', \'g\');
+        charToEntityRegex = new RegExp("(" + charKeys.join("|") + ")", "g");
+        entityToCharRegex = new RegExp("(" + entityKeys.join("|") + "|&#[0-9]{1,5};" + ")", "g");
     }
 
     function htmlEncode(value){

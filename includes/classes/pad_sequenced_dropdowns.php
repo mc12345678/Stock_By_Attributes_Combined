@@ -158,32 +158,32 @@
       // do all but last attribute (nothing needs to happen when it changes)
       for ($curattr=0; $curattr<sizeof($attributes)-1; $curattr++) {
         $attr=$attributes[$curattr];
-        $out.="  function i".$attr['oid']."(frm) {\n";
+        $out.='var i' . $attr['oid'] . ' = function (frm) {' . "\n";
         $i=key($attributes);
         for ($i=$curattr+1; $i<sizeof($attributes); $i++) {
-          $out.="    frm['id[".$attributes[$i]['oid']."]'].length=1;\n";
+          $out.='            frm["id[' . $attributes[$i]['oid'] . ']"].length = 1;' . "\n";
         }
         $out.="    for (opt in stk";
         for ($i=0; $i<=$curattr; $i++) {
           $out.="[frm['id[".$attributes[$i]['oid']."]'].value]";
         }
-        $out.=") {\n";
+          $out.=') {' . "\n";
         $out.="      frm['id[".$attributes[$curattr+1]['oid']."]'].options[frm['id[".$attributes[$curattr+1]['oid']."]'].length]=new Option(txt".$attributes[$curattr+1]['oid']."[opt],opt);\n";
-        $out.="    }\n";
-        $out.="  }\n";
+        $out.='    }' . "\n";
+        $out.='  };' . "\n"; 
       }
 
       // js to initialize dropdowns to defaults if product id contains attributes (i.e. clicked through to product page from cart)
-      $out.="  i" . $attributes[0]['oid'] . "(document.cart_quantity);\n";
+        $out.='  i' . $attributes[0]['oid'] . '(document.cart_quantity);' . "\n";
       for($o=1; $o<sizeof($attributes)-1; $o++) {
         if ($attributes[$o]['default']!='') {
-          $out.="  document.cart_quantity['id[".$attributes[$o]['oid']."]'].value=".$attributes[$o]['default'].";\n";
-          $out.="  i" . $attributes[$o]['oid'] . "(document.cart_quantity);\n";
+          $out.='  document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
+          $out.='  i' . $attributes[$o]['oid'] . '(document.cart_quantity);' . "\n";
         }
         else break;
       }
       if (($o == sizeof($attributes)-1) && ($attributes[$o]['default']!='')) {
-        $out.="  document.cart_quantity['id[".$attributes[$o]['oid']."]'].value=".$attributes[$o]['default'].";\n";
+        $out.='  document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
       }
       
       // js to not allow add to cart if selections not made
@@ -193,10 +193,10 @@
         $out.="    if (this['id[".$attr['oid']."]'].value==0) ok=false;\n";
       $out.="    if (!ok) alert('".TEXT_SELECT_OPTIONS."');\n";
       $out.="    return ok;\n";
-      $out.="  }\n";
+      $out.="  };\n";
       $out.="  document.cart_quantity.onsubmit=chksel;\n";
-      $out.="//--></script>\n";
-      $out.="\n</td></tr>\n";
+      $out.='//--></script>' . "\n";
+      $out.="\n" . '</td></tr>' . "\n";
       
       return $out;
     }
