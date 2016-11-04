@@ -478,8 +478,13 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     $out = '';
     $outArrayList = array();
     $combinations = array();
+    $combinations2 = array();
+    $combinations4 = array();
+    
     $selected_combination = 0;
     $this->_build_attributes_combinations($attributes, true, 'None', $combinations, $selected_combination); // Used to identify all possible combinations as provided in SBA.
+
+    $this->_build_attributes_combinations($attributes, 'only', 'None', $combinations4, $selected_combination); // Used to identify only the product that can exist based on the entries entered into the SBA product table and is expected to include all combinations whether they have stock or not.  Appears that could be used to provide all information related to stock; however, the code herein would have to be rewritten to reduce dependency on one or the other combination groupings.
 
     $this->_build_attributes_combinations($attributes, false, 'None', $combinations2, $selected_combination); // This is used to identify what is out of stock by comparison with the above.
 // SBA_ZC_DEFAULT
@@ -496,8 +501,10 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     $out.="<script type=\"text/javascript\" language=\"javascript\"><!--\n";
     // build javascript array of in stock combinations of the form
     // {optval1:{optval2:{optval3:1,optval3:1}, optval2:{optval3:1}}, optval1:{optval2:{optval3:1}}};
-    $out.="  var stk=" . $this->_draw_js_stock_array($combinations) . ";\n";
-    $out.="  var stk2=" . $this->_draw_js_stock_array($combinations2) . ";\n";
+    $out.='var stk = ' . $this->_draw_js_stock_array($combinations) . ';' . "\n";
+    $out.='var stk2 = ' . $this->_draw_js_stock_array($combinations2) . ';' . "\n";
+    $out.='var stk4 = ' . $this->_draw_js_stock_array($combinations4) .';' . "\n";
+    
     // Going to want to add a third stk tracking quantity to account for the availability of entered variants.
     //   Ie. if a variant doesn't exist in the SBA table, then values associated with the sub-selection should not be displayed.
     //      or if displayed should be selectable to display.
