@@ -384,10 +384,10 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
                   $html .= implode("\n",$attributes_output);
 
                   $html .= '</td>'."\n";
-                  $html .= '<td class="stockAttributesCellQuantity" id="stockid2-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['quantity'].'</td>'."\n";
-                  $html .= '<td class="stockAttributesCellSort" id="stockid3-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['sort'].'</td>'."\n";
-                  $html .= '<td class="stockAttributesCellCustomid" id="stockid4-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['customid'].'</td>'."\n";
-                  $html .= '<td class="stockAttributesCellTitle" id="stockid1-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['title'].'</td>'."\n";
+                  $html .= '<td class="stockAttributesCellQuantity editthis" id="stockid-quantity-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['quantity'].'</td>'."\n";
+                  $html .= '<td class="stockAttributesCellSort editthis" id="stockid-sort-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['sort'].'</td>'."\n";
+                  $html .= '<td class="stockAttributesCellCustomid editthis" id="stockid-customid-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['customid'].'</td>'."\n";
+                  $html .= '<td class="stockAttributesCellTitle" id="stockid-title-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['title'].'</td>'."\n";
                   $html .= '<td class="stockAttributesCellEdit">'."\n";
                   $html .= '<a href="'.zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=edit&amp;products_id=".$products->fields['products_id'].'&amp;attributes='.$attribute_products->fields['stock_attributes'].'&amp;q='.$attribute_products->fields['quantity'], 'NONSSL').'">'.PWA_EDIT_QUANTITY.'</a>'; //s_mack:prefill_quantity
                   $html .= '</td>'."\n";
@@ -430,41 +430,85 @@ function saveAttrib(){
 //	$stock = $products_with_attributes_stock_class; // Should replace all cases of $stock with the class variable name.
     $i = 0;
     foreach ($_POST as $key => $value) {
-    	$id1 = intval(str_replace('stockid1-', '', $key));//title
-      $id2 = intval(str_replace('stockid2-', '', $key));//quantity
-    	$id3 = intval(str_replace('stockid3-', '', $key));//sort
-    	$id4 = intval(str_replace('stockid4-', '', $key));//customid	
+      $matches = array();
+      
+      if(preg_match('/stockid-(.*?)-(.*)/', $key, $matches)) {
+        // $matches[1] is expected to be the pwas database table field to be updated
+        // $matches[2] is expected to be the pwas stock_id to be updated
 
-        if($id1 > 0){
-        	$value = $this->nullDataEntry($value);
-        	if(empty($value) || is_null($value)){$value = 'null';}
-       		$sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET title = $value WHERE stock_id = " .$id1. " LIMIT 1";
-       		$db->execute($sql);
-        	$i++;
+        $tabledata = '';
+        $stock_id = null;
+        
+        $tabledata = $matches[1];
+        $stock_id = $matches[2];
+        
+        switch ($tabledata) {
+          case 'quantity':
+          case 'sort':
+            $value = doubleval($value); // Get a float value
+            $value = $db->getBindVarValue($value, 'float');
+            break;
+          case 'customid':
+          case 'title':
+            if ($db->getBindVarValue('NULL', 'string') === 'null' && $value !== 'NULL') {
+              if(empty($value) || is_null($value)){$value = 'NULL';}
+              $value = $db->getBindVarValue($value, 'string');
+            } else {
+              $value = $db->prepare_input($value); // Maybe if numeric bind to float, else bind to string.
+              $value = $this->nullDataEntry($value); // Get the value or string of entered text, if there is nothing then be able to store a null value that is not the text 'null'.
+              if(empty($value) || is_null($value)){$value = 'null';}
+            }  
+            break;
+          default:
+            next;
+            break;
         }
-        if($id2 > 0){
-        	$value = doubleval($value);
-        	if(empty($value) || is_null($value)){$value = 0;}
-			$sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET quantity = $value WHERE stock_id = " .$id2. " LIMIT 1";
+
+        if (isset($stock_id) && (int)$stock_id > 0) {
+          $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET :field: = $value WHERE stock_id = :stock_id: LIMIT 1";
+          $sql = $db->bindVars($sql, ':field:', $tabledata, 'noquotestring');
+          $sql = $db->bindVars($sql, ':stock_id:', $stock_id, 'integer');
+          $db->execute($sql);
+          $i++;
+        }
+      }
+      
+/*      $id1 = intval(str_replace('stockid1-', '', $key));//title
+      $id2 = intval(str_replace('stockid2-', '', $key));//quantity
+      $id3 = intval(str_replace('stockid3-', '', $key));//sort
+      $id4 = intval(str_replace('stockid4-', '', $key));//customid  */
+
+/*        if($id1 > 0){
+          $value = $this->nullDataEntry($value);
+          if(empty($value) || is_null($value)){$value = 'null';}
+           $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET title = $value WHERE stock_id = " .$id1. " LIMIT 1";
+           $db->execute($sql);
+          $i++;
+        }*/
+/*        if($id2 > 0){
+          $value = doubleval($value);
+          if(empty($value) || is_null($value)){$value = 0;}
+      $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET quantity = $value WHERE stock_id = " .$id2. " LIMIT 1";
             $db->execute($sql);
             $i++;
         }      
         if($id3 > 0){
-        	$value = doubleval($value);
-        	if(empty($value) || is_null($value)){$value = 0;}
-        	$sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET sort = $value WHERE stock_id = " .$id3. " LIMIT 1";
-        	$db->execute($sql);
-        	$i++;
+          $value = doubleval($value);
+          if(empty($value) || is_null($value)){$value = 0;}
+          $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET sort = $value WHERE stock_id = " .$id3. " LIMIT 1";
+          $db->execute($sql);
+          $i++;
         }
         if($id4 > 0){
-        	$value = addslashes($value);
-        	$value = $this->nullDataEntry($value);
-        	if(empty($value) || is_null($value)){$value = 'null';}
-        	$sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET customid = $value WHERE stock_id = " .$id4. " LIMIT 1";
-        	$db->execute($sql);
-        	$i++;
-        }
+          $value = addslashes($value);
+          $value = $this->nullDataEntry($value);
+          if(empty($value) || is_null($value)){$value = 'null';}
+          $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET customid = $value WHERE stock_id = " .$id4. " LIMIT 1";
+          $db->execute($sql);
+          $i++;
+        }*/
     }
+    unset ($key, $value);
     $html = print_r($_POST, true);
     $html = "$i DS SAVED";
     return $html;  
