@@ -549,7 +549,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
       }
       $out='';
       foreach ($combinations[0]['comb'] as $oid=>$ovid) {
-        $out.='{'.zen_output_string_protected($ovid).':';
+        $out.='{'.zen_output_string_protected($ovid).': ';
         $opts[]=$oid;
       }
       $out.='1';
@@ -561,13 +561,13 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
             break;
           }
         }
-        $out.=str_repeat('}',sizeof($opts)-1-$i).',';
+        $out.=str_repeat('}',sizeof($opts)-1-$i).', ';
         if ($i<sizeof($opts)-1) {
           for ($j=$i; $j<sizeof($opts)-1; $j++){
-            $out.=zen_output_string_protected($comb[$opts[$j]]).':{';
+            $out.=zen_output_string_protected($comb[$opts[$j]]).': {';
           }
         }
-        $out.=zen_output_string_protected($comb[$opts[sizeof($opts)-1]]).':1';
+        $out.=zen_output_string_protected($comb[$opts[sizeof($opts)-1]]).': 1';
       }
       $out.=str_repeat('}',sizeof($opts));
       

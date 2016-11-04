@@ -512,12 +512,11 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     // do all but the first attribute (its dropdown never changes)
     for ($curattr = 1; $curattr < sizeof($attributes); $curattr++) {
       $attr = $attributes[$curattr];
-      $out.="  var txt" . $attr['oid'] . "={";
+      $out.='var txt' . $attr['oid'] . ' = {';
       foreach ($attr['ovals'] as $oval) {
-        $out.="\"_" . $oval['id'] . "\"" . ":\"" . zen_output_string_protected($oval['text']) . "\",";
+        $out.='"_' . $oval['id'] . '"' . ': "' . zen_output_string_protected($oval['text']) . '", ';
       }
-      $out = substr($out, 0, strlen($out) - 1) . "};";
-      $out.="\n";
+      $out = substr($out, 0, strlen($out) - 2) . '};' . "\n";
     }
 
     // js functions to set next dropdown options when a dropdown selection is made
@@ -841,7 +840,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     }
     $out = '';
     foreach ($combinations[0]['comb'] as $oid => $ovid) {
-      $out.='{' . '"_' . zen_output_string_protected($ovid) . '"' . ':';
+      $out.='{' . '"_' . zen_output_string_protected($ovid) . '"' . ': ';
       $ovids[] = $ovid;
       $opts[] = $oid;
     }
@@ -863,13 +862,13 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
           break;
         }
       }
-      $out.=str_repeat('}', sizeof($opts) - 1 - $i) . ',';
+      $out.=str_repeat('}', sizeof($opts) - 1 - $i) . ', ';
       if ($i < sizeof($opts) - 1) {
         for ($j = $i; $j < sizeof($opts) - 1; $j++) {
-          $out.= '"_' . zen_output_string_protected($comb[$opts[$j]]) . '"' . ':{';
+          $out.= '"_' . zen_output_string_protected($comb[$opts[$j]]) . '"' . ': {';
         }
       }
-      $out.='"_' . zen_output_string_protected($comb[$opts[sizeof($opts) - 1]]) . '"' . ':';
+      $out.='"_' . zen_output_string_protected($comb[$opts[sizeof($opts) - 1]]) . '"' . ': ';
       if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true') {
         $idvals = array();
         foreach ($comb as $ids => $idvalsadd) {

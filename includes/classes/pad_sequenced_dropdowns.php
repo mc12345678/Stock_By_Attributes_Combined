@@ -146,11 +146,11 @@
       // do all but the first attribute (its dropdown never changes)
       for ($curattr=1; $curattr<sizeof($attributes); $curattr++) {
         $attr = $attributes[$curattr];
-        $out.="  var txt".$attr['oid']."={";
+        $out.='var txt' . $attr['oid'] . ' = {';
         foreach ($attr['ovals'] as $oval) {
-          $out.=$oval['id'].":'".$oval['text']."',";
+        $out.='"_' . $oval['id'] . '"' . ': "' . $oval['text'] . '", ';
         }
-        $out=substr($out,0,strlen($out)-1)."};";
+        $out = substr($out, 0, strlen($out) - 2) . "};";
         $out.="\n";
       }
 
