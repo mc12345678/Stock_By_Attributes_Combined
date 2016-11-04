@@ -541,17 +541,17 @@ switch ($action) {
     <script type="text/javascript" src="includes/menu.js"></script>
     <script type="text/javascript" src="includes/general.js"></script>
     <script type="text/javascript">
-	 <!--
+   <!--
     function init()
-	 {
-		 cssjsmenu('navbar');
-		 if (document.getElementById)
-		 {
-			 var kill = document.getElementById('hoverJS');
-			 kill.disabled = true;
-		 }
-	 }
-	 // -->
+   {
+     cssjsmenu('navbar');
+     if (document.getElementById)
+     {
+       var kill = document.getElementById('hoverJS');
+       kill.disabled = true;
+     }
+   }
+   // -->
     </script>
   </head>
   <body onLoad="init()">
