@@ -429,8 +429,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
        && (isset($_SESSION['pwas_class2']) 
            && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba') 
            && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba')) 
-             ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'][$i])) 
-             : function_exists('zen_product_is_sba') && zen_product_is_sba(zen_get_prid($_POST['products_id'][$i])) 
+             ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'])) 
+             : function_exists('zen_product_is_sba') && zen_product_is_sba(zen_get_prid($_POST['products_id'])) 
            )
       ) {
 
