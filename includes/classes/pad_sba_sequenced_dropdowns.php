@@ -165,7 +165,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     if ($attributes[0]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
       // Need to load all readonly option values for this option name that are 
       //  associated with this product.
-      $out.='<tr><td align="right" class="main"><b>' . $attributes[0]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[0]['oid'] . ']"' . ' value="' . stripslashes($attributes[0]['ovals'][0]['id']) . '" />' . $attributes[0]['ovals'][0]['text'] . "</td></tr>\n";
+      $out.='<tr id="' . $options_html_id[0] . '"><td align="right" class="main"><b>' . $attributes[0]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[0]['oid'] . ']"' . ' value="' . stripslashes($attributes[0]['ovals'][0]['id']) . '" />' . $attributes[0]['ovals'][0]['text'] . "</td></tr>\n";
       $out2.='<div class="wrapperAttribsOptions">';
     } else {
       $out.='<tr id="' . $options_html_id[0] . '"><td align="right" class="main"><b>' . $attributes[0]['oname'] . ':</b></td><td class="main">';
@@ -189,7 +189,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     }
 
     // Draw second to next to last option dropdowns - no values, with onchange
-    for ($o = 1; $o < sizeof($attributes) - 1; $o++) {
+    for ($o = 1, $s = sizeof($attributes); $o < $s - 1; $o++) {
       // Need to consider if the option name is read only.  If it is, then simply display it and do not make it "selectable"
       //  May need to modify the array for the attributes in order to accomodate identification.
       $sql2 = $db->bindVars($sql, ':products_options_id:', $attributes[$o]['oid'], 'integer');
@@ -207,7 +207,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       if ($attributes[$o]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
         // Need to load all readonly option values for this option name that are 
         //  associated with this product.
-        $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][0]['id']) . '" />' . $attributes[$o]['ovals'][0]['text'] . '</td></tr>' . "\n";
+        $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][0]['id']) . '" />' . $attributes[$o]['ovals'][0]['text'] . '</td></tr>' . "\n";
         $out2.='<div class="wrapperAttribsOptions">';
       } else {
         $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">' . zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), "", 'id="attrib-' . $attributes[$o]['oid'] . '" onchange="i' . $attributes[$o]['oid'] . '(this.form);"') . '</td></tr>' . "\n";
@@ -227,7 +227,9 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.='<div class="ProductInfoComments">' . $options_comment[$o] . '</div>';
         $out2.='<div class="ProductInfoComments">' . $options_comment[$o] . '</div>';
       }
-    } // end for $o       
+    } // end for $o 
+    unset($s);
+    
     // Draw last option dropdown - no values, no onchange      
     // Need to consider if the option name is read only.  If it is, then simply display it and do not make it "selectable"
     //  May need to modify the array for the attributes in order to accomodate identification.
@@ -245,7 +247,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     if ($attributes[$o]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
       // Need to load all readonly option values for this option name that are 
       //  associated with this product.
-      $out.='<tr><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][0]['id']) . '" />' . $attributes[$o]['ovals'][0]['text'] . '</td></tr>' . "\n";
+      $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][0]['id']) . '" />' . $attributes[$o]['ovals'][0]['text'] . '</td></tr>' . "\n";
       $out2.='<div class="wrapperAttribsOptions">';
     } else {
       $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">' . zen_draw_pull_down_menu("id[" . $attributes[$o]['oid'] . "]", array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), "", 'id="attrib-' . $attributes[$o]['oid'] . '" onchange="i' . $attributes[$o]['oid'] . '(this.form);"') . "</td></tr>\n";
@@ -475,11 +477,15 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
   
 */
   function _draw_dropdown_sequence_js($attributes) {
+    global $options_html_id;
     $out = '';
     $outArrayList = array();
+    $outArrayAdd = array();
     $combinations = array();
     $combinations2 = array();
     $combinations4 = array();
+    $outArrayListedArray = array();
+    $outArrayTestArray = array();
     
     $selected_combination = 0;
     $this->_build_attributes_combinations($attributes, true, 'None', $combinations, $selected_combination); // Used to identify all possible combinations as provided in SBA.
@@ -504,6 +510,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     $out.='var stk = ' . $this->_draw_js_stock_array($combinations) . ';' . "\n";
     $out.='var stk2 = ' . $this->_draw_js_stock_array($combinations2) . ';' . "\n";
     $out.='var stk4 = ' . $this->_draw_js_stock_array($combinations4) .';' . "\n";
+    unset($combinations);
+    unset($combinations4);
     
     // Going to want to add a third stk tracking quantity to account for the availability of entered variants.
     //   Ie. if a variant doesn't exist in the SBA table, then values associated with the sub-selection should not be displayed.
@@ -511,21 +519,27 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 
     // js arrays of possible option values/text for dropdowns
     // do all but the first attribute (its dropdown never changes)
-    for ($curattr = 1; $curattr < sizeof($attributes); $curattr++) {
+    for ($curattr = 1, $s = sizeof($attributes); $curattr < $s; $curattr++) {
       $attr = $attributes[$curattr];
       $out.='var txt' . $attr['oid'] . ' = {';
       foreach ($attr['ovals'] as $oval) {
         $out.='"_' . $oval['id'] . '"' . ': "' . zen_output_string_protected($oval['text']) . '", ';
       }
+      unset($oval);
       $out = substr($out, 0, strlen($out) - 2) . '};' . "\n";
     }
+    unset($s);
+    
+
     $out.='var chkstk = function (frm) {' . "\n";
     $out.='    "use strict";' . "\n";
     // build javascript array of in stock combinations
     $out.='    var stk3 = ' . $this->_draw_js_stock_array($combinations2) . ';' . "\n";
+    unset($combinations2);
+    
 //    $out.="    var instk = false;\n";
     // Begin the cycle 
-    for ($j = 0; $j < sizeof($attributes); $j++) {
+    for ($j = 0, $s = sizeof($attributes); $j < $s; $j++) {
       //Check if the menu selection is the default selection in the menu
       $out.='    ' . str_repeat("    ", 0);
       $out.='if (frm["id[' . $attributes[$j]['oid'] . ']"].value === "0") {' . "\n";
@@ -539,6 +553,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       for ($k = 0; $k <= $j; $k++) {
         $out.='[' . '"_" + ' . 'frm["id[' . $attributes[$k]['oid'] . ']"].value]';
       }
+      unset($k);
       $out.=' === undefined) {' . "\n";
       $out.='    ' . str_repeat("    ", 1);
       $out.='return false;' . "\n";
@@ -550,6 +565,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.='return true;' . "\n";
       }
     }
+    unset($j);
+    unset($s);
 
     $out.='};' . "\n";
 
@@ -561,25 +578,44 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $out.='    var span = document.getElementById("oosmsg");' . "\n";
       $out.='    while (span.childNodes[0]) {' . "\n";
       $out.='        span.removeChild(span.childNodes[0]);' . "\n";
-      $out.='        if (!instk) {' . "\n";
-      $out.='            span.appendChild(document.createTextNode("' . TEXT_OUT_OF_STOCK_MESSAGE . '"));' . "\n";
-      $out.='        } else {' . "\n";
-      $out.='            span.appendChild(document.createTextNode(" "));' . "\n";
-      $out.='        }' . "\n";
+      $out.='    }' . "\n";
+      $out.='    if (!instk) {' . "\n";
+      $out.='        span.appendChild(document.createTextNode("' . TEXT_OUT_OF_STOCK_MESSAGE . '"));' . "\n";
+      $out.='    } else {' . "\n";
+      $out.='        span.appendChild(document.createTextNode(" "));' . "\n";
       $out.='    }' . "\n";
       $out.='};' . "\n";
     }
 
+    for ($i = 0, $s = sizeof($attributes); $i < $s; $i++) {
+      $outArrayPart = 'frm["id[' . $attributes[$i]['oid'] . ']"]';
+          
+      $outArrayAdd[$i] = '["_" + ' . $outArrayPart . '.value]';
+      if ($i == 0) {
+        $outArrayList[$i] = $outArrayAdd[$i]; 
+        $outArrayListedArray[$i] = (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True' ? 'stk4' : 'stk2') . $outArrayList[$i] . ' !== undefined';
+        $outArrayTestArray[$i] = $outArrayPart . ' !== undefined && ';;
+      } else {
+        $outArrayList[$i] = $outArrayList[$i-1] . $outArrayAdd[$i];
+        $outArrayListedArray[$i] = $outArrayListedArray[$i - 1] . ' && ' . (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True' ? 'stk4' : 'stk2') . $outArrayList[$i] . ' !== undefined';
+        $outArrayTestArray[$i] = $outArrayTestArray[$i - 1] . $outArrayPart . ' !== undefined && ';;
+      }
+    }
+    unset($outArrayPart);
+    unset($s);
+    unset($i);
+    
     // js functions to set next dropdown options when a dropdown selection is made
     // do all but last attribute (nothing needs to happen when it changes except additional validation action to improve the customer experience)
     for ($curattr = sizeof($attributes) - 1 ; $curattr >= 0; $curattr-- /* $curattr = 0; $curattr < sizeof($attributes); $curattr++*/) {
-      for ($nextattr = $curattr + 1; $nextattr < sizeof($attributes); $nextattr++) {
+      for ($nextattr = $curattr + 1, $s = sizeof($attributes); $nextattr < $s; $nextattr++) {
         if ($attributes[$nextattr]['otype'] != PRODUCTS_OPTIONS_TYPE_READONLY) {
 
           break 1;
         }
       }
-
+      unset($s);
+      
       $attr = $attributes[$curattr];
 
       $out.='var i' . $attr['oid'] . ' = function (frm) {' . "\n";
@@ -593,17 +629,9 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.='    while (span.childNodes[0]) {' . "\n";
         $out.='        span.removeChild(span.childNodes[0]);' . "\n";
         $out.='    }' . "\n";
-        $i = key($attributes);
-        
-        $outArray = '';
-        $outArrayTest = '';
-        for ($i = 0; $i <= $curattr; $i++) {
-          $outArray.='["_" + frm["id[' . $attributes[$i]['oid'] . ']"].value]';
-          $outArrayTest.='frm["id[' . $attributes[$i]['oid'] . ']"] !== undefined && ';
-          $outArrayList[$i] = $outArray;
-        }
+            
 
-        for ($i = $curattr + 1; $i < sizeof($attributes); $i++) {
+        for ($i = $curattr + 1, $s = sizeof($attributes); $i < $s; $i++) {
           if ($attributes[$i]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
             // Do not reset the form that is applicable to readonly attributes.
             // 
@@ -627,7 +655,10 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
             //     possibly exit the determination of further dropdowns.
             // Do nothing..
           } else {
-            $out.='    if (' . $outArrayTest . (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True' ? 'stk4' : 'stk2') . $outArray. ' !== undefined) {' . "\n";
+            
+
+            $out.='    if (' . $outArrayTestArray[$nextattr - 1] . $outArrayListedArray[$nextattr - 1];
+            $out.= ') {' . "\n";            
             $out.='        if (frm["id[' . $attributes[$i]['oid'] . ']"] !== undefined) {' . "\n";
             // Reset the dropdown to have only one item.
             $out.='            frm["id[' . $attributes[$i]['oid'] . ']"].length = 1;' . "\n";
@@ -635,48 +666,70 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
             $out.='    }' . "\n";
           }
         }
+        unset($s);
 //         $out.="    stkmsg(frm);\n";
-        $out.='    if (true) {' . "\n";
-        $out.='        if (frm !== undefined && frm["id[' . $attributes[$nextattr]['oid'] . ']"] !== undefined && frm["id[' . $attributes[$nextattr]['oid'] . ']"].length !== undefined) {' . "\n";
-        $out.='            if (' . $outArrayTest;
+        // Only process if not using a radio selection from above as this is selection specific.
 
-        for ($i = 0; $i<=$curattr; $i++) {
+        // Below applies to non-radio type options.  Probably could/should consider using a different factor than 
+        //  a javascript variable, more like identification of the item being reviewed so that can more appropriately
+        //  handle it.  Ideally, would be able to handle/have multiple selection "styles".
+      if ($nextattr < count($attributes)) {
+        $out.='    if (true) {' . "\n";
+        $out.='        if (frm !== undefined && frm["id[' . (int)$attributes[$nextattr]['oid'] . ']"] !== undefined && frm["id[' . (int)$attributes[$nextattr]['oid'] . ']"].length !== undefined) {' . "\n";
+        
+        $out.='            if (' . $outArrayTestArray[$nextattr - 1] . $outArrayListedArray[$nextattr - 1];
+/*        for ($i = 0; $i<$nextattr; $i++) {
           $out.=(PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True' ? 'stk4' : 'stk2') . $outArrayList[$i] . ' !== undefined';
-          if ($i<$curattr) {
+          if ($i<$nextattr - 1) {
             $out.=' && ';
           }
-        }
-
+        }*/
         $out.=') {' . "\n";
 
         //Loop on all selections available if all stock were included.
         $out.='                for (opt in ' . (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True' ? 'stk4': 'stk2');
-        $out.=$outArray;
+        $out.=$outArrayList[$nextattr - 1];
         $out.=') {' . "\n";
         //The following checks to verify that the option exists in the list
         //  Without looking at the sub-selection yet.  Is necessary on 
         //  a product with two or more attributes, where any attribute is
         //  already exhausted before the last selectable attribute.
         $out.='                    if (';
-        for ($i = 0; $i<=$curattr; $i++) {
+        for ($i = 0; $i<$nextattr; $i++) {
           $out.='stk2' . $outArrayList[$i] . ' !== undefined';
-          if ($i<$curattr) {
+          if ($i<$nextattr - 1) {
             $out.=' && ';
           }
         }
         $out.=') {' . "\n";
         $out.='                        if (stk2';
-        $out.=$outArray;
-        $out.='[opt] !== undefined && frm["id[' . $attributes[$nextattr]['oid'] . ']"] !== undefined) {' . "\n";
+        $out.=$outArrayList[$nextattr - 1];
+        $out.='[opt] !== undefined && frm["id[' . $attributes[$nextattr - 1]['oid'] . ']"] !== undefined) {' . "\n";
         //  Add the product to the next selectable list item as it is in stock.
         $out.='                            frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length] = new Option(htmlEnDeCode.htmlDecode(txt' . $attributes[$nextattr]['oid'] . '[opt])';
-        if ($curattr == sizeof($attributes) - 2) {
-          if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true') {
-            $out.=' + "' . PWA_STOCK_QTY . '" + stk2';
-            $out.=$outArray;
-            $out.='[opt]';
+
+        // Need to determine that if we were at the next selectable list, would the stock need to be
+        //  shown or not... 
+        for ($nextattr2 = $nextattr + 1, $s = sizeof($attributes); $nextattr2 < $s; $nextattr2++) {
+          if ($attributes[$nextattr2]['otype'] != PRODUCTS_OPTIONS_TYPE_READONLY) {
+            break 1;
           }
         }
+        unset($s);
+        
+        if ($nextattr2 == sizeof($attributes)) {
+          if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true') {
+            $out.=' + "' . PWA_STOCK_QTY . '" + stk2';
+            $out.=$outArrayList[$nextattr - 1];
+            $out.='[opt]';
+            for ($k = $nextattr + 1, $s = sizeof($attributes); $k < $s; $k++) {
+              $out.=$outArrayAdd[$k];
+            }
+            unset($k);
+            unset($s);
+          }
+        }
+        unset($nextattr2);
         
         $out.=', opt.substring(1));' . "\n";
         $out.='                        }';
@@ -759,6 +812,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 
         $out.='        }' . "\n";
         $out.='    }' . "\n";
+        }
       } else {
         if ($this->out_of_stock_msgline == 'True') {
           $out.='    stkmsg(frm);' . "\n";
@@ -770,11 +824,11 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         }
       }
       $out.='};' . "\n";
-    }
+    } // EOF for ($curattr)
 
     // js to initialize dropdowns to defaults if product id contains attributes (i.e. clicked through to product page from cart)
     $out.='i' . $attributes[0]['oid'] . '(document.cart_quantity);' . "\n";
-    for ($o = 1; $o < sizeof($attributes) - 1; $o++) {
+    for ($o = 1, $s = sizeof($attributes); $o < $s - 1; $o++) {
       if ($attributes[$o]['default'] != '') {
         $out.='document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
         $out.='i' . $attributes[$o]['oid'] . '(document.cart_quantity);' . "\n";
@@ -782,6 +836,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         break;
       }
     }
+    unset($s);
+    
     if (($o == sizeof($attributes) - 1) && ($attributes[$o]['default'] != '')) {
       $out.='document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
     }
@@ -796,6 +852,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $out.='        ok = false;' . "\n";
       $out.='    }' . "\n";
     }
+    unset($attr);
     
     $out.='    if (!ok) {' . "\n";
     $out.='        alert("' . TEXT_SELECT_OPTIONS . '");' . "\n";
@@ -837,7 +894,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     Returns:
   
       string:                 Javacript array definition.  Excludes the "var xxx=" and terminating ";".  Form is:
-                              {optval1:{optval2:{optval3:1,optval3:1}, optval2:{optval3:1}}, optval1:{optval2:{optval3:1}}}
+                              {optval1:{optval2:{optval3:1, optval3:1}, optval2:{optval3:1}}, optval1:{optval2:{optval3:1}}}
                               For example if there are 3 options and the instock value combinations are:
                                 opt1   opt2   opt3
                                   1      5      4
@@ -845,7 +902,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
                                   1     10      4
                                   3      5      8
                               The string returned would be
-                                {1:{5:{4:1,8:1}, 10:{4:1}}, 3:{5:{8:1}}}
+                                {1: {5: {4: 1, 8: 1}, 10: {4: 1}}, 3: {5: {8: 1}}}
   
 */
   function _draw_js_stock_array($combinations) {
@@ -869,7 +926,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       $out.='1';
     }
 
-    for ($combindex = 1; $combindex < sizeof($combinations); $combindex++) {
+    for ($combindex = 1, $s = sizeof($combinations); $combindex < $s; $combindex++) {
       $comb = $combinations[$combindex]['comb'];
       for ($i = 0; $i < sizeof($opts) - 1; $i++) {
         if ($comb[$opts[$i]] != $combinations[$combindex - 1]['comb'][$opts[$i]]) {
@@ -897,6 +954,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.='1';
       }
     }
+    unset($s);
     $out.=str_repeat('}', sizeof($opts));
 
     return $out;
@@ -929,7 +987,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     } */
 
 /*    function _draw_js_stock_array($combinations) {
-      if (!((isset($combinations)) && (is_array($combinations)) && (sizeof($combinations) >= 0))){
+      if (!((isset($combinations)) && (is_array($combinations)) && (sizeof($combinations) >= 0))) {
         return '{}';
       }
       $out='';
@@ -1001,7 +1059,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 
           $out="\n";
     $out .= '<script type="text/javascript"><!--//<![CDATA[
-    var htmlEnDeCode = (function() {
+    var htmlEnDeCode = (function () {
     var charToEntityRegex,
         entityToCharRegex,
         charToEntity,
@@ -1035,8 +1093,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         entityToCharRegex = new RegExp("(" + entityKeys.join("|") + "|&#[0-9]{1,5};" + ")", "g");
     }
 
-    function htmlEncode(value){
-        var htmlEncodeReplaceFn = function(match, capture) {
+    function htmlEncode(value) {
+        var htmlEncodeReplaceFn = function (match, capture) {
             return charToEntity[capture];
         };
 
@@ -1044,7 +1102,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     }
 
     function htmlDecode(value) {
-        var htmlDecodeReplaceFn = function(match, capture) {
+        var htmlDecodeReplaceFn = function (match, capture) {
             return (capture in entityToChar) ? entityToChar[capture] : String.fromCharCode(parseInt(capture.substr(2), 10));
         };
 

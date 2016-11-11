@@ -148,7 +148,7 @@ switch ($action) {
       $stock_attributes = implode(',', $attributes);
 
       $hidden_form .= zen_draw_hidden_field('attributes', $stock_attributes) . "\n";
-      $s_mack_noconfirm .='attributes=' . $stock_attributes . '&amp;'; //kuroi: to pass string not array
+      $s_mack_noconfirm .= 'attributes=' . $stock_attributes . '&amp;'; //kuroi: to pass string not array
 
       $query = 'select * 
             from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' 
@@ -161,7 +161,7 @@ switch ($action) {
       if (!$stock_check->EOF) {
         $hidden_form .= zen_draw_hidden_field('add_edit', 'edit');
         $hidden_form .= zen_draw_hidden_field('stock_id', $stock_check->fields['stock_id']);
-        $s_mack_noconfirm .="stock_id=" . $stock_check->fields['stock_id'] . "&amp;"; //s_mack:noconfirm
+        $s_mack_noconfirm .= "stock_id=" . $stock_check->fields['stock_id'] . "&amp;"; //s_mack:noconfirm
         $s_mack_noconfirm .="add_edit=edit&amp;"; //s_mack:noconfirm
         $add_edit = 'edit';
       } else {

@@ -473,6 +473,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
           $this->_build_attributes_combinations($attributes, $showoos, $markoos, $combinations, $selected_combination, $oidindex+1, $newcomb, $newid, $newtext, $newisselected);
         } else {
           $is_out_of_stock=zen_check_stock(zen_get_prid($this->products_id),1,$newcomb);
+          
           $productAttrAreSBA = isset($_SESSION['pwas_class2'])
                                && method_exists($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')
                                && is_callable(array($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info'))

@@ -1376,7 +1376,7 @@ Of the attributes provided, determine the number of those attributes that are
     // mc12345678 Below is a list of product types that are currently not supported
     //  by dynamic dropdowns and therefore should not be displayed with dropdowns 
     //  until the option type is properly worked around and supported in the dropdowns.
-    $special = array(PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_FILE, PRODUCTS_OPTIONS_TYPE_READONLY, PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_GRID);
+    $special = array(PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_FILE, /*PRODUCTS_OPTIONS_TYPE_READONLY,*/ PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_GRID);
 
     // This is the default "reason" for using this code, and will handle 
     //   the data that is default provided ($products_options_names from: 
