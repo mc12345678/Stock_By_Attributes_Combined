@@ -201,6 +201,13 @@ function removeDynDropdownsConfiguration() {
         }
         array_push($resultMmessage, '&bull; Deleted PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK ' . $msg);
         
+        $sql = "DELETE IGNORE FROM `".TABLE_CONFIGURATION."` WHERE `configuration_key` = 'PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY'";
+        $db->Execute($sql);
+        if($db->error){
+          $msg = ' Error Message: ' . $db->error;
+        }
+        array_push($resultMmessage, '&bull; Deleted PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY ' . $msg);
+
         zen_record_admin_activity('Deleted Dynamic Dropdowns from database via SBA install.', 'warning');
 /*	$sql = "DELETE IGNORE FROM `".TABLE_CONFIGURATION."` WHERE `configuration_key` = 'SBA_SHOW_IMAGE_ON_PRODUCT_INFO'";
 	$db->Execute($sql);
@@ -828,9 +835,10 @@ function insertDynDropdownsConfiguration(){
       ('Display Out of Stock Message Line', 'PRODINFO_ATTRIBUTE_OUT_OF_STOCK_MSGLINE', 'True', 'Controls the display of a message line indicating an out of stock attributes is selected.', :configuration_id:, 70, now(), NULL, 'zen_cfg_select_option(array(\'True\', \'False\'),'),
 			('Prevent Adding Out of Stock to Cart', 'PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK', 'True', 'Prevents adding an out of stock attribute combination to the cart.', :configuration_id:, 80, now(), NULL, 'zen_cfg_select_option(array(\'True\', \'False\'),'),
       ('SBA Number of Records to Displayed', 'STOCK_SET_SBA_NUMRECORDS', '25', 
-				'Number of records to show on page:',
-				:configuration_id:, 60, now(), NULL, NULL),
-	  ('Display Javascript Popup for Out-of-Stock Selection', 'PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK', 'True', 'Controls whether to display or not the message for when a products attribute is out-of-stock.', :configuration_id:, 90, now(), NULL, 'zen_cfg_select_option(array(\'True\', \'False\'),')
+        'Number of records to show on page:',
+        :configuration_id:, 60, now(), NULL, NULL),
+    ('Display Javascript Popup for Out-of-Stock Selection', 'PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK', 'True', 'Controls whether to display or not the message for when a products attribute is out-of-stock.', :configuration_id:, 90, now(), NULL, 'zen_cfg_select_option(array(\'True\', \'False\'),'),
+    ('Count Read Only as Stock', 'PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY', 'false', 'Controls whether read only attributes should be controlled as stock (true) or ignored (default:false)', :configuration_id:, 100, now(), NULL, 'zen_cfg_select_option(array(\'true\', \'false\'),')
     ;";
   $sql = $db->bindVars($sql, ':configuration_id:', $configuration_id, 'integer');
   $db->Execute($sql);

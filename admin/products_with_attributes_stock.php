@@ -630,23 +630,66 @@ require(DIR_WS_INCLUDES . 'header.php');
             $sql = $db->bindVars($sql, ':language_id:', $language_id, 'integer');
             $products_options_type = $db->Execute($sql);
 
-            // MULTI
-            $arrValues = array();
-            if (is_array($options)) {
-              if (sizeof($options) > 0) {
-                foreach ($options as $k => $a) {
-                  $arrValues[] = $a['id'];
+            if ($products_options_type->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_READONLY && $products_options_type->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
+              // MULTI
+              $arrValues = array();
+              if (is_array($options)) {
+                if (sizeof($options) > 0) {
+                  foreach ($options as $k => $a) {
+                    $arrValues[] = $a['id'];
+                  }
+                }
+              }
+
+              array_unshift($options, array('id' => implode(";", $arrValues), 'text' => 'All - Attributes - Combo'));
+              array_unshift($options, array('id' => implode("|", $arrValues), 'text' => 'All - Attributes'));
+              array_unshift($options, array('id' => null, 'text' => 'N/A'));
+              ?><p><strong><?php echo $option_name; ?>: </strong><?php
+              echo zen_draw_pull_down_menu('attributes[]', $options);
+              ?></p>
+<?php
+            } elseif ($products_options_type->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_READONLY && PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true') {
+              // MULTI
+              if (is_array($options)) {
+                if (sizeof($options) > 0) {
+                  ?><div class="READONLY" style="border: 1px solid black;
+    line-height: normal;"
+    ><p><strong><?php echo $products_options_type->fields['products_options_types_name'] . ': ' . $option_name; ?>: </strong></p><?php
+                  foreach ($options as $k => $a) {
+                    $arrValues = array();
+                    $arrValues[] = array('id'=>$a['id'], 'text'=>$a['text']);
+                    array_unshift($arrValues, array('id' => $arrValues[sizeof($arrValues) - 1]['id'] . ";", 'text' => 'All - Attributes - Combo'));
+                    array_unshift($arrValues, array('id' => $arrValues[sizeof($arrValues) - 1]['id'] . "|", 'text' => 'All - Attributes'));
+                    array_unshift($arrValues, array('id' => null, 'text' => 'N/A'));
+                    ?><p><strong><?php echo $a['text']; ?>: </strong><?php
+                    echo zen_draw_pull_down_menu('attributes[]', $arrValues);
+                    ?></p>
+<?php
+                  }
+                  ?></div><?php
+                }
+              }
+            } elseif ($products_options_type->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
+              if (is_array($options)) {
+                if (sizeof($options) > 0) {
+                  ?><div class="CHECKBOX" style="border: 1px solid black;
+    line-height: normal;"
+    ><p><strong><?php echo $products_options_type->fields['products_options_types_name'] . ': ' . $option_name; ?>: </strong></p><?php
+                  foreach ($options as $k => $a) {
+                    $arrValues = array();
+                    $arrValues[] = array('id'=>$a['id'], 'text'=>$a['text']);
+                    array_unshift($arrValues, array('id' => $arrValues[sizeof($arrValues) - 1]['id'] . ";", 'text' => 'All - Attributes - Combo'));
+                    array_unshift($arrValues, array('id' => $arrValues[sizeof($arrValues) - 1]['id'] . "|", 'text' => 'All - Attributes'));
+                    array_unshift($arrValues, array('id' => null, 'text' => 'N/A'));
+                    ?><p><strong><?php echo $a['text']; ?>: </strong><?php
+                    echo zen_draw_pull_down_menu('attributes[]', $arrValues);
+                    ?></p>
+<?php
+                  }
+                  ?></div><?php
                 }
               }
             }
-
-            array_unshift($options, array('id' => implode(";", $arrValues), 'text' => 'All - Attributes - Combo'));
-            array_unshift($options, array('id' => implode("|", $arrValues), 'text' => 'All - Attributes'));
-            array_unshift($options, array('id' => null, 'text' => 'N/A'));
-            ?><p><strong><?php echo $option_name; ?>: </strong><?php
-            echo zen_draw_pull_down_menu('attributes[]', $options);
-            ?></p>
-<?php
           }
 
           ?><p>If using "<strong>All - Attributes - Combo</strong>" there must be TWO (or more) attribute groups selected (i.e., Color and Size)

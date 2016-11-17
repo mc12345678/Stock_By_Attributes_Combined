@@ -63,7 +63,7 @@
       $products_attributes_noread = $db->Execute($products_attributes_noread_query);
       if ((
         ((defined('PRODINFO_ATTRIBUTE_PLUGIN_MULTI') && ($products_attributes->fields['total'] > 1) 
-          && ($products_attributes->fields['total'] - $products_attributes_noread->fields['total'] === 0) 
+          && ($products_attributes->fields['total'] - $products_attributes_noread->fields['total'] !== $products_attributes->fields['total']/*0*/) 
           && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2')) 
            ? file_exists(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_MULTI . '.php') 
            : ( (defined('PRODINFO_ATTRIBUTE_PLUGIN_SINGLE') 

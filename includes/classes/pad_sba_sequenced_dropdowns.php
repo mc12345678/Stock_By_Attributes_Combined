@@ -165,7 +165,15 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     if ($attributes[0]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
       // Need to load all readonly option values for this option name that are 
       //  associated with this product.
-      $out.='<tr id="' . $options_html_id[0] . '"><td align="right" class="main"><b>' . $attributes[0]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[0]['oid'] . ']"' . ' value="' . stripslashes($attributes[0]['ovals'][0]['id']) . '" />' . $attributes[0]['ovals'][0]['text'] . "</td></tr>\n";
+      $out.='<tr id="' . $options_html_id[0] . '"><td align="right" class="main"><b>' . $attributes[0]['oname'] . ':</b></td><td class="main">';
+      for ($j = 0, $n = sizeof($attributes[0]['ovals']); $j < $n; $j++) {
+        if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true') {
+          $out.='<input type = "hidden" name = "id[' . $attributes[0]['oid'] . ']"' . ' value="' . stripslashes($attributes[0]['ovals'][$j]['id']) . '" />'; // Used to track Read Only Stock
+        }
+        $out.=$attributes[$o]['ovals'][$j]['text'] . '<br />'; // Read Only Text
+      }
+      $out.='</td></tr>' . "\n";
+      unset($j, $n);
       $out2.='<div class="wrapperAttribsOptions">';
     } else {
       $out.='<tr id="' . $options_html_id[0] . '"><td align="right" class="main"><b>' . $attributes[0]['oname'] . ':</b></td><td class="main">';
@@ -207,7 +215,15 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       if ($attributes[$o]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
         // Need to load all readonly option values for this option name that are 
         //  associated with this product.
-        $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][0]['id']) . '" />' . $attributes[$o]['ovals'][0]['text'] . '</td></tr>' . "\n";
+        $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">';
+        for ($j = 0, $n = sizeof($attributes[$o]['ovals']); $j < $n; $j++) {
+          if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true') {
+            $out.='<input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][$j]['id']) . '" />'; // Used to track Read Only Stock
+          }
+          $out.=$attributes[$o]['ovals'][$j]['text'] . '<br />'; // Read Only Text
+        }
+        unset($j, $n);
+        $out.='</td></tr>' . "\n";
         $out2.='<div class="wrapperAttribsOptions">';
       } else {
         $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">' . zen_draw_pull_down_menu('id[' . $attributes[$o]['oid'] . ']', array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), "", 'id="attrib-' . $attributes[$o]['oid'] . '" onchange="i' . $attributes[$o]['oid'] . '(this.form);"') . '</td></tr>' . "\n";
@@ -247,7 +263,15 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     if ($attributes[$o]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
       // Need to load all readonly option values for this option name that are 
       //  associated with this product.
-      $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main"><input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][0]['id']) . '" />' . $attributes[$o]['ovals'][0]['text'] . '</td></tr>' . "\n";
+      $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">';
+      for ($j = 0, $n = sizeof($attributes[$o]['ovals']); $j < $n; $j++) {
+        if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true') {
+          $out.='<input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][$j]['id']) . '" />'; // Used to track Read Only stock
+        }
+        $out.=$attributes[$o]['ovals'][$j]['text'] . '<br />'; // Read Only text.
+      }
+      unset($j, $n);
+      $out.='</td></tr>' . "\n";
       $out2.='<div class="wrapperAttribsOptions">';
     } else {
       $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">' . zen_draw_pull_down_menu("id[" . $attributes[$o]['oid'] . "]", array(array('id' => 0, 'text' => TEXT_SEQUENCED_NEXT . $attributes[$o]['oname'])), "", 'id="attrib-' . $attributes[$o]['oid'] . '" onchange="i' . $attributes[$o]['oid'] . '(this.form);"') . "</td></tr>\n";
@@ -488,11 +512,21 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     $outArrayTestArray = array();
     
     $selected_combination = 0;
-    $this->_build_attributes_combinations($attributes, true, 'None', $combinations, $selected_combination); // Used to identify all possible combinations as provided in SBA.
+    $selected_combination4 = 0;
+    $selected_combination2 = 0;
+    $attributes2 = $attributes;
 
-    $this->_build_attributes_combinations($attributes, 'only', 'None', $combinations4, $selected_combination); // Used to identify only the product that can exist based on the entries entered into the SBA product table and is expected to include all combinations whether they have stock or not.  Appears that could be used to provide all information related to stock; however, the code herein would have to be rewritten to reduce dependency on one or the other combination groupings.
+    foreach ($attributes2 as $key => $attrib) {
+      if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY != 'true' && $attrib['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
+        unset($attributes2[$key]);
+      }
+    }
+    $attributes2 = array_values($attributes2);
+    $this->_build_attributes_combinations($attributes2, true, 'None', $combinations, $selected_combination); // Used to identify all possible combinations as provided in SBA.
 
-    $this->_build_attributes_combinations($attributes, false, 'None', $combinations2, $selected_combination); // This is used to identify what is out of stock by comparison with the above.
+    $this->_build_attributes_combinations($attributes2, 'only', 'None', $combinations4, $selected_combination4); // Used to identify only the product that can exist based on the entries entered into the SBA product table and is expected to include all combinations whether they have stock or not.  Appears that could be used to provide all information related to stock; however, the code herein would have to be rewritten to reduce dependency on one or the other combination groupings.
+    
+    $this->_build_attributes_combinations($attributes2, false, 'None', $combinations2, $selected_combination2); // This is used to identify what is out of stock by comparison with the above.
 // SBA_ZC_DEFAULT
     if (SBA_ZC_DEFAULT !== 'true') {
       $out.='<tr><td>&nbsp;</td><td>';
@@ -540,6 +574,9 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 //    $out.="    var instk = false;\n";
     // Begin the cycle 
     for ($j = 0, $s = sizeof($attributes); $j < $s; $j++) {
+      if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY != 'true' && $attributes[$j]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
+        continue;
+      }
       //Check if the menu selection is the default selection in the menu
       $out.='    ' . str_repeat("    ", 0);
       $out.='if (frm["id[' . $attributes[$j]['oid'] . ']"].value === "0") {' . "\n";
@@ -551,6 +588,9 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       // Check if the option is defined/has stock.
       $out.='if (stk3';
       for ($k = 0; $k <= $j; $k++) {
+        if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY != 'true' && $attributes[$k]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
+          continue;
+        }
         $out.='[' . '"_" + ' . 'frm["id[' . $attributes[$k]['oid'] . ']"].value]';
       }
       unset($k);
@@ -592,13 +632,13 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
           
       $outArrayAdd[$i] = '["_" + ' . $outArrayPart . '.value]';
       if ($i == 0) {
-        $outArrayList[$i] = $outArrayAdd[$i]; 
+        $outArrayList[$i] = ($attributes[$i]['otype'] != PRODUCTS_OPTIONS_TYPE_READONLY || PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true' ? $outArrayAdd[$i] : ''); 
         $outArrayListedArray[$i] = (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True' ? 'stk4' : 'stk2') . $outArrayList[$i] . ' !== undefined';
-        $outArrayTestArray[$i] = $outArrayPart . ' !== undefined && ';;
+        $outArrayTestArray[$i] = ($attributes[$i]['otype'] != PRODUCTS_OPTIONS_TYPE_READONLY || PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true' ? $outArrayPart . ' !== undefined && ' : '');
       } else {
-        $outArrayList[$i] = $outArrayList[$i-1] . $outArrayAdd[$i];
+        $outArrayList[$i] = ($attributes[$i]['otype'] != PRODUCTS_OPTIONS_TYPE_READONLY || PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true' ? $outArrayList[$i-1] . $outArrayAdd[$i] : $outArrayList[$i-1]);
         $outArrayListedArray[$i] = $outArrayListedArray[$i - 1] . ' && ' . (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True' ? 'stk4' : 'stk2') . $outArrayList[$i] . ' !== undefined';
-        $outArrayTestArray[$i] = $outArrayTestArray[$i - 1] . $outArrayPart . ' !== undefined && ';;
+        $outArrayTestArray[$i] = ($attributes[$i]['otype'] != PRODUCTS_OPTIONS_TYPE_READONLY || PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true' ? $outArrayTestArray[$i - 1] . $outArrayPart . ' !== undefined && ' : $outArrayTestArray[$i - 1]);
       }
     }
     unset($outArrayPart);
@@ -629,6 +669,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.='    while (span.childNodes[0]) {' . "\n";
         $out.='        span.removeChild(span.childNodes[0]);' . "\n";
         $out.='    }' . "\n";
+
             
 
         for ($i = $curattr + 1, $s = sizeof($attributes); $i < $s; $i++) {
@@ -704,7 +745,8 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.=') {' . "\n";
         $out.='                        if (stk2';
         $out.=$outArrayList[$nextattr - 1];
-        $out.='[opt] !== undefined && frm["id[' . $attributes[$nextattr - 1]['oid'] . ']"] !== undefined) {' . "\n";
+        $out.='[opt] !== undefined && frm["id[' . $attributes[$nextattr]['oid'] . ']"] !== undefined) {' . "\n";
+        $out.='  // attributes: ' . sizeof($attributes) . ' : curattr: ' . $curattr . ' : nextattr: ' . $nextattr . "\n";
         //  Add the product to the next selectable list item as it is in stock.
         $out.='                            frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length] = new Option(htmlEnDeCode.htmlDecode(txt' . $attributes[$nextattr]['oid'] . '[opt])';
 
@@ -723,7 +765,9 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
             $out.=$outArrayList[$nextattr - 1];
             $out.='[opt]';
             for ($k = $nextattr + 1, $s = sizeof($attributes); $k < $s; $k++) {
-              $out.=$outArrayAdd[$k];
+              if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true') {
+                $out.=$outArrayAdd[$k];
+              }
             }
             unset($k);
             unset($s);
@@ -848,6 +892,9 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     $out.='    var ok = true;' . "\n";
 
     foreach ($attributes as $attr) {
+      if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY != 'true' && $attr['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
+        continue;
+      }
       $out.='    if (form["id[' . $attr['oid'] . ']"].value === "0") {' . "\n";
       $out.='        ok = false;' . "\n";
       $out.='    }' . "\n";
