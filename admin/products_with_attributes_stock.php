@@ -621,12 +621,12 @@ require(DIR_WS_INCLUDES . 'header.php');
               left join " . TABLE_PRODUCTS_ATTRIBUTES . " pa ON (pa.options_id = popt.products_options_id)
               left join " . TABLE_PRODUCTS_OPTIONS_TYPES . " pot ON (popt.products_options_type = pot.products_options_types_id)
             where pa.products_id = :products_id:
-              and popt.products_options_name = :option_name:     
+              and pa.products_attributes_id = :products_attributes_id:
               and popt.language_id = :language_id:
               " /*. $order_by*/;
 
             $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
-            $sql = $db->bindVars($sql, ':option_name:', $option_name, 'string');
+            $sql = $db->bindVars($sql, ':products_attributes_id:', $options[0]['id'], 'integer');
             $sql = $db->bindVars($sql, ':language_id:', $language_id, 'integer');
             $products_options_type = $db->Execute($sql);
 
