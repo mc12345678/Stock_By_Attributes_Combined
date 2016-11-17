@@ -970,7 +970,7 @@ Of the attributes provided, determine the number of those attributes that are
       //Get product level stock quantity
       $stock_query = "select products_quantity from " . TABLE_PRODUCTS . " where products_id = :products_id:";
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
-      $stock_values = $db->Execute($stock_query);
+      $stock_values = $db->Execute($stock_query, false, false, 0, true);
       return $stock_values->fields['products_quantity'];
     } elseif (!$this->zen_product_is_sba($products_id)) {
       return NULL;
@@ -1037,7 +1037,7 @@ Of the attributes provided, determine the number of those attributes that are
 
     $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
     $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
-    $products_options_names = $db->Execute($sql);
+    $products_options_names = $db->Execute($sql, false, false, 0, true);
     
     if ($products_options_names->EOF) {
       $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
@@ -1170,7 +1170,7 @@ Of the attributes provided, determine the number of those attributes that are
       $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :stock_attributes:';
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
       $stock_query = $db->bindVars($stock_query, ':stock_attributes:', $stock_attributes, 'passthru');
-      $stock_values = $db->Execute($stock_query);
+      $stock_values = $db->Execute($stock_query, false, false, 0, true);
       // return the stock qty for the attribute
       if (!$stock_values->EOF) {
         switch ($datatype) {
@@ -1212,7 +1212,7 @@ Of the attributes provided, determine the number of those attributes that are
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
       $stock_query = $db->bindVars($stock_query, ':TMPstock_attributes:', $stock_attributes, 'string');
       // get the stock value for the combination
-      $stock_values = $db->Execute($stock_query);
+      $stock_values = $db->Execute($stock_query, false, false, 0, true);
       switch ($datatype) {
         case 'stock':
           $stockResult = $stock_values->fields['products_quantity'];
@@ -1258,7 +1258,7 @@ Of the attributes provided, determine the number of those attributes that are
           $stock_query = $db->bindVars($stock_query, ':eachAttribute:', $eachAttribute, 'passthru');
 
           // get the stock value for the combination
-          $stock_values = $db->Execute($stock_query);
+          $stock_values = $db->Execute($stock_query, false, false, 0, true);
           $stockResult = $stock_values->fields['products_quantity'];
           $stockResultArray[] = $stock_values->fields['stock_id'];
 
