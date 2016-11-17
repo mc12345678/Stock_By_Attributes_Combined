@@ -227,18 +227,35 @@ switch ($action) {
         //explode array on ,
         $arrTemp = preg_split("/\,/", $attributes);
         $arrMain = array();
-        $intCount = 0;
+//        $intCount = 0;
 
         for ($i = 0, $arrTempCount = sizeof($arrTemp); $i < $arrTempCount; $i++) {
           //explode array on |
           $arrTemp1 = preg_split("/\|/", $arrTemp[$i]);
           $arrMain[] = $arrTemp1;
 
-          if ($intCount) {
+          foreach ($arrMain as $key => $value) {
+            if (is_array($value)) {
+              foreach ($value as $k2 => $v2) {
+                if (!zen_not_null($v2)) {
+                  unset($arrMain[$key][$k2]);
+                }
+              }
+            } else {
+              if (!zen_not_null($value)) {
+                unset($arrMain[$key]);
+              }
+            }
+            $arrMain[$key] = array_values($arrMain[$key]);
+          }
+
+          $arrMain = array_values($arrMain);
+
+/*          if ($intCount) {
             $intCount = $intCount * sizeof($arrTemp1);
           } else {
             $intCount = sizeof($arrTemp1);
-          }
+          }*/
         }
         $intVars = sizeof($arrMain);
         $arrNew = array();
@@ -266,18 +283,35 @@ switch ($action) {
         //explode array on ,
         $arrTemp = preg_split("/\,/", $attributes);
         $arrMain = array();
-        $intCount = 0;
+//        $intCount = 0;
 
         for ($i = 0, $arrTempSize = sizeof($arrTemp); $i < $arrTempSize; $i++) {
           //explode array on ;
           $arrTemp1 = preg_split("/\;/", $arrTemp[$i]);
           $arrMain[] = $arrTemp1;
 
-          if ($intCount) {
+          foreach ($arrMain as $key => $value) {
+            if (is_array($value)) {
+              foreach ($value as $k2 => $v2) {
+                if (!zen_not_null($v2)) {
+                  unset($arrMain[$key][$k2]);
+                }
+              }
+            } else {
+              if (!zen_not_null($value)) {
+                unset($arrMain[$key]);
+              }
+            }
+            $arrMain[$key] = array_values($arrMain[$key]);
+          }
+
+          $arrMain = array_values($arrMain);
+          
+/*          if ($intCount) {
             $intCount = $intCount * sizeof($arrTemp1);
           } else {
             $intCount = sizeof($arrTemp1);
-          }
+          }*/
         }
         $intVars = sizeof($arrMain);
         $arrNew = array();
