@@ -209,18 +209,23 @@ class products_with_attributes_stock_admin extends base {
     $options_values_id = $paramsArray['options_values_id'];
     
     $remove_attributes_query = $db->Execute("select products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where options_id = " . (int)$option_id . " and options_values_id = " . (int)$options_values_id);
+    unset($option_id);
+    unset($options_values_id);
 
     while (!$remove_attributes_query->EOF) {
       $remove_attributes_list[] = $remove_attributes_query->fields['products_attributes_id'];
       $remove_attributes_query->MoveNext();
     }
+    unset($remove_attributes_query);
 
     $stock_ids = zen_get_sba_ids_from_attribute($remove_attributes_list);
+    unset($remove_attributes_list);
 
     if (sizeof($stock_ids) > 0) {
       $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                     where stock_id in (" . implode(',', $stock_ids) . ")");
     }
+    unset($stock_ids);
     
     
   }
@@ -235,12 +240,18 @@ class products_with_attributes_stock_admin extends base {
     $options_values_id = $paramsArray['options_values_id'];
     
     $check_all_options_values = $db->Execute("select products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . (int)$products_id . "' and options_id='" . (int)$options_id . "' and options_values_id='" . (int)$options_values_id . "'");
+    unset($products_id);
+    unset($options_id);
+    unset($options_values_id);
 
     $stock_ids = zen_get_sba_ids_from_attribute($check_all_options_values->fields['products_attributes_id']);
+    unset($check_all_options_values);
     if (sizeof($stock_ids) > 0) {
       $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                     where stock_id in (" . implode(',', $stock_ids) . ")");
     }
+
+    unset($stock_ids);
 
   }
   
@@ -253,6 +264,8 @@ class products_with_attributes_stock_admin extends base {
     $value_id = $paramsArray['value_id'];
     
     $remove_attributes_query = $db->Execute("select products_id, products_attributes_id, options_id, options_values_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where options_values_id ='" . (int)$value_id . "'");
+    unset($value_id);
+    
     if ($remove_attributes_query->RecordCount() > 0) {
       // clean all tables of option value
       while (!$remove_attributes_query->EOF) {
@@ -262,9 +275,12 @@ class products_with_attributes_stock_admin extends base {
           $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                         where stock_id in (" . implode(',', $stock_ids) . ")");
         }
+
+        unset($stock_ids);
         $remove_attributes_query->MoveNext();
       }
     }
+    unset($remove_attributes_query);
 
   }
   
@@ -277,12 +293,13 @@ class products_with_attributes_stock_admin extends base {
     $remove_ids = $paramsArray['remove_ids'];
     
     $stock_ids = zen_get_sba_ids_from_attribute($remove_ids);
+    unset($remove_ids);
 
     if (sizeof($stock_ids) > 0) {
       $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                     where stock_id in (" . implode(',', $stock_ids) . ")");
     }
-
+    unset($stock_ids);
   }
 
   // ORDER_QUERY_ADMIN_COMPLETE
@@ -321,6 +338,8 @@ class products_with_attributes_stock_admin extends base {
             } 
             $orders_products_sba_customid->MoveNext();
           }
+          unset($orders_products_sba_customid);
+          
           if (sizeof($customid) > 0) {
             // Combine the various customids to apply to the ordered product information.
             // Default method is to combine with a comma between each value when multiple exist.
@@ -330,9 +349,15 @@ class products_with_attributes_stock_admin extends base {
           } // EOF if sizeof
         } // EOF if orders_products_sba_customid->RecordCount() > 0
       } // EOF array check if attributes are involved.
+      unset($product);
+
       $index++;
       $orders_products->MoveNext();
     } // EOF while loop on products
+    unset($customid);
+    unset($index);
+    unset($order_id);
+    unset($orders_products);
   }
   
     
