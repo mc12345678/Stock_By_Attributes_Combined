@@ -73,3 +73,37 @@ function return_attribute_combinations($arrMain, $intVars, $currentLoop = array(
     }
     return $stock_id_list;
   }  
+  
+  function sba_get_eo_products($oID = 0) {
+    global $db;
+    
+    $index = 0;    
+    $orders_products_query = "select orders_products_id, products_id, products_name,
+                                 products_model, products_price, products_tax,
+                                 products_quantity, final_price,
+                                 onetime_charges,
+                                 products_priced_by_attribute, product_is_free, products_discount_type,
+                                 products_discount_type_from
+                                  from " . TABLE_ORDERS_PRODUCTS . "
+                                  where orders_id = " . (int)$oID . "
+                                  order by orders_products_id";
+//    global $db;
+    $orders_products = $db->Execute($orders_products_query, false, false, 0, true);
+    $_SESSION['orders_products_query'] = $orders_products_query . ' hello';
+    $_SESSION['db_set'] = $orders_products;
+    //unset($orders_products_query);
+
+    $_SESSION['orders_products'] = $db->Execute('SELECT * FROM ' . TABLE_PRODUCTS . ';', false, false, 0, true);
+    
+    $order = array();
+    while (!$orders_products->EOF) {
+      $order[$index] = array('id' => $orders_products->fields['products_id']);
+      $index++;
+      $orders_products->MoveNext();
+    }
+    $_SESSION['order_data'] = $order;
+    unset($orders_products);
+    unset($index);
+    
+    return $order;
+  }

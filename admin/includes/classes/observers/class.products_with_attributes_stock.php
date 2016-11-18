@@ -40,6 +40,8 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME';
     $attachNotifier[] = 'ORDER_QUERY_ADMIN_COMPLETE';  // Not ready to implement yet. 2016-06-01
+    $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT';
+    $attachNotifier[] = 'EDIT_ORDERS_REMOVE_PRODUCT';
 
     $this->attach($this, $attachNotifier); 
   }  
@@ -360,6 +362,274 @@ class products_with_attributes_stock_admin extends base {
     unset($orders_products);
   }
   
+//    $zco_notifier->notify ('EDIT_ORDERS_ADD_PRODUCT', array ( 'order_id' => (int)$order_id, 'orders_products_id' => $order_products_id, 'product' => $product ));
+    function updateEditOrdersAddProduct(&$callingClass, $notifier, $paramsArray) {
+        global $db, $order, $eo;
+
+        $order_id = $paramsArray['order_id'];
+        $orders_products_id = $paramsArray['orders_products_id'];
+        $product = $paramsArray['product'];
+/*
+    These are the notifiers that are "duplicated" here to accomplish the same task as happens when 
+      processing an order.
+    
+    $attachNotifier[] = 'NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM';
+    $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT';
+    $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN';
+    $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END';
+
+*/
+
+//  function updateNotifyOrderProcessingStockDecrementInit(&$callingClass, $notifier, $paramsArray, & $productI, & $i) {
+    //global $pwas_class;
+
+//    $this->_i = $i;
+      //$_productI = $product;
+        $_orderIsSBA = $_SESSION['pwas_class2']->zen_product_is_sba($product['id']);
+    
+        if ($_orderIsSBA) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
+            $_stock_info = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute_info(zen_get_prid($product['id']), $product['attributes'], 'order'); // Sorted comma separated list of the attribute_id.
+
+      // START "Stock by Attributes"
+            $attributeList = null;
+            $customid = null;
+            if(isset($product['attributes']) and sizeof($product['attributes']) >0){
+                foreach($product['attributes'] as $attributes){
+                    $attributeList[] = $attributes['value_id'];
+                }
+                unset($attributes);
+                $customid = $_SESSION['pwas_class2']->zen_get_customid($product['id'],$attributeList); // Expects that customid would be from a combination product, not individual attributes on a single product.  Should return an array if the values are individual or a single value if all attributes equal a single product.
+                $product['customid'] = $customid;
+//              $product['customid'] = $customid;
+                unset($customid);
+//      $productI['model'] = (zen_not_null($customid) ? $customid : $productI['model']);
+//              $product['model'] = $product['model'];
+            }
+            $eo->eoLog(PHP_EOL . "admin-observer-pwas:" . PHP_EOL . "attributeList:" . PHP_EOL . var_export($attributeList,true) . PHP_EOL);
+        }
+        // END "Stock by Attributes"
+
+
+//      $_stock_values = $product;
+
+        if ($_orderIsSBA && isset($product) && is_array($product)) {
+            // kuroi: Begin Stock by Attributes additions
+            // added to update quantities of products with attributes
+            // $stock_attributes_search = array();
+            $attribute_stock_left = STOCK_REORDER_LEVEL + 1;  // kuroi: prevent false low stock triggers
+            $_attribute_stock_left = $attribute_stock_left;
+
+            // mc12345678 If the has attibutes then perform the following work.
+            if(isset($product['attributes']) and sizeof($product['attributes']) > 0){
+                // Need to identify which records in the PWAS table need to be updated to remove stock from
+                // them.  Ie. provide a list of attributes and get a list of stock_ids from pwas.
+                // Then process that list of stock_ids to decrement based on their impact on stock.  This
+                // all should be a consistent application.
+                // mc12345678 Identify a list of attributes associated with the product
+        
+                $stock_attributes_search = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute(zen_get_prid($product['id']), $product['attributes'], 'order');
+        
+                $eo->eoLog (PHP_EOL . "admin-observer-pwas:" . PHP_EOL . "stock_attributes_search:" . PHP_EOL . var_export($stock_attributes_search,true) . PHP_EOL);
+
+                $stock_attributes_search_new = $_SESSION['pwas_class2']->zen_get_sba_attribute_info(zen_get_prid($product['id']), $product['attributes'], 'order', 'ids');
+
+                $eo->eoLog (PHP_EOL . "admin-observer-pwas:" . PHP_EOL . "stock_attributes_search_new:" . PHP_EOL . var_export($stock_attributes_search_new,true) . PHP_EOL);
+
+                if (isset($stock_attributes_search_new) && $stock_attributes_search_new === false) {
+        
+                } elseif (isset($stock_attributes_search_new) && (!zen_not_null($stock_attributes_search_new) || is_array($stock_attributes_search_new) && count($stock_attributes_search_new) == 0)) {
+                } elseif (isset($stock_attributes_search_new) && (zen_not_null($stock_attributes_search_new) || (is_array($stock_attributes_search_new) && count($stock_attributes_search_new) > 0))) {
+                    foreach ($stock_attributes_search_new as $stock_id) {
+                        // @todo: address in PWAS table whether particular variant should be altered with stock quantities.
+                        $get_quantity_query = 'SELECT quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id=' . zen_get_prid($product['id']) . ' and stock_id=' . (int)$stock_id;
+                        $attribute_stock_available = $db->Execute($get_quantity_query, false, false, 0, true);
+                        if (true) { // Goal here is to identify if the particular attribute/stock item should be affected by a stock change.  If it is not, then this should be false or not performed.
+                            $attribute_stock_left_test = $attribute_stock_available->fields['quantity'] - $product['qty'];
+                            $attribute_update_query = 'UPDATE ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' SET quantity="'.$attribute_stock_left_test.'" where products_id=' . zen_get_prid($product['id']) . ' and stock_id=' . (int)$stock_id;
+                            $db->Execute($attribute_update_query, false, false, 0, true);
+                            unset($attribute_update_query);
+                    
+                            if ($attribute_stock_left_test < $attribute_stock_left) {
+                                $_attribute_stock_left = min($attribute_stock_left_test, $_attribute_stock_left);
+                                $attribute_stock_left = $_attribute_stock_left;
+                            }
+                        }
+                    }
+                    unset($stock_id, $attribute_stock_available, $attribute_stock_left_test);
+                }
+                unset($stock_attributes_search_new);
+            }
+            $attribute_stock_left = $_attribute_stock_left;
+        }
+        $eo->eoLog (PHP_EOL . "admin-observer-pwas:" . PHP_EOL . "stock_left:" . PHP_EOL . var_export($attribute_stock_left,true) . PHP_EOL);
+
+//    function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $paramsArray) {
+        //Need to modify the email that is going out regarding low-stock.
+        //paramsArray is $i at time of development.
+        if ($_orderIsSBA /*zen_product_is_sba($this->_productI['id'])*/) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
+            if (/*$callingClass->email_low_stock == '' && */$callingClass->doStockDecrement &&  isset($product) && is_array($product) && $_attribute_stock_left <= STOCK_REORDER_LEVEL) {
+                // kuroi: trigger and details for attribute low stock email
+                $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($product['id']) . ', model# ' . $product['model'] . ', customid ' . $product['customid'] . ', name ' . $product['name'] . ', ';
+                foreach($product['attributes'] as $attributes){
+                    $callingClass->email_low_stock .= $attributes['option'] . ': ' . $attributes['value'] . ', ';
+                }
+                unset($attributes);
+        
+                $callingClass->email_low_stock .= 'Stock: ' . $_attribute_stock_left . "\n\n";
+
+
+                $messageStack->add_session(WARNING_ORDER_QTY_OVER_MAX, 'warning');
+
+                // kuroi: End Stock by Attribute additions
+            }
+        }
+
+
+
+
+
+        // NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM
+        /* First check to see if SBA is installed and if it is then look to see if a value is 
+         *  supplied in the stock_id parameter (which should only be populated when a SBA tracked
+         *  item is in the order */
+        if ($_orderIsSBA && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && zen_not_null($_stock_info['stock_id'])) {  
+            //Need to validate that order had attributes in it.  If so, then were they tracked by SBA and then add to appropriate table.
+/*          `orders_products_attributes_stock_id` INT(11) NOT NULL auto_increment, 
+  `orders_products_attributes_id` INT(11) NOT NULL default '0',
+  `orders_id` INT(11) NOT NULL default '0', 
+  `orders_products_id` INT(11) NOT NULL default '0', 
+  `stock_id` INT(11) NOT NULL default '0', 
+  `stock_attribute` VARCHAR(255) NULL DEFAULT NULL, 
+  `products_prid` TINYTEXT NOT NULL, */
+            $new_attrs = array();
+            $new_attrs = $_productI['attributes'];
+            $order_product_attribute_id = array();
+            foreach ($new_attrs as $key=>$attr) {
+                unset($new_attrs[$key]['value']);
+                $orders_products_attribute_id_query =
+            "SELECT orders_products_attributes_id FROM " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES . " opa WHERE orders_id = "
+                . $order_id . " AND orders_products_id = " . $orders_products_id . " AND products_options_id = " . $attr['option_id']
+                . " AND products_options_values_id = " . $attr['value_id'];
+                $orders_products_attribute_id = $db->Execute($orders_products_attribute_id_query, false, false, 0, true);
+
+                while (!$orders_products_attribute_id->EOF) {
+                    $order_product_attribute_id[] = $orders_products_attribute_id->fields['orders_products_attributes_id'];
+                    $orders_products_attribute_id->MoveNext();  
+                }
+                unset($orders_products_attribute_id);
+            }
+            unset($key);
+            unset($attr);
+        
+//   @TODO XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   // NEED TO LOOKUP 'stock_id', 'stock_attribute' and 'customid' which should be created above as part of _stock_info and _productI
+            foreach ($order_product_attribute_id as $key=>$opai) {
+                $sql_data_array = array('orders_products_attributes_id' =>$opai,
+                                        'orders_id' =>$order_id, 
+                                        'orders_products_id' =>$orders_products_id, 
+                                        'stock_id' => $_stock_info['stock_id'], 
+                                        'stock_attribute' => $_stock_info['stock_attribute'], 
+                                        'customid' => $product['customid'],
+                                        'products_prid' =>zen_get_uprid($product['id'], $new_attrs[$key]));
+                zen_db_perform(TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK, $sql_data_array); //inserts data into the TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK table.
+            }
+            unset($key);
+            unset($opai);
+            unset($order_product_attribute_id);
+            unset($new_attrs);
+            unset($sql_data_array);
+
+        }
+        unset($_orderIsSBA);
+    }
+
+//    $zco_notifier->notify ('EDIT_ORDERS_REMOVE_PRODUCT', array ( 'order_id' => (int)$order_id, 'orders_products_id' => (int)$orders_products_id ));
+    function updateEditOrdersRemoveProduct(&$callingClass, $notifier, $paramsArray) {
+        global $db;
+
+        $order_id = (int)$paramsArray['order_id'];
+        $orders_products_id = (int)$paramsArray['orders_products_id'];
+
+    
+        $order = $db->Execute("select products_id, products_quantity, products_prid
+                               from " . TABLE_ORDERS_PRODUCTS . "
+                               where orders_id = " . (int)$order_id . "
+                               AND orders_products_id = ". (int)$orders_products_id, false, false, 0, true);
+
+        $_orderIsSBA = $_SESSION['pwas_class2']->zen_product_is_sba($order->fields['products_id']);
+
+        while (!$order->EOF) {
+      // START SBA //restored db //mc12345678 update the SBA quantities based on order delete.
+/*
+ * Need to take the data collected above, (products_id) to find the matching order record 
+ * (attributes table that is left joined by the sba table and values not equal to null. 
+ * Records that match are ones on which quantities can be affected.
+ */
+            $_orderIsSBA = $_SESSION['pwas_class2']->zen_product_is_sba($order->fields['products_id']);
+      
+            if ($_orderIsSBA) {
+                $order_product_attributes_id_query = "SELECT orders_products_attributes_id, products_options_id, 
+                                        products_options_values_id FROM " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES . " opa 
+                                 WHERE orders_id = " . (int)$order_id . " 
+                                 AND orders_products_id = " . (int)$orders_products_id;
+                $order_product_attributes_id = $db->Execute($order_product_attributes_id_query, false, false, 0, true);
+                unset($order_product_attributes_id_query);
+
+                $attr = array();
+          
+                while (!$order_product_attributes_id->EOF) {
+                    $attr[] = array('option_id' =>$order_product_attributes_id->fields['products_options_id'],
+                                    'value_id' => $order_product_attributes_id->fields['products_options_values_id']);
+
+                    $order_product_attributes_id->MoveNext();        
+                }
+                unset($order_product_attributes_id);
+      
+                $stockids = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($order->fields['products_id'], $attr, 'order', 'ids');
+                unset($attr);
+      
+                if (isset($stockids) && $stockids === false) {
+                    /* There is no stock associated with this sequence so ignore it. */
+                } elseif (isset($stockids) && (!zen_not_null($stockids) || is_array($stockids) && count($stockids) == 0)) {
+                    /*  The ids came back as null or as an empty array. Nothing to be done. */
+                } elseif (isset($stockids) && (zen_not_null($stockids) || (is_array($stockids) && count($stockids) > 0))) {
+                    foreach ($stockids as $stock_id) {
+                    // @todo: address in PWAS table whether particular variant should be altered with stock quantities.
+                        $get_quantity_query = 'SELECT quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id=' . zen_get_prid($order->fields['products_id']) . ' and stock_id=' . (int)$stock_id;
+                        $attribute_stock_available = $db->Execute($get_quantity_query, false, false, 0, true);
+                        unset($get_quantity_query);
+                      
+                        if (true) { // Goal here is to identify if the particular attribute/stock item should be affected by a stock change.  If it is not, then this should be false or not performed.
+                            $attribute_stock_left_test = $attribute_stock_available->fields['quantity'] + $order->fields['products_quantity'];
+                            $attribute_update_query = 'UPDATE ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' SET quantity=' . $attribute_stock_left_test . ' where products_id=' . zen_get_prid($order->fields['products_id']) . ' and stock_id=' . (int)$stock_id;
+                            $db->Execute($attribute_update_query, false, false, 0, true);
+                            unset($attribute_update_query);
+                            unset($attribute_stock_left_test);
+                        }
+                        unset($attribute_stock_available);
+                    }
+                    unset($stock_id);
+                }
+                unset($stockids);
+
+            // End SBA modification.
+            }
+            $order->MoveNext();
+        }
+        unset($order);
+
+        if ($_orderIsSBA) {
+/* START STOCK BY ATTRIBUTES */
+            $db->Execute("delete from " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK . "
+                          where orders_id = '" . (int)$order_id . "'
+                          AND orders_products_id = " . (int)$orders_products_id);
+/* END STOCK BY ATTRIBUTES */
+        }
+  
+        unset($_orderIsSBA);
+        unset($order_id);
+        unset($orders_products_id);
+    }
     
 //  notify('NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP', array('i'=>$i, 'j'=>$j, 'productsI'=>$order->products[$i], 'prod_img'=>$prod_img), $order->products[$i], $prod_img);
 
@@ -420,6 +690,15 @@ class products_with_attributes_stock_admin extends base {
     
     if ($notifier == 'ORDER_QUERY_ADMIN_COMPLETE') {
       $this->updateOrderQueryAdminComplete($callingClass, $notifier, $paramsArray);
+    }
+    
+    if ($notifier == 'EDIT_ORDERS_REMOVE_PRODUCT') {
+      $this->updateEditOrdersRemoveProduct($callingClass, $notifier, $paramsArray);
+    }
+
+    if ($notifier == 'EDIT_ORDERS_ADD_PRODUCT') {
+//    $zco_notifier->notify ('EDIT_ORDERS_ADD_PRODUCT', array ( 'order_id' => (int)$order_id, 'orders_products_id' => $order_products_id, 'product' => $product ));
+      $this->updateEditOrdersAddProduct($callingClass, $notifier, $paramsArray);
     }
 
   } //end update function - mc12345678
