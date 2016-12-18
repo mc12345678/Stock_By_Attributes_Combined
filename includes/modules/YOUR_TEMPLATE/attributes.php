@@ -12,6 +12,7 @@
  * @version $Id: Author: DrByte  Sat Jan 2 12:53:21 2016 -0500 Modified in v1.5.5 $
  * 
  * Stock by Attributes 1.5.4 : mc12345678 16-01-02
+ * Attribute image replaces main product image on selecting attribute mc12345678 16-12-09
  * Incorporated to support ZC 1.5.1 and up when using SBA.
  */
 if (!defined('IS_ADMIN_FLAG')) {
@@ -614,7 +615,7 @@ $sql = "select count(*) as total
                     $options_name[] = $products_options_names->fields['products_options_name'];
                   }
                   $options_html_id[] = 'drprad-attrib-' . $products_options_names->fields['products_options_id'];
-                  $options_menu[] = zen_draw_radio_field('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_value_id, 'selected', 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '-' . $products_options_value_id . '"') . '<label class="attribsRadioButton" for="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '-' . $products_options_value_id . '">' . $products_options_details . '</label>' . "\n";
+                  $options_menu[] = zen_draw_radio_field('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_value_id, 'selected', 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '-' . $products_options_value_id . '"' . $params) . '<label class="attribsRadioButton" for="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '-' . $products_options_value_id . '">' . $products_options_details . '</label>' . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
                   break;
@@ -646,7 +647,7 @@ $sql = "select count(*) as total
                   }
 
                   $options_html_id[] = 'drp-attrib-' . $products_options_names->fields['products_options_id'];
-                  $options_menu[] = zen_draw_pull_down_menu('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '"') . "\n";
+                  $options_menu[] = zen_draw_pull_down_menu('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '"' . $params) . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
                   $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
                   break;
