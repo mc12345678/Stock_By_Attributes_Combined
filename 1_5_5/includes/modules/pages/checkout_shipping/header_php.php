@@ -48,10 +48,6 @@
     // Added to allow individual stock of different attributes
       unset($attributes);
       if(is_array($products[$i]['attributes'])){
-/*        $inSBA_query = "select stock_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :productsid:";
-        $inSBA_query = $db->bindVars($inSBA_query, ':productsid:', $products[$i]['id'], 'integer');
-        
-        $inSBA_result = $db->Execute($inSBA_query);*/
 
         if (isset($_SESSION['pwas_class2'])
         && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
