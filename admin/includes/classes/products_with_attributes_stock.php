@@ -978,9 +978,9 @@ function nullDataEntry($fieldtoNULL){
     function zen_sba_get_uprid($prid, $params) {
       if ( (is_array($params)) && (!strstr($prid, ':')) ) {
         $uprid = $prid;
-        while (list($option, $value) = each($params)) {
+        foreach($params as $option => $value) {
           if (is_array($value)) {
-            while (list($opt, $val) = each($value)) {
+            foreach($value as $opt => $val) {
               $uprid = $uprid . '{' . $option . '}' . trim($opt);
             }
           } else {
