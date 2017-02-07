@@ -422,7 +422,7 @@ function cartProductCount($products_id){
       }
       $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
 
-      $attributes_new = $db->Execute($query);
+      $attributes_new = $db->Execute($query, false, false, 0, true);
 
       while (!$attributes_new->EOF) {
         if (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.
@@ -1522,7 +1522,7 @@ Of the attributes provided, determine the number of those attributes that are
     if (!$SBA_installed->EOF && $SBA_installed->RecordCount() > 0) {
       $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:;';
       $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
-      $isSBA = $db->Execute($isSBA_query);
+      $isSBA = $db->Execute($isSBA_query, false, false, 0, true);
     
       if (!$isSBA->EOF && $isSBA->RecordCount() > 0) {
 //        $this->_isSBA[(int)$product_id] = true;
