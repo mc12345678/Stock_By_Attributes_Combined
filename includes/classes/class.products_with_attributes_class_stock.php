@@ -1496,7 +1496,7 @@ Of the attributes provided, determine the number of those attributes that are
   *
   **/
   function zen_product_is_sba($product_id, $reset = false) {
-    global $db;
+    global $db, $sniffer;
     
     if (!isset($product_id) && !is_numeric(zen_get_prid($product_id))) {
       return null;
@@ -1510,16 +1510,16 @@ Of the attributes provided, determine the number of those attributes that are
       //return $this->_isSBA[(int)$product_id];
     }*/
     
-    $inSBA_query = 'SELECT * 
+    $inSBA_query = $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK); /*'SELECT * 
                     FROM information_schema.tables
                     WHERE table_schema = :your_db: 
                     AND table_name = :table_name:
                     LIMIT 1;';
     $inSBA_query = $db->bindVars($inSBA_query, ':your_db:', DB_DATABASE, 'string');
     $inSBA_query = $db->bindVars($inSBA_query, ':table_name:', TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'string');
-    $SBA_installed = $db->Execute($inSBA_query, false, false, 0, true);
- 
-    if (!$SBA_installed->EOF && $SBA_installed->RecordCount() > 0) {
+    $SBA_installed = $db->Execute($inSBA_query, false, false, 0, true);*/
+        
+    if ($inSBA_query /*!$SBA_installed->EOF && $SBA_installed->RecordCount() > 0*/) { // Added to simplify query/code, assuming caching won't/can't be an issue.
       $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:;';
       $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
       $isSBA = $db->Execute($isSBA_query, false, false, 0, true);
