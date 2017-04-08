@@ -154,38 +154,43 @@ function cartProductCount($products_id){
     $customid_model_query = null;
     $customid_query = null;
     $products_id = zen_get_prid($products_id);
-  $customid = null;
+    $customid = null;
   
     // check if there are attributes for this product
-   $stock_has_attributes_query = 'select products_attributes_id 
+   /*$stock_has_attributes_query = 'select products_attributes_id 
                         from '.TABLE_PRODUCTS_ATTRIBUTES.' 
                         where products_id = :products_id:';
   $stock_has_attributes_query = $db->bindVars($stock_has_attributes_query, ':products_id:', $products_id, 'integer');
-  $stock_has_attributes = $db->Execute($stock_has_attributes_query);
-
-    if ( $stock_has_attributes->RecordCount() < 1 ) {
+  $stock_has_attributes = $db->Execute($stock_has_attributes_query);*/
+    
+    // Use ZC function to identify if a product has attributes or not.
+    if (!zen_has_product_attributes($products_id, false/* 'true' here will return false if all attributes are read-only 'false' will cause an all read-only attribute product to be seen as having attributes with which to process*/)/* $stock_has_attributes->RecordCount() < 1*/) {
       
         //if no attributes return products_model
-      $no_attribute_stock_query = 'select products_model 
+      /*$no_attribute_stock_query = 'select products_model 
                       from '.TABLE_PRODUCTS.' 
                       where products_id = :products_id:';
     $no_attribute_stock_query = $db->bindVars($no_attribute_stock_query, ':products_id:', $products_id, 'integer');
       $customid = $db->Execute($no_attribute_stock_query);
-      return $customid->fields['products_model'];
+      return $customid->fields['products_model'];*/
+      
+      // Use ZC function to obtain the products_model.
+      $customid = zen_products_lookup($products_id, 'products_model');
+      return $customid;
     } 
     else {
       
       if(is_array($attributes) and sizeof($attributes) > 0){
         // check if attribute stock values have been set for the product
         // if there are will we continue, otherwise we'll use product level data
-      $attribute_stock = $db->Execute("select stock_id 
-                          from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
-                          where products_id = " . (int)$products_id . ";");
+        /*$attribute_stock = $db->Execute("select stock_id 
+                            from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
+                            where products_id = " . (int)$products_id . ";");*/
     
         //Why not left join this below query into the above or why even have a separate/second query? Especially seeing that $attributes_stock is never used in the below results...  
-        if ($attribute_stock->RecordCount() > 0) {
+        if ($this->zen_product_is_sba($product_id)/*$attribute_stock->RecordCount() > 0*/) {
           // search for details for the particular attributes combination
-            $first_search = 'where options_values_id in ("'.implode('","',$attributes).'")';
+          $first_search = 'where options_values_id in ("'.implode('","',$attributes).'")';
           
           // obtain the attribute ids
           $query = 'select products_attributes_id 
@@ -200,13 +205,13 @@ function cartProductCount($products_id){
             $attributes_new->MoveNext();
           }
 
-        $stock_attributes = implode(',',$stock_attributes);
+          $stock_attributes = implode(',',$stock_attributes);
         }
         
         //Get product model
-        $customid_model_query = 'select products_model 
+        /*$customid_model_query = 'select products_model 
                         from '.TABLE_PRODUCTS.' 
-                        where products_id = '. (int)$products_id . ';';
+                        where products_id = '. (int)$products_id . ';';*/
 
         //Get custom id as products_model
         $customid_query = 'select customid as products_model
@@ -215,7 +220,7 @@ function cartProductCount($products_id){
                     and stock_attributes in ( ":stock_attributes:");'; 
         $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
         $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes, 'passthru');
-      $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
+        $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
       // a difference in the code where there would be an error with it below...
       }
       
@@ -236,16 +241,20 @@ function cartProductCount($products_id){
       
       }
       else{
-        $customid = null;
+        unset($customid);// = null;
         //This is used as a fall-back when custom ID is set to be displayed but no attribute is available.
         //Get product model
-        $customid_model_query = 'select products_model
+        /*$customid_model_query = 'select products_model
                         from '.TABLE_PRODUCTS.'
                         where products_id = :products_id:';
-      $customid_model_query = $db->bindVars($customid_model_query, ':products_id:', $products_id, 'integer');                
-        $customid = $db->Execute($customid_model_query);
+        $customid_model_query = $db->bindVars($customid_model_query, ':products_id:', $products_id, 'integer');
+        
+        $customid = $db->Execute($customid_model_query);*/
+        // Use ZC default function to obtain the products_model field.
+        $customid = zen_products_lookup($products_id, 'products_model');
+        return $customid;
         //return result for display
-            return $customid->fields['products_model'];
+        //return $customid->fields['products_model'];
       }
       return;//nothing to return, should never reach this return
     }
@@ -269,7 +278,7 @@ function cartProductCount($products_id){
     $stock_attributes = '';
     $multi = (sizeof($attribute_list) > 1 ? true : false);
     
-    if (isset($attribute_list) && is_array($attribute_list) && ($k = sizeof($attribute_list) > 0)) {
+    if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
       if ($from == 'order') {
         foreach ($attribute_list as $attrib_data) {
           if (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.  This is probably the best place to do the review because all aspects of the attribute are available.
@@ -296,7 +305,7 @@ function cartProductCount($products_id){
    * @access  public
    * @param   integer   $products_id      The product id of the product on which to obtain the stock attribute.
    * @param   array     $attribute_list   The attribute array of the product identified in products_id
-   * @returns array     stock_id          The value of the unique id in the SBA table products_with_attributes_stock
+   * @returns array     stock_id          The value of the unique id in the SBA table products_with_attributes_stock sorted by products_attributes_id 
    */
   function zen_get_sba_attribute_ids($products_id, $attribute_list = array(), $from = 'order'){
     global $db;
@@ -499,7 +508,7 @@ Of the attributes provided, determine the number of those attributes that are
 
     $products_id = zen_get_prid($products_id);
 
-    $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
+    //$stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Result is not used. 1/18/2017
     if (!$this->zen_product_is_sba($products_id)) {
       return NULL;
     }
@@ -509,8 +518,10 @@ Of the attributes provided, determine the number of those attributes that are
 
    // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
 
-      if (sizeof($stock_attributes_list) == 1) {
+      if (isset($stock_attributes_list) && is_array($stock_attributes_list) && sizeof($stock_attributes_list) == 1) {
+        // Product has one unique record in the database for the list of attributes.  This could be a single option value/option name or it could be a myriad of attributes but entered as a single variant.
         //         echo '<br />Single Attribute <br />';
+        // @TODO: what sanitization is in place here?
         $stock_attributes = $stock_attributes_list[0];
         // create the query to find single attribute stock
         $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :stock_attributes:';
@@ -523,10 +534,10 @@ Of the attributes provided, determine the number of those attributes that are
         } else {
           return false;
         }
-      } elseif (sizeof($stock_attributes_list) > 1) {
+      } elseif (isset($stock_attributes_list) && is_array($stock_attributes_list) && sizeof($stock_attributes_list) > 1) {
         //       echo '<br />Multiple attributes <br />';
         $stockResult = null;
-        //This part checks for "attribute combinations" in the SBA table. (Multiple attributes per Stock ID Row, Multiple Attribute types in stock_attributes Field  i.e, 123,321,234)
+        //This part checks for "attribute combinations" in the SBA table. (Multiple attributes per Stock ID Row, Multiple Attribute types in stock_attributes Field  i.e, 123,234,321)
         $stock_attributes = implode(',', $stock_attributes_list);
         // create the query to find attribute stock
         $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :TMPstock_attributes:';
@@ -694,6 +705,7 @@ Of the attributes provided, determine the number of those attributes that are
     $products_options_names = $db->Execute($sql);
     
     if ($products_options_names->EOF) {
+      // @TODO: Log error rather than set session value, unless session value is to be used elsewhere for messaging.
       $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
       //There's an issue because this shouldn't be possible
     } else {
@@ -970,6 +982,8 @@ Of the attributes provided, determine the number of those attributes that are
       //Get product level stock quantity
       $stock_query = "select products_quantity from " . TABLE_PRODUCTS . " where products_id = :products_id:";
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
+      // @TODO: identify if function zen_products_lookup($products_id, 'products_quantity') could be used here or if there
+      //  would be a cache of information left behind that could cause an issue?
       $stock_values = $db->Execute($stock_query, false, false, 0, true);
       return $stock_values->fields['products_quantity'];
     } elseif (!$this->zen_product_is_sba($products_id)) {
@@ -1040,6 +1054,7 @@ Of the attributes provided, determine the number of those attributes that are
     $products_options_names = $db->Execute($sql, false, false, 0, true);
     
     if ($products_options_names->EOF) {
+      // @TODO: Log error rather than set a session value unless the session value performs a specific function.
       $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
       //There's an issue because this shouldn't be possible
     } else {
@@ -1163,7 +1178,7 @@ Of the attributes provided, determine the number of those attributes that are
     // Summary of the above, if the product is not tracked by SBA, then return null.
     // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
 
-    if (sizeof($stock_attributes_list) == 1 && $datatype != 'dupTest') {
+    if (isset($stock_attributes_list) && is_array($stock_attributes_list) && sizeof($stock_attributes_list) == 1 && $datatype != 'dupTest') {
       //         echo '<br />Single Attribute <br />';
       $stock_attributes = $stock_attributes_list[0];
       // create the query to find single attribute stock
@@ -1187,7 +1202,7 @@ Of the attributes provided, determine the number of those attributes that are
         //  attributes that can be blank (text/upload file) then this
         //  is the same "result" if there is one other non-text field
         //  or one text field is filled and the other not.
-        //  Need: identify if this product/combination can exist in the
+        //  @TODO: Need: identify if this product/combination can exist in the
         //   above known state.  In essence to repeat the check process
         //   of the add-to-cart, but not needing to ensure that the 
         //   contents match the required attribute marker as product 
@@ -1200,12 +1215,12 @@ Of the attributes provided, determine the number of those attributes that are
 
         return false;
       }
-    } elseif (sizeof($stock_attributes_list) > 1) {
+    } elseif (isset($stock_attributes_list) && is_array($stock_attributes_list) && sizeof($stock_attributes_list) > 1) {
       // mc12345678 multiple attributes are associated with the product
       //   question is how these relate to the SBA variant.
       //       echo '<br />Multiple attributes <br />';
       $stockResult = null;
-      //This part checks for "attribute combinations" in the SBA table. (Multiple attributes per Stock ID Row, Multiple Attribute types in stock_attributes Field  i.e, 123,321,234)
+      //This part checks for "attribute combinations" in the SBA table. (Multiple attributes per Stock ID Row, Multiple Attribute types in stock_attributes Field  i.e, 123,234,321)
       $stock_attributes = implode(',', $stock_attributes_list);
       // create the query to find attribute stock
       $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :TMPstock_attributes:';
@@ -1330,14 +1345,15 @@ Of the attributes provided, determine the number of those attributes that are
     
     $attribute_info = array();
 
-    if (isset($attribute_list) && (($k = sizeof($attribute_list)) > 0)) {
+    if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
       $attribute_info['stock_attribute'] = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
       $query = 'select stock_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . 
                 ' where `stock_attributes` = "' . $attribute_info['stock_attribute'] . '" and products_id = ' . (int)$products_id;
 
       $stock_id = $db->Execute($query);
 
-      if (zen_not_null($stock_id) && sizeof($stock_id) > 1) {
+      if (!$stock_id->EOF && $stock_id->RecordCount() > 1 /*zen_not_null($stock_id) && sizeof($stock_id) > 1*/) {
+        // @TODO: Log an error instead of displaying it.  This way the store operator can identify additional information.
         echo 'This is an error situation, as only one record should be returned.  More than one stock id was returned which should not be possible.';
       } else {
         $attribute_info['stock_id'] = $stock_id->fields['stock_id'];
@@ -1361,8 +1377,8 @@ Of the attributes provided, determine the number of those attributes that are
     }
     $products_stock_attributes = $db->Execute("select stock_id, stock_attributes from " . 
                                               TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . (zen_not_null($products_id) ? " where products_id in (" . implode(',', (int)$products_id) . ")" : "" ));
-    $stock_id_list = array();
-*/    /* The below "search" is one reason that the original tables for SBA should be better refined
+    $stock_id_list = array();*/
+    /* The below "search" is one reason that the original tables for SBA should be better refined
      * and not use comma separated items in a field...
      */
 /*    while (!$products_stock_attributes->EOF) {
@@ -1475,7 +1491,10 @@ Of the attributes provided, determine the number of those attributes that are
 
   // function zen_is_SBA was removed as it was a duplicate of $this->zen_product_is_sba.  If code
   // has been written to use that function, please consider using $this->zen_product_is_sba instead.
-  
+  /**
+  *
+  *
+  **/
   function zen_product_is_sba($product_id, $reset = false) {
     global $db;
     
