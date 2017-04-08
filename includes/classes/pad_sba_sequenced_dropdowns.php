@@ -842,9 +842,12 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
           // Don't show the out of stock message during processing code when the current location is blank/not selected.
           // This prevents showing the message when the options are first displayed on page load as well as when 
           //  the selection is changed back to the "default" message of First/Next select Option Name Text.
-          for ($i = 0; $i <= $curattr; $i++) {
-            $out.=' && frm["id[' . $attributes[$i]['oid'] . ']"].value !== "0"';
+          if ($nextattr >= 1) {
+              $out.=' && ' . $outArrayTestArray[$nextattr - 1] . $outArrayListedArray[$nextattr - 1];
           }
+/*          for ($i = 0; $i <= $curattr; $i++) {
+            $out.=' && frm["id[' . $attributes[$i]['oid'] . ']"] !== undefined';
+          }*/
           $out.=') {' . "\n";
           $out.='                    alert("' . TEXT_JAVA_ALL_SELECT_OUT . '");' . "\n";
           $out.='                    displayshown = true;' . "\n";
@@ -871,20 +874,33 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     } // EOF for ($curattr)
 
     // js to initialize dropdowns to defaults if product id contains attributes (i.e. clicked through to product page from cart)
-    $out.='i' . $attributes[0]['oid'] . '(document.cart_quantity);' . "\n";
-    for ($o = 1, $s = sizeof($attributes); $o < $s - 1; $o++) {
+    // Take action on the first currently set value.
+    for ($p = 0, $r = sizeof($attributes); $p < $r; $p++) {
+        if ($attributes[$p]['default'] != '') {
+            // Execute code on the current/first selection
+            $out.='i' . $attributes[$p]['oid'] . '(document.cart_quantity);' . "\n";
+            $p++;
+            break;
+        }
+    }
+    unset($r);
+    // Process the known selections from top to bottom for each processable (having a default) option.
+    // This directly supports returning to the product from the shopping cart page and populating the selections made/entered.
+    for ($o = $p, $s = sizeof($attributes); $o < $s; $o++) {
       if ($attributes[$o]['default'] != '') {
+        // Set the next attribute's selection
         $out.='document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
+        // Execute the code for the next attribute's selection.
         $out.='i' . $attributes[$o]['oid'] . '(document.cart_quantity);' . "\n";
-      } else {
+      } /*else {
         break;
-      }
+      }*/
     }
     unset($s);
     
-    if (($o == sizeof($attributes) - 1) && ($attributes[$o]['default'] != '')) {
+/*    if (($o == sizeof($attributes) - 1) && ($attributes[$o]['default'] != '')) {
       $out.='document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
-    }
+    }*/
 
     // js to not allow add to cart if selections not made
     $out.='var chksel = function (form) {' . "\n";
