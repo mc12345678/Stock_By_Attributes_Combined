@@ -615,8 +615,8 @@ require(DIR_WS_INCLUDES . 'header.php');
           foreach ($product_attributes as $option_name => $options) {
 
             //get the option/attribute list
-            $sql = "select distinct popt.products_options_type, popt.products_options_name, pot.products_options_types_name, 
-                     pa.attributes_display_only, pa.products_attributes_id
+            $sql = "select distinct popt.products_options_type, popt.products_options_name, pot.products_options_types_name" . /*, 
+                     pa.attributes_display_only, pa.products_attributes_id */ "
             from " . TABLE_PRODUCTS_OPTIONS . " popt
               left join " . TABLE_PRODUCTS_ATTRIBUTES . " pa ON (pa.options_id = popt.products_options_id)
               left join " . TABLE_PRODUCTS_OPTIONS_TYPES . " pot ON (popt.products_options_type = pot.products_options_types_id)

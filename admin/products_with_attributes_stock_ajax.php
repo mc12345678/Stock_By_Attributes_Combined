@@ -10,7 +10,7 @@
  
 require('includes/application_top.php');
 require(DIR_WS_CLASSES . 'currencies.php');
-//require(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
+  //require(DIR_WS_CLASSES . 'products_with_attributes_stock.php'); 
   // Attempt to load the admin's specific language version of the file, but if unable to find it then default to english instead of displaying constants.
   if (file_exists(DIR_WS_LANGUAGES . $_SESSION['language'] . '/products_with_attributes_stock.php')) { 
     include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/products_with_attributes_stock.php');
