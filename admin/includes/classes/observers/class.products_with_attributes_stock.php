@@ -39,7 +39,7 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'OPTIONS_NAME_MANAGER_UPDATE_OPTIONS_VALUES_DELETE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME';
-    $attachNotifier[] = 'ORDER_QUERY_ADMIN_COMPLETE';  // Not ready to implement yet. 2016-06-01
+    $attachNotifier[] = 'ORDER_QUERY_ADMIN_COMPLETE';
     $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT';
     $attachNotifier[] = 'EDIT_ORDERS_REMOVE_PRODUCT';
 
