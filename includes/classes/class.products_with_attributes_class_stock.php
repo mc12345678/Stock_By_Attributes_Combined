@@ -269,7 +269,7 @@ function cartProductCount($products_id){
    * @param   string    $from             The source of the attribute list as created differently in order class than shopping_cart class.
    * @returns string    $stock_attributes A comma separated (if >1 attribute) string of the products_attributes_id sorted by products_attributes_id. This is the current set of information stored in the SBA table for stock_attributes.
    */
-  function zen_get_sba_stock_attribute($products_id, $attribute_list = array(), $from = 'order'){
+  function zen_get_sba_stock_attribute($products_id, $attribute_list = array(), $from = 'order', $non_sba = false){
 //  global $db;
 
     $temp_attributes = array();
@@ -288,7 +288,7 @@ function cartProductCount($products_id){
         $attribute_list = $temp_attributes;
       } 
       
-      $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
+      $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from, $non_sba);
       
       
 //      $_SESSION['attributes_list_'. (int)$products_id] = $stock_attributes_list;
@@ -304,14 +304,14 @@ function cartProductCount($products_id){
   }
 
   /*
-   * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to $this->zen_get_sba_stock_attribute in order to identify data to help with this search.
+   * Function to return the array of values for the stock_attributes field from the SBA table products_with_attributes_stock. Makes a call to $this->zen_get_sba_stock_attribute in order to identify data to help with this search.
    * 
    * @access  public
-   * @param   integer   $products_id      The product id of the product on which to obtain the stock attribute.
-   * @param   array     $attribute_list   The attribute array of the product identified in products_id
-   * @returns array     stock_id          The value of the unique id in the SBA table products_with_attributes_stock sorted by products_attributes_id 
+   * @param   integer   $products_id            The product id of the product on which to obtain the stock attribute.
+   * @param   array     $attribute_list         The attribute array of the product identified in products_id
+   * @returns array     $stock_attributes_list  The sorted array of the products_attributes_id that would be needed for populating the SBA table field stock_attributes 
    */
-  function zen_get_sba_attribute_ids($products_id, $attribute_list = array(), $from = 'order'){
+  function zen_get_sba_attribute_ids($products_id, $attribute_list = array(), $from = 'order', $non_sba = false){
     global $db;
 
     $temp_attributes = array();
@@ -325,7 +325,7 @@ function cartProductCount($products_id){
 //    $stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
 
     // If the product is not tracked by SBA, then return null.
-    if (!$this->zen_product_is_sba($products_id)) {
+    if ($non_sba === false && !$this->zen_product_is_sba($products_id)) {
       return NULL;
     }
 

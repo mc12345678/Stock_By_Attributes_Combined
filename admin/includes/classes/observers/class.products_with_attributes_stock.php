@@ -35,6 +35,8 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES';
+    $attachNotifier[] = 'NOTIFY_ADMIN_PRODUCT_COPY_TO_ATTRIBUTES';
+//    $attachNotifier[] = 'NOTIFY_MODULES_COPY_TO_CONFIRM_ATTRIBUTES';
     $attachNotifier[] = 'OPTIONS_NAME_MANAGER_DELETE_OPTION';
     $attachNotifier[] = 'OPTIONS_NAME_MANAGER_UPDATE_OPTIONS_VALUES_DELETE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUE';
@@ -152,7 +154,24 @@ class products_with_attributes_stock_admin extends base {
       }
     }
   }
+
+  // NOTIFY_ADMIN_PRODUCT_COPY_TO_ATTRIBUTES
+  function updateNotifyAdminProductCopyToAttributes(&$callingClass, $notifier, $paramsArray, &$contents) {
+    // Obtain the last row within the array that contains the "divider" then replace with the below code and then add the divider
+    //  back so that all attribute action is in one area instead of "separate" areas.
+    global $products_with_attributes_stock_class, $pInfo;
     
+    if (file_exists(DIR_WS_LANGUAGES . $_SESSION['language'] . '/modules/product_sba.php')) {
+      include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/modules/product_sba.php'); 
+    }
+    
+    if ($products_with_attributes_stock_class->zen_product_is_sba($pInfo->products_id)){
+      $last_content = $contents[sizeof($contents) - 2];
+      $contents[sizeof($contents) - 2] = array('text' => '<br />' . TEXT_COPY_SBA_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_yes', true) . ' ' . TEXT_COPY_SBA_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_no') . ' ' . TEXT_COPY_SBA_ATTRIBUTES_NO); 
+      $contents[] = $last_content;
+    }
+  }
+  
   // NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE
   function updateNotifyAttributeControllerDeleteAttribute(&$callingClass, $notifier, $paramsArray, &$attribute_id) {
     global $db;
@@ -199,6 +218,19 @@ class products_with_attributes_stock_admin extends base {
       $delete_attributes_options_id->MoveNext();
     }
 
+  }
+
+  // NOTIFY_MODULES_COPY_TO_CONFIRM_ATTRIBUTES
+  function updateNotifyModulesCopyToConfirmAttributes(&$callingClass, $notifier, $paramsArray) {
+
+/*    if ( $_POST['copy_sba_attributes']=='copy_sba_attributes_yes' and $_POST['copy_as'] == 'duplicate' ) {
+      global $products_with_attributes_stock_class;
+
+      $products_id_from = $paramsArray['products_id_from'];
+      $products_id_to = $paramsArray['products_id_to'];
+
+      $products_with_attributes_stock_class->zen_copy_sba_products_attributes($products_id_from, $products_id_to);
+    }*/
   }
   
   // OPTIONS_NAME_MANAGER_DELETE_OPTION', array('option_id' => $option_id, 'options_values_id' => (int)$remove_option_values->fields['products_options_values_id']));
@@ -659,6 +691,11 @@ class products_with_attributes_stock_admin extends base {
       $this->updateNotifierAdminZenRemoveProduct($callingClass, $notifier, $paramsArray, $product_id, $ptc);
     }
 
+    if ($notifier == 'NOTIFY_ADMIN_PRODUCT_COPY_TO_ATTRIBUTES'){
+      global $contents;
+      $this->updateNotifyAdminProductCopyToAttributes($callingClass, $notifier, $paramsArray, $contents);
+    }
+    
     if ($notifier == 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE'){
       $attribute_id = $paramsArray['attribute_id'];
       $this->updateNotifyAttributeControllerDeleteAttribute($callingClass, $notifier, $paramsArray, $attribute_id);
@@ -671,6 +708,10 @@ class products_with_attributes_stock_admin extends base {
     if ($notifier == 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES') {
     //, array('pID' => $_POST['products_filter'], 'options_id' => $_POST['products_options_id_all']));
       $this->updateNotifyAttributeControllerDeleteOptionNameValues($callingClass, $notifier, $paramsArray);
+    }
+
+    if ($notifier == 'NOTIFY_MODULES_COPY_TO_CONFIRM_ATTRIBUTES') {
+      $this->updateNotifyModulesCopyToConfirmAttributes($callingClass, $notifier, $paramsArray);
     }
     
     if ($notifier == 'OPTIONS_NAME_MANAGER_DELETE_OPTION') {

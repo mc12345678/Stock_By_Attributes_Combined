@@ -973,6 +973,171 @@ function nullDataEntry($fieldtoNULL){
     }
   }//end of function
   
+  function zen_copy_sba_products_attributes($products_id_from, $products_id_to) {
+
+    global $db;
+    global $messageStack;
+    global $copy_attributes_delete_first, $copy_attributes_duplicates_skipped, $copy_attributes_duplicates_overwrite, $copy_attributes_include_downloads, $copy_attributes_include_filename;
+    global $zco_notifier;
+    global $products_with_attributes_stock_admin_observe;
+  
+    if (file_exists(DIR_WS_LANGUAGES . $_SESSION['language'] . '/modules/product_sba.php')) {
+      include_once(DIR_WS_LANGUAGES . $_SESSION['language'] . '/modules/product_sba.php'); 
+    }
+
+
+// Check for errors in copy request
+    if ( (!zen_has_product_attributes($products_id_from, 'false') or !zen_products_id_valid($products_id_to)) or $products_id_to == $products_id_from or !$this->zen_product_is_sba($products_id_from) ) {
+      if ($products_id_to == $products_id_from) {
+        // same products_id
+        $messageStack->add_session('<b>WARNING: Cannot copy from Product ID #' . $products_id_from . ' to Product ID # ' . $products_id_to . ' ... No copy was made' . '</b>', 'caution');
+      } else {
+        if (!zen_has_product_attributes($products_id_from, 'false')) {
+          // no attributes found to copy
+          $messageStack->add_session('<b>WARNING: No Attributes to copy from Product ID #' . $products_id_from . ' for: ' . zen_get_products_name($products_id_from) . ' ... No copy was made' . '</b>', 'caution');
+        } else {
+          if (!$this->zen_product_is_sba($products_id_from)) {
+            $messageStack->add_session('<b>WARNING: No Stock By Attributes to copy from Product ID #' . $products_id_from . ' for: ' . zen_get_products_name($products_id_from) . ' ... No SBA attributes copy was made' . '</b>', 'caution');
+          } else {
+            // invalid products_id
+            $messageStack->add_session('<b>WARNING: There is no Product ID #' . $products_id_to . ' ... No copy was made' . '</b>', 'caution');
+          }
+        }
+      }
+    } else {
+// FIX HERE - remove once working
+
+// check if product already has attributes
+      $check_attributes = zen_has_product_attributes($products_id_to, 'false');
+
+      if ($copy_attributes_delete_first=='1' and $check_attributes == true) {
+// die('DELETE FIRST - Copying from ' . $products_id_from . ' to ' . $products_id_to . ' Do I delete first? ' . $copy_attributes_delete_first);
+        // delete all attributes first from products_id_to
+
+//        $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL', array('pID' => $_POST['products_filter']));
+        $products_with_attributes_stock_admin_observe->updateNotifyAttributeControllerDeleteAll($this, 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL', array('pID' => $products_id_to));
+
+//        $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = '" . (int)$products_id_to . "'");
+
+      }
+
+// get attributes to copy from
+      $products_copy_from = $db->Execute("select * from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id='" . (int)$products_id_from . "'" . " order by stock_id");
+
+      while ( !$products_copy_from->EOF ) {
+// This must match the structure of your products_attributes table
+
+        $update_attribute = false;
+        $add_attribute = true;
+
+        $attributes_copy_from_ids = array_map('trim', explode(',', $products_copy_from->fields['stock_attributes']));
+        $attributes_copy_from_ids_data = array();
+        
+        // Generate array of attributes from the SBA data record
+        foreach ($attributes_copy_from_ids as $key => $value) {
+          $attributes_copy_from_ids_data_query = $db->Execute("SELECT options_id, options_values_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " WHERE products_attributes_id = " . (int)$value, false, false, 0, true);
+
+          if (array_key_exists($attributes_copy_from_ids_data_query->fields['options_id'], $attributes_copy_from_ids_data)) {
+            // Only handles a depth of one for the array, it does not handle an array of arrays of arrays or a third level of arrays.  Not currently
+            //  as of ZC 1.5.5 considered a core feature of ZC, although some plugins might work that deep or deeper.
+            if (is_array($attributes_copy_from_ids_data[$attributes_copy_from_ids_data_query->fields['options_id']]) 
+                && sizeof($attributes_copy_from_ids_data[$attributes_copy_from_ids_data_query->fields['options_id']])) {
+                  // Array of arrays already exists and has at least one element associated with it.
+              $attributes_copy_from_ids_data[$attributes_copy_from_ids_data_query->fields['options_id']][] = $attributes_copy_from_ids_data_query->fields['options_values_id'];
+            } else {
+              // Value was previously found/identified; however, now this should be identified as an array of arrays, so transition to that setup.
+              $attributes_copy_from_ids_data[$attributes_copy_from_ids_data_query->fields['options_id']] = array($attributes_copy_from_ids_data[$attributes_copy_from_ids_data_query->fields['options_id']], $attributes_copy_from_ids_data_query->fields['options_values_id']);
+            }  
+          } else {
+            $attributes_copy_from_ids_data[$attributes_copy_from_ids_data_query->fields['options_id']] = $attributes_copy_from_ids_data_query->fields['options_values_id'];
+          }
+        }
+        unset($attributes_copy_from_ids_data_query);
+        unset($attributes_copy_from_ids);
+        unset($key);
+        unset($value);
+
+        $check_duplicate = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute_id($products_id_to, $attributes_copy_from_ids_data, 'products');
+        
+        
+        
+        /* 
+            CREATE TABLE IF NOT EXISTS `products_with_attributes_stock` (
+        `stock_id` int(11) NOT NULL AUTO_INCREMENT,
+        `products_id` int(11) NOT NULL,
+        `product_attribute_combo` varchar(255) DEFAULT NULL,
+        `stock_attributes` varchar(255) NOT NULL,
+        `quantity` float NOT NULL DEFAULT '0',
+        `sort` int(11) NOT NULL DEFAULT '0',
+        `customid` varchar(255) DEFAULT NULL,
+        `title` varchar(50) DEFAULT NULL,
+        PRIMARY KEY (`stock_id`),
+        UNIQUE KEY `idx_products_id_stock_attributes` (`products_id`,`stock_attributes`),
+        UNIQUE KEY `idx_products_id_attributes_id` (`product_attribute_combo`),
+        UNIQUE KEY `idx_customid` (`customid`)
+
+      */
+        if ($check_attributes == true) {
+          if (!isset($check_duplicate) || $check_duplicate === false) {
+            $update_attribute = false;
+            $add_attribute = true;
+          } else {
+            if (!isset($check_duplicate) || $check_duplicate === false) {
+              $update_attribute = false;
+              $add_attribute = true;
+            } else {
+              $update_attribute = true;
+              $add_attribute = false;
+            }
+          }
+        } else {
+          $update_attribute = false;
+          $add_attribute = true;
+        }
+
+// die('UPDATE/IGNORE - Checking Copying from ' . $products_id_from . ' to ' . $products_id_to . ' Do I delete first? ' . ($copy_attributes_delete_first == '1' ? TEXT_YES : TEXT_NO) . ' Do I add? ' . ($add_attribute == true ? TEXT_YES : TEXT_NO) . ' Do I Update? ' . ($update_attribute == true ? TEXT_YES : TEXT_NO) . ' Do I skip it? ' . ($copy_attributes_duplicates_skipped=='1' ? TEXT_YES : TEXT_NO) . ' Found attributes in From: ' . $check_duplicate);
+
+       if ($copy_attributes_duplicates_skipped == '1' and $check_duplicate !== false and $check_duplicate !== NULL) {
+          // skip it
+            $messageStack->add_session(TEXT_ATTRIBUTE_COPY_SKIPPING . $products_copy_from->fields['products_attributes_id'] . ' for Products ID#' . $products_id_to, 'caution');
+        } else {
+          $products_attributes_id_to = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute($products_id_to, $attributes_copy_from_ids_data, 'products', true);
+          $products_attributes_combo = $_SESSION['pwas_class2']->zen_get_sba_attribute_ids($products_id_to, $attributes_copy_from_ids_data, 'products', true);
+
+          if ($add_attribute == true) {
+            // New attribute - insert it
+            $db->Execute("insert into " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " (products_id, product_attribute_combo, stock_attributes, quantity, sort, title)
+                          values ('" . (int)$products_id_to . "',
+            '" . (int)$products_id_to . '-' . implode('-', $products_attributes_combo) . "',
+            '" . $products_attributes_id_to . "',
+            '" . (float)$products_copy_from->fields['quantity'] . "',
+            '" . $products_copy_from->fields['sort'] . "',
+            '" . $products_copy_from->fields['title'] . "')");
+
+            $messageStack->add_session(TEXT_SBA_ATTRIBUTE_COPY_INSERTING . $products_copy_from->fields['stock_id'] . ' for Products ID#' . $products_id_to, 'caution');
+          }
+          if ($update_attribute == true) {
+            // Update attribute - Just attribute settings not ids
+            $db->Execute("update " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set
+            product_attribute_combo='" . (int)$products_id_to . '-' . implode('-', $products_attributes_combo) . "',
+            quantity='" . (float)$products_copy_from->fields['quantity'] . "',
+            sort='" . $products_copy_from->fields['sort'] . "',
+            title='" . $products_copy_from->fields['title'] . "'"
+             . " where products_id=" . (int)$products_id_to . " and stock_attributes= '" . $products_attributes_id_to . "'");
+//             . " where products_id='" . $products_id_to . "'" . " and options_id= '" . $products_copy_from->fields['options_id'] . "' and options_values_id='" . $products_copy_from->fields['options_values_id'] . "' and attributes_image='" . $products_copy_from->fields['attributes_image'] . "' and attributes_price_base_included='" . $products_copy_from->fields['attributes_price_base_included'] .  "'");
+
+            $messageStack->add_session(TEXT_SBA_ATTRIBUTE_COPY_UPDATING . $products_copy_from->fields['stock_id'] . ' for Products ID#' . $products_id_to, 'caution');
+          }
+        }
+
+        $products_copy_from->MoveNext();
+      } // end of products with sba attributes while loop
+
+       // reset products_price_sorter for searches etc.
+       zen_update_products_price_sorter($products_id_to);
+    } // end of no attributes or other errors
+  } // eof: zen_copy_sba_products_attributes function
+  
 ////
 // Return a product ID with attributes as provided on the store front
     function zen_sba_get_uprid($prid, $params) {
