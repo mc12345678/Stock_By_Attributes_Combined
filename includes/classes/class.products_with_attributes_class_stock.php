@@ -293,7 +293,11 @@ function cartProductCount($products_id){
       
 //      $_SESSION['attributes_list_'. (int)$products_id] = $stock_attributes_list;
           
-      $stock_attributes = implode(',',$stock_attributes_list);
+      if (isset($stock_attributes_list) && is_array($stock_attributes_list)) {
+        $stock_attributes = implode(',',$stock_attributes_list);
+      } else {
+        $stock_attributes = $stock_attributes_list;
+      }
     }
     
     return $stock_attributes;
@@ -1353,8 +1357,8 @@ Of the attributes provided, determine the number of those attributes that are
       $stock_id = $db->Execute($query);
 
       if (!$stock_id->EOF && $stock_id->RecordCount() > 1 /*zen_not_null($stock_id) && sizeof($stock_id) > 1*/) {
-        // @TODO: Log an error instead of displaying it.  This way the store operator can identify additional information.
-        echo 'This is an error situation, as only one record should be returned.  More than one stock id was returned which should not be possible.';
+        // Log an error instead of displaying it.  This way the store operator can identify additional information.
+        trigger_error('This is an error situation, as only one record should be returned.  More than one stock id was returned which should not be possible.', E_USER_WARNING);
       } else {
         $attribute_info['stock_id'] = $stock_id->fields['stock_id'];
         return $attribute_info;
