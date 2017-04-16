@@ -135,44 +135,10 @@
           <td class="cartProductDisplay"><?php echo $order->products[$i]['name']; ?>
           <?php  echo $stock_check[$i]; ?>
 
-<?php
-	// START "Stock by Attributes" mc12345678 This NEEDS TO BE moved into some
-  //  Basic function rather than the mess of code below...
-	$customid = null;
-	$tmpCheck = null;
-	$attributes = null;
-	if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
-		if ( (isset($order->products[$i]['attributes'])) && (sizeof($order->products[$i]['attributes']) > 0) ) {
-			//create array for use in zen_get_customid
-			for ($j = 0, $n2 = sizeof($order->products[$i]['attributes']); $j < $n2; $j++) {
-				$attributes[] = $order->products[$i]['attributes'][$j]['value_id'];//value_id option_id
-			}
-			$customid = '<br />(';
-			//get custom ID
-			for ($j = 0, $n2 = sizeof($order->products[$i]['attributes']); $j < $n2; $j++) {
- 				if( $tmpCheck != $order->products[$i]['id'] ){
-
- 					$tmpCheck = $order->products[$i]['id'];
-
-                    $customid .= (isset($_SESSION['pwas_class2'])
-                        && method_exists($_SESSION['pwas_class2'], 'zen_get_customid')
-                        && is_callable(array($_SESSION['pwas_class2'], 'zen_get_customid'))
-                            ? $_SESSION['pwas_class2']->zen_get_customid($order->products[$i]['id'], $attributes)
-                            : function_exists('zen_get_customid') && zen_get_customid($order->products[$i]['id'], $attributes)) . ', ';
-				}
-			}
-			$customid = rtrim($customid,', ');
-			$customid .= ')';
-		}
-		elseif(isset($order->products[$i]['model'])){
-			$customid = '<br />(' . $order->products[$i]['model'] . ')';
-		}
-	}
-	echo $customid;
-  	// END "Stock by Attributes"
-?>
-
 <?php // if there are attributes, loop thru them and display one per line
+    // START "Stock by Attributes" mc12345678 
+    echo $customid[$i]; 
+    // END "Stock by Attributes"
     if (isset($order->products[$i]['attributes']) && sizeof($order->products[$i]['attributes']) > 0 ) {
     echo '<ul class="cartAttribsList">';
       for ($j=0, $n2=sizeof($order->products[$i]['attributes']); $j<$n2; $j++) {

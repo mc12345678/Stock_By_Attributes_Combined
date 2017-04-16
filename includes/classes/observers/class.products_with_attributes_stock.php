@@ -64,6 +64,7 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT';
     $attachNotifier[] = 'NOTIFY_HEADER_END_ACCOUNT_HISTORY_INFO';
+    $attachNotifier[] = 'NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION';
     $attachNotifier[] = 'NOTIFY_HEADER_END_SHOPPING_CART';
     $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_SHIPPING';
 
@@ -758,6 +759,24 @@ class products_with_attributes_stock extends base {
       $customid[$i] .= (zen_not_null($order->products[$i]['model'])
             ? '<br />(' . $order->products[$i]['model'] . ')'
             : '');
+    }
+  }
+
+  /*
+   * $zco_notifier->notify('NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION');
+   * NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION
+   */
+  function updateNotifyHeaderEndCheckoutConfirmation(&$callingClass, $notifier, $paramsArray) {
+    global $order, $customid;
+    
+    if (!isset($customid) || !is_array($customid)) {
+      $customid = array();
+    }
+    
+    foreach ($order->products as $i => $productsI) {
+      if(isset($productsI['customid'])) {
+        $customid[$i] = '<br />(' . $productsI['customid'] . ')';
+      }
     }
   }
 
