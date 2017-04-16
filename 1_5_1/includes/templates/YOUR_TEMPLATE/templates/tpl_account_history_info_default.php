@@ -38,43 +38,8 @@
   ?>
     <tr>
         <td class="accountQuantityDisplay"><?php echo  $order->products[$i]['qty'] . QUANTITY_SUFFIX; ?></td>
+        <td class="accountProductDisplay"><?php echo  $order->products[$i]['name'] . ' ' . $customid[$i]; // MOD for "Stock by Attributes"
 
-        <?php 
-		// START "Stock by Attributes"
-        $customid = null;
-        $tmpCheck = null;
-        $attributes = null;
-        if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
-	        if ( (isset($order->products[$i]['attributes'])) && (sizeof($order->products[$i]['attributes']) > 0) ) {
-				//create array for use in zen_get_customid
-				for ($j = 0, $n2 = sizeof($order->products[$i]['attributes']); $j < $n2; $j++) {
-					$attributes[] = $order->products[$i]['attributes'][$j]['value_id'];//value_id option_id
-				}
-        $customid = '<br />(';
-				//get custom ID
-				for ($j = 0, $n2 = sizeof($order->products[$i]['attributes']); $j < $n2; $j++) {
-					if( $tmpCheck != $order->products[$i]['id'] ){
-						$tmpCheck = $order->products[$i]['id'];
-
-						$customid .= (isset($_SESSION['pwas_class2'])
-                          && method_exists($_SESSION['pwas_class2'], 'zen_get_customid')
-                          && is_callable(array($_SESSION['pwas_class2'], 'zen_get_customid'))
-                            ? $_SESSION['pwas_class2']->zen_get_customid($order->products[$i]['id'], $attributes)
-                            : function_exists('zen_get_customid') && zen_get_customid($order->products[$i]['id'], $attributes)) . ', ';
-					}
-		       	}
-		       	$customid = rtrim($customid,', ');
-		       	$customid .= ')';
-		    }
-		    elseif(isset($order->products[$i]['model'])){
-				$customid = '<br />(' . $order->products[$i]['model'] . ')';
-			}
-		}
-        
-		?>
-	    <td class="accountProductDisplay"><?php echo  $order->products[$i]['name'] . ' ' . $customid;
-		// END "Stock by Attributes"
-		
     if ( (isset($order->products[$i]['attributes'])) && (sizeof($order->products[$i]['attributes']) > 0) ) {
       echo '<ul id="orderAttribsList">';
       for ($j=0, $n2=sizeof($order->products[$i]['attributes']); $j<$n2; $j++) {

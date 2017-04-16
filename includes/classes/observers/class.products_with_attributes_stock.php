@@ -63,6 +63,7 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT';
+    $attachNotifier[] = 'NOTIFY_HEADER_END_ACCOUNT_HISTORY_INFO';
     $attachNotifier[] = 'NOTIFY_HEADER_END_SHOPPING_CART';
     $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_SHIPPING';
 
@@ -738,6 +739,27 @@ class products_with_attributes_stock extends base {
 
     }
   } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
+
+  /*
+   * $zco_notifier->notify('NOTIFY_HEADER_END_ACCOUNT_HISTORY_INFO');
+   */
+  function updateNotifyHeaderEndAccountHistoryInfo(&$callingClass, $notifier, $paramsArray) {
+    global $order, $customid;
+    if (!isset($customid) || !is_array($customid)) {
+      $customid = array();
+    }
+    
+    for ($i = 0, $n = sizeof($order->products); $i < $n; $i++) {
+      if (STOCK_SBA_DISPLAY_CUSTOMID == 'true') {
+        $customid[$i] = (zen_not_null($order->products[$i]['customid']) 
+                ? '<br />(' . $order->products[$i]['customid'] . ') ' 
+                : $order->products[$i]['customid']);
+      }
+      $customid[$i] .= (zen_not_null($order->products[$i]['model'])
+            ? '<br />(' . $order->products[$i]['model'] . ')'
+            : '');
+    }
+  }
 
   // NOTIFY_HEADER_END_SHOPPING_CART
     /**
