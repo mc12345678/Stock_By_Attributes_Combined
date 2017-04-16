@@ -167,29 +167,31 @@
         for ($j=0, $k=sizeof($order->products[$i]['attributes']); $j<$k; $j++) {
           $zco_notifier->notify('NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP', array('i'=>$i, 'j'=>$j, 'prod_img'=>$prod_img), $prod_img);
 
-			//"Stock by Attributes" add custom ID to display
-			
-		/*	$customid = null;
-			//test if this is to be displayed
-			if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
-        $attributes = array(); // mc12345678 moved into if statement otherwise doesn't apply in code.
-				//create array for use in zen_get_customid
-				$attributes[] = $order->products[$i]['attributes'][$j]['value_id'];
-				//get custom ID
-				$customid = $stock->zen_get_customid($order->products[$i]['id'],$attributes);
-				//only display custom ID if exists
-				if( !empty($customid) ){
-					//add name prefix (this is set in the admin language file)
-					$customid = PWA_CUSTOMID_NAME . $customid;
-				}
-			}*/
-		  //"Stock by Attributes" add custom ID to display
+          //"Stock by Attributes" add custom ID to display
+          /*	$customid = null;
+          //test if this is to be displayed
+          if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
+            $attributes = array(); // mc12345678 moved into if statement otherwise doesn't apply in code.
+            //create array for use in zen_get_customid
+            $attributes[] = $order->products[$i]['attributes'][$j]['value_id'];
+            //get custom ID
+            $customid = $stock->zen_get_customid($order->products[$i]['id'],$attributes);
+            //only display custom ID if exists
+            if( !empty($customid) ){
+              //add name prefix (this is set in the admin language file)
+              $customid = PWA_CUSTOMID_NAME . $customid;
+            }
+          }*/
+          // END "Stock by Attributes"
           echo '<br><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
           //"Stock by Attributes" add custom ID to display
-          echo ( zen_not_null($customid) ? ' (' . $customid . ') ' : '');
+          echo ($order->products[$i]['attributes'][$j]['customid']['type'] == 'multi' ? ' (' . $order->products[$i]['attributes'][$j]['customid']['value'] . ') ' : '');
           // END "Stock by Attributes"
           echo '</i></small></nobr>';
         }
+        //"Stock by Attributes" add custom ID to display
+        echo ( zen_not_null($order->products[$i]['customid']) ? '<br />(' . $order->products[$i]['customid'] . ') ' : '');
+        // END "Stock by Attributes"
       }
 
       echo '        </td>' . "\n" .
