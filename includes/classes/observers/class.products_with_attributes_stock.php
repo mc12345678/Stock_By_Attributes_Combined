@@ -50,6 +50,8 @@ class products_with_attributes_stock extends base {
   function __construct() {
     
     $attachNotifier = array();
+    $attachNotifier[] = 'NOTIFY_ORDER_AFTER_QUERY';
+    $attachNotifier[] = 'NOTIFY_ORDER_CART_ADD_PRODUCT_LIST';
     $attachNotifier[] = 'NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN';
@@ -450,6 +452,131 @@ class products_with_attributes_stock extends base {
     }
   }
    
+  /*
+   * Functino that populates order class product data if order has been finalized.
+   */
+  //  $attachNotifier[] = 'NOTIFY_ORDER_AFTER_QUERY';
+  //  $this->notify('NOTIFY_ORDER_AFTER_QUERY', array(), $order_id);
+  function updateNotifyOrderAfterQuery(&$orderClass, $notifier, $paramsArray, &$order_id) {
+    global $db;
+    
+//    $order_id = $paramsArray['orders_id'];
+    
+    //$orders_products_sba = $db->Execute("select orders_products_attributes_stock_id, orders_products_attributes_id, orders_products_id, stock_id, stock_attribute, customid, products_prid from " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK . " where orders_id = " . (int)$order_id );
+    
+    $orders_products = $db->Execute("select orders_products_id, products_id
+                                     from " . TABLE_ORDERS_PRODUCTS . "
+                                     where orders_id = " . (int)$order_id . "
+                                     order by orders_products_id");
+    /*
+    select orders_products_id, products_id
+                                     from orders_products
+                                     where orders_id = 28
+                                     order by orders_products_id;
+    Result 568, 338
+           569, 41
+    */
+    // This gets a list of all of the products that were ordered. The first should match with an index of 0, second, etc.. 
+    $index = 0;
+    //$subindex = 0;
+    
+    while (!$orders_products->EOF) {                                     
+    // Loop through each product in the order
+      $product = $orderClass->products[$index];
+      $customid_txt = '';
+    
+      // If the product has attributes, then need to see what was logged into the orders_products_attributes_stock table.  
+      //    If nothing then is a product that has attributes, but was not tracked by SBA. 
+      //    If something, then retrieve the desired data (customid)
+      if (array_key_exists('attributes', $product) && sizeof($product['attributes']) > 0) {
+        $orders_products_sba_customid = $db->Execute("select 
+                           opas.orders_products_attributes_stock_id, opas.orders_products_attributes_id, 
+                           opas.stock_id, opas.stock_attribute, opas.customid, opas.products_prid, 
+                           opa.products_options_id, opa.products_options_values_id
+                           FROM " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK . " opas LEFT JOIN " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES . " opa 
+                             ON (opas.orders_products_attributes_id = opa.orders_products_attributes_id)
+                           WHERE  
+                             opas.orders_id = " . (int)$order_id . " 
+                             AND opas.orders_products_id = " . (int)$orders_products->fields['orders_products_id'] . " 
+                           ORDER BY opas.orders_products_attributes_stock_id");
+        
+        
+        //$_SESSION['admin_complete_' . $product['id']] = $orders_products_sba_customid;
+        
+        
+        // If the product was tracked by SBA then perform desired work.
+        if ($orders_products_sba_customid->RecordCount() > 0) {
+
+          $customid = array();
+
+          while (!$orders_products_sba_customid->EOF) {
+            // provide the "list" of customid's such that only the unique populated customid's are provided (zen_not_null) and not previously accounted
+            if (zen_not_null($orders_products_sba_customid->fields['customid'])) {
+                if (!(in_array($orders_products_sba_customid->fields['customid'], $customid))) {
+                  $customid[] = $orders_products_sba_customid->fields['customid'];
+                }
+            } 
+            // I don't like this next method to find the attributes, but am having difficulty doing anything else because of the way that attributes are
+            //  "tagged" to the product.  There is no "guaranteed" location other than trying to find the option/value pair and equate it back to the
+            //  order data. :/
+              
+            // Goal of this routine is to provide the individual customid for the specific attribute to be able to capture each individual customid for the
+            //   attribute and to then also be able to capture the "total" customid for the product.
+            foreach ($orderClass->products[$index]['attributes'] as $key => $value) {
+              if ($value['option'] == $orders_products_sba_customid->fields['products_options_id']
+                  && $value['value_id'] == $orders_products_sba_customid->fields['products_options_values_id']) {
+                $orderClass->products[$index]['attributes'][$key]['customid'] = $orders_products_sba_customid->fields['customid'];
+                break;
+              }
+            }
+
+            $orders_products_sba_customid->MoveNext();
+          }
+          unset($orders_products_sba_customid);
+          
+          if (sizeof($customid) > 0) {
+            // Combine the various customids to apply to the ordered product information.
+            // Default method is to combine with a comma between each value when multiple exist.
+            //   If every customid that is and is not present is to be concatenated then above need to add all to the array
+            //    not just those that have data.
+            $customid_txt = implode(", ", $customid);
+          } // EOF if sizeof
+        } // EOF if orders_products_sba_customid->RecordCount() > 0
+      } // EOF array check if attributes are involved.
+
+      $orderClass->products[$index]['customid'] = $customid_txt;
+
+      unset($product);
+
+      $index++;
+      $orders_products->MoveNext();
+    } // EOF while loop on products
+    unset($customid);
+    unset($index);
+//    unset($order_id);
+    unset($orders_products);
+  }
+
+  /*
+   *  // Notifier from ZC 1.5.5
+   *  $this->notify('NOTIFY_ORDER_CART_ADD_PRODUCT_LIST', array('index'=>$index, 'products'=>$products[$i]));
+   *
+   * applies the customid to the order class' product(s) when function cart is called (storeside new order no orders_id).
+   */
+  function updateNotifyOrderCartAddProductList(&$orderClass, $notifier, $paramsArray) {
+    
+    if (!is_array($paramsArray) || !array_key_exists('index', $paramsArray) || !array_key_exists('products', $paramsArray)) {
+      trigger_error('Array values not as expected.', E_USER_WARNING);
+    }
+    
+    $index = $paramsArray['index'];
+    $productsI = $paramsArray['products'];
+    
+    if (array_key_exists('attributes', $productsI) && sizeof($productsI['attributes']) > 0) {
+      $orderClass->products[$index]['customid'] = $_SESSION['pwas_class2']->zen_get_customid($productsI['id'], $productsI['attributes']);
+    }
+  }
+  
   /*
    * Function that is activated when NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT is encountered as a notifier.
    */
