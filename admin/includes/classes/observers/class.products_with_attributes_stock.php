@@ -350,26 +350,53 @@ class products_with_attributes_stock_admin extends base {
                                      order by orders_products_id");
     $index = 0;
     //$subindex = 0;
-    $customid = array();
     
     while (!$orders_products->EOF) {                                     
     // Loop through each product in the order
       $product = $orderClass->products[$index];
+      $customid_txt = '';
     
       // If the product has attributes, then need to see what was logged into the orders_products_attributes_stock table.  
       //    If nothing then is a product that has attributes, but was not tracked by SBA. 
       //    If something, then retrieve the desired data (customid)
       if (array_key_exists('attributes', $product) && sizeof($product['attributes']) > 0) {
-        $orders_products_sba_customid = $db->Execute("select orders_products_attributes_stock_id, orders_products_attributes_id, stock_id, stock_attribute, customid, products_prid from " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK . " where orders_id = " . (int)$order_id . " and orders_products_id = " . (int)$orders_products->fields['orders_products_id'] . " order by orders_products_attributes_stock_id");
+        $orders_products_sba_customid = $db->Execute("select 
+                           opas.orders_products_attributes_stock_id, opas.orders_products_attributes_id, 
+                           opas.stock_id, opas.stock_attribute, opas.customid, opas.products_prid, 
+                           opa.products_options_id, opa.products_options_values_id
+                           FROM " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK . " opas LEFT JOIN " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES . " opa 
+                             ON (opas.orders_products_attributes_id = opa.orders_products_attributes_id)
+                           WHERE  
+                             opas.orders_id = " . (int)$order_id . " 
+                             AND opas.orders_products_id = " . (int)$orders_products->fields['orders_products_id'] . " 
+                           ORDER BY opas.orders_products_attributes_stock_id");
       
         // If the product was tracked by SBA then perform desired work.
         if ($orders_products_sba_customid->RecordCount() > 0) {
 
+          $customid = array();
+
           while (!$orders_products_sba_customid->EOF) {
-            // provide the "list" of customid's such that only the populated customid's are provided (zen_not_null)
+            // provide the "list" of customid's such that only the unique populated customid's are provided (zen_not_null) and not previously accounted
             if (zen_not_null($orders_products_sba_customid->fields['customid'])) {
-              $customid[] = $orders_products_sba_customid->fields['customid'];
+                if (!(in_array($orders_products_sba_customid->fields['customid'], $customid))) {
+                  $customid[] = $orders_products_sba_customid->fields['customid'];
+                }
             } 
+            // I don't like this next method to find the attributes, but am having difficulty doing anything else because of the way that attributes are
+            //  "tagged" to the product.  There is no "guaranteed" location other than trying to find the option/value pair and equate it back to the
+            //  order data. :/
+              
+            // Goal of this routine is to provide the individual customid for the specific attribute to be able to capture each individual customid for the
+            //   attribute and to then also be able to capture the "total" customid for the product.
+            foreach ($orderClass->products[$index]['attributes'] as $key => $value) {
+              if (/*$value['option'] == $orders_products_sba_customid->fields['products_options_id']
+                  &&*/ $value['value_id'] == $orders_products_sba_customid->fields['products_options_values_id']) {
+                $orderClass->products[$index]['attributes'][$key]['customid'] = $orders_products_sba_customid->fields['customid'];
+                break;
+              }
+            }
+
             $orders_products_sba_customid->MoveNext();
           }
           unset($orders_products_sba_customid);
@@ -379,10 +406,13 @@ class products_with_attributes_stock_admin extends base {
             // Default method is to combine with a comma between each value when multiple exist.
             //   If every customid that is and is not present is to be concatenated then above need to add all to the array
             //    not just those that have data.
-            $orderClass->products[$index]['customid'] = implode(", ", $customid);
+            $customid_txt = implode(", ", $customid);
           } // EOF if sizeof
         } // EOF if orders_products_sba_customid->RecordCount() > 0
       } // EOF array check if attributes are involved.
+
+      $orderClass->products[$index]['customid'] = $customid_txt;
+
       unset($product);
 
       $index++;
