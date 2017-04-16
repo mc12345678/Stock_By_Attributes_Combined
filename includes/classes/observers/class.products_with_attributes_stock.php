@@ -374,7 +374,13 @@ class products_with_attributes_stock extends base {
 
         //disable default selected if out of stock
         $products_opt = $products_options;
-        $products_opt->Move(0);
+        if (method_exists($products_opt, 'rewind')) {
+          $products_opt->rewind();
+        } else {
+          $products_opt->Move(0);
+          $products_opt->MoveNext();
+        }
+//        $products_opt->Move(0);
               // $products_opt->MoveNext(); // Start off at the first record, need to address based on ZC version.
         $prevent_checkout = defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false' && array_key_exists('pasqty', $products_opt->fields);
 
