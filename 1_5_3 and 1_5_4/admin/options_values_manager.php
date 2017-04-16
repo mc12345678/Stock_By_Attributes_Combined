@@ -464,7 +464,7 @@ die('I SEE match from products_id:' . $copy_from_products_id . ' options_id_from
             // check for associated downloads
             $downloads_remove_query = "select products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $current_products_id . "' and options_id='" . $options_id_from . "' and options_values_id='" . $options_values_values_id_from . "'";
             $downloads_remove = $db->Execute($downloads_remove_query);
-			//mc12345678 SBA Added Start
+            //mc12345678 SBA Added Start
             $remove_downloads_ids = array();
             while (!$downloads_remove->EOF) {
               $remove_downloads_ids[] = $downloads_remove->fields['products_attributes_id'];
@@ -472,7 +472,7 @@ die('I SEE match from products_id:' . $copy_from_products_id . ' options_id_from
             }
             $zco_notifier->notify('OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME', array('current_products_id' => $current_products_id, 'remove_ids' => $remove_downloads_ids, 'options_id'=>$options_id_from, 'options_values_id'=>$options_values_values_id_from));
 
-			//mc12345678 SBA Added End
+            //mc12345678 SBA Added End
             $sql = "delete from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $current_products_id . "' and options_id='" . $options_id_from . "' and options_values_id='" . $options_values_values_id_from . "'";
             $delete_selected = $db->Execute($sql);
 

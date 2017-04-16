@@ -54,7 +54,7 @@
     if ($orders->RecordCount() <= 0) {
       $order_exists = false;
       if ($action != '') $messageStack->add_session(ERROR_ORDER_DOES_NOT_EXIST . ' ' . $oID, 'error');
-        zen_redirect(zen_href_link(FILENAME_ORDERS, zen_get_all_get_params(array('oID', 'action')), 'NONSSL'));
+      zen_redirect(zen_href_link(FILENAME_ORDERS, zen_get_all_get_params(array('oID', 'action')), 'NONSSL'));
     }
   }
 
@@ -555,14 +555,14 @@ function couponpopupWindow(url) {
           </tr>
 <?php
 
-	// START "Stock by Attributes"
-	//include language file
-	include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
-	//new object from class
+  // START "Stock by Attributes"
+  //include language file
+    include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
+  //new object from class
     //require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
     //$stock = new products_with_attributes_stock;
-	// END "Stock by Attributes"
-	
+  // END "Stock by Attributes"
+  
     for ($i=0, $n=sizeof($order->products); $i<$n; $i++) {
       if (DISPLAY_PRICE_WITH_TAX_ADMIN == 'true')
       {
@@ -576,7 +576,7 @@ function couponpopupWindow(url) {
            '            <td class="dataTableContent" valign="top">' . $order->products[$i]['name'];
 
       if (isset($order->products[$i]['attributes']) && (sizeof($order->products[$i]['attributes']) > 0)) {
-  			$attributes = array(); // mc12345678 Moved to within if statement otherwise doesn't apply elsewhere.
+        $attributes = array(); // mc12345678 Moved to within if statement otherwise doesn't apply elsewhere.
         for ($j = 0, $k = sizeof($order->products[$i]['attributes']); $j < $k; $j++) {
       // kuroi: SbA //this bit of code does not seem to be used on this page, need to see if it is dead code or used elseware!
           $option_name_array = explode(":", $order->products[$i]['attributes'][$j]['option']);

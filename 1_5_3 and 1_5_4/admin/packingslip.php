@@ -168,7 +168,7 @@
           $zco_notifier->notify('NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP', array('i'=>$i, 'j'=>$j, 'prod_img'=>$prod_img), $prod_img);
 
           //"Stock by Attributes" add custom ID to display
-		/*	$customid = null;
+          /*	$customid = null;
           //test if this is to be displayed
           if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
             $attributes = array(); // mc12345678 moved into if statement otherwise doesn't apply in code.
@@ -181,7 +181,7 @@
               //add name prefix (this is set in the admin language file)
               $customid = PWA_CUSTOMID_NAME . $customid;
             }
-			}*/
+          }*/
           // END "Stock by Attributes"
           echo '<br><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
           //"Stock by Attributes" add custom ID to display

@@ -156,13 +156,13 @@ function couponpopupWindow(url) {
       </tr>
 <?php
 
-	// START "Stock by Attributes"
-	//include language file
-	include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
-	//new object from class
+  // START "Stock by Attributes"
+  //include language file
+  include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
+  //new object from class
   //require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
   //$stock = new products_with_attributes_stock;
-	// END "Stock by Attributes"
+  // END "Stock by Attributes"
 
     $decimals = $currencies->get_decimal_places($order->info['currency']);
     for ($i = 0, $n = sizeof($order->products); $i < $n; $i++) {

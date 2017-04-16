@@ -106,7 +106,7 @@
       echo '</span>';
 
   }
-	// END "Stock by Attributes"
+  // END "Stock by Attributes"
 ?>
 <br class="clearBoth" />
 
@@ -115,9 +115,9 @@
 
 // START "Stock by Attributes" 
 if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && !is_null($product['customid']) ){
-	echo '<div class="cartAttribsList">';
-	echo PWA_CUSTOMID_NAME . $product['customid'];
-	echo '</div>';
+  echo '<div class="cartAttribsList">';
+  echo PWA_CUSTOMID_NAME . $product['customid'];
+  echo '</div>';
 }
 // END "Stock by Attributes"
 

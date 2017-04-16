@@ -87,8 +87,8 @@
 <a href="<?php echo $product['linkProductsName']; ?>"><span class="cartImage back"><?php echo $product['productsImage']; ?></span><span class="cartProdTitle"><?php echo $product['productsName'] . '<span class="alert bold">' . $product['flagStockCheck'] . '</span>'; ?></span></a>
 
 <?php 
-	// START "Stock by Attributes"
-	if ( (STOCK_SHOW_LOW_IN_CART == 'true') && $product['flagStockCheck'] ) {
+  // START "Stock by Attributes"
+  if ( (STOCK_SHOW_LOW_IN_CART == 'true') && $product['flagStockCheck'] ) {
 
       echo '<span class="alert bold">';
       if( $product['stockAvailable'] <= 0 ){
@@ -115,9 +115,9 @@
 
 // START "Stock by Attributes" 
 if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && !is_null($product['customid']) ){
-	echo '<div class="cartAttribsList">';
-	echo PWA_CUSTOMID_NAME . $product['customid'];
-	echo '</div>';
+  echo '<div class="cartAttribsList">';
+  echo PWA_CUSTOMID_NAME . $product['customid'];
+  echo '</div>';
 }
 // END "Stock by Attributes"
 

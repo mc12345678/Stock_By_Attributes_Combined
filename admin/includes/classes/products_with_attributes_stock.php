@@ -34,7 +34,7 @@ class products_with_attributes_stock extends base
 
       //get the option/attribute list
       $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
-                              popt.products_options_type 
+                              popt.products_options_type
               from        " . TABLE_PRODUCTS_OPTIONS . " popt
               left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
               where patrib.products_id= :products_id:
