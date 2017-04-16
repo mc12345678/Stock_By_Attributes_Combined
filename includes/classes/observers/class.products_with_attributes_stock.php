@@ -641,7 +641,7 @@ class products_with_attributes_stock extends base {
         //  nor $productsQty = 0; $productsQty = 0 was previously used to identify "duplicates" and is not needed.
         //  $products_options_type is not yet used for anything else, but was perhaps to address something specific in future
         //  coding.  It will remain off of here for now.
-        $productArray[$i]['customid'] = (STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? zen_get_customid($productArray[$i]['id'], $products[$i]['attributes']) : null;
+        $productArray[$i]['customid'] = (STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $products[$i]['attributes']) : null;
         $productArray[$i]['stockAvailable'] = null;
         $productArray[$i]['lowproductstock'] = false;
         
