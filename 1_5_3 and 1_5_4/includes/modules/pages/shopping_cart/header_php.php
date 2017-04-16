@@ -88,7 +88,6 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
   $attrArray = false;
   $productsName = $products[$i]['name'];
   // Push all attributes information in an array
-  $inSBA = false;
   if (isset($products[$i]['attributes']) && is_array($products[$i]['attributes'])) {
     if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
       //LPAD - Return the string argument, left-padded with the specified string
@@ -97,26 +96,6 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
     } else {
       $options_order_by= ' ORDER BY popt.products_options_name';
     }
-
-    // START "Stock by Attributes"
-    // Added to allow individual stock of different attributes
-    $inSBA_query = 'SELECT * 
-                    FROM information_schema.tables
-                    WHERE table_schema = :your_db: 
-                    AND table_name = :table_name:
-                    LIMIT 1;';
-    $inSBA_query = $db->bindVars($inSBA_query, ':your_db:', DB_DATABASE, 'string');
-    $inSBA_query = $db->bindVars($inSBA_query, ':table_name:', TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'string');
-    $inSBA_result = $db->Execute($inSBA_query, false, false, 0, true);
-    if (sizeof($inSBA_result) > 0 and !$inSBA_result->EOF) {
-      $inSBA_query = "select stock_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :productsid:";
-      $inSBA_query = $db->bindVars($inSBA_query, ':productsid:', $products[$i]['id'], 'integer');
-      $inSBA_result = $db->Execute($inSBA_query);
-    }
-
-    $inSBA = (sizeof($inSBA_result) > 0 && !$inSBA_result->EOF);
-    $products_options_type = null;
-    // End of "Stock by Attributes"
     foreach ($products[$i]['attributes'] as $option => $value) {
 
       $attributes = "SELECT popt.products_options_name, poval.products_options_values_name, pa.options_values_price, pa.price_prefix
@@ -153,79 +132,8 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
       $attrArray[$option]['price_prefix'] = $attributes_values->fields['price_prefix'];
     } //end foreach [attributes]
   } // end if attributes exist
-    
-      //Clear variables for each loop
-  $flagStockCheck = null;   
-  $stockAvailable = null;
-  $lowproductstock = false;
-  $customid = null;
-  //unset($attributes); //Unnecessary because reeassigned below.
-  $productsQty = 0;
-
-  if ($inSBA) {
-    $attributes = $products[$i]['attributes']; 
-  }  else {
-    $attributes = null; //Force normal operation if the product is not monitored by SBA.
-  }
-    
-  if ( STOCK_CHECK == 'true' ) {
-    $flagStockCheck = zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes);
-
-    if(false && $inSBA){
-      //check for product used multiple time in cart with different attributes
-      //test for total qty availability for each combination
-      if( cartProductCount($products[$i]['id']) > 1 ){
-        //Build array for use below
-        $duplicatesCOMPARE[$i] = array( 1 => $products[$i]['attributes'], 2 =>$products[$i]['id'], 3 => $products[$i]['quantity'] );
-
-        /*used to find unique entries, keep for reference and tests
-//         foreach($products[$i] as $row){
-//           foreach($row as $val){
-//             //if the value exists and it isn't already in the dupcliates array
-//             //Only add unique values to the array
-//             if(in_array($val, $exists) && !in_array($val, $duplicates)){
-//               $duplicates[] = $val;
-//               $duplicatesTMP[] = array( 1 => $val, 2 =>$products[$i]['id'], 3 => $products[$i]['quantity'] );
-//             }
-//             else{
-//               //cummulatively build the array to test against with each product attribut.
-//               $exists[] = $val;
-//               $existsTMP[] = array( 1 => $val, 2 =>$products[$i]['id'], 3 => $products[$i]['quantity'] );
-//             }
-//           }
-//         }
-        
-        //The following is an attempt to account for duplicate entries of attributes on different products
-        //These attributes are expected to be limited in qty
-        //Skips products that have specific attributes combination qty
-        //This should only affect single attribute entries per product*/
-        foreach($duplicatesCOMPARE as $dupCOMPARE){
-          foreach($dupCOMPARE[1] as $dupC){
-            foreach($products[$i]['attributes'] as $pAttr){
-//               echo 'dupC: ' . $dupC . ' ' . $dupCOMPARE[3] . '<br />';
-//               echo 'pAttr: ' . $pAttr . ' ' . $products[$i]['quantity'] . '<br />';
-//               echo 'Prod ID: ' . $products[$i]['id'] . ' ' . $dupCOMPARE[2] . '<br /><br />';
-
-              if( ($pAttr === $dupC) && ($products[$i]['id'] != $dupCOMPARE[2]) ){
-//                 echo 'Product: ' . $products[$i]['id'] . '<br />';
-//                 echo 'Requested: ' . $products[$i]['quantity'] . '<br />';
-//                 echo zen_get_products_stock($products[$i]['id'], $attributes, 'true') . ' TEST<br />';
-                if( zen_get_products_stock($products[$i]['id'], $attributes, 'true') !== 'true' ){
-                  $productsQty = ($productsQty + $dupCOMPARE[3] + $products[$i]['quantity']);
-//                   echo 'Qty Requested: ' . $productsQty . '<br />';
-//                   echo 'Available qty: ' . zen_get_products_stock($products[$i]['id'], $attributes) . '<br />';
-//                   echo zen_get_products_stock($products[$i]['id'], $attributes, 'true');      
-                  $flagStockCheck = zen_check_stock($products[$i]['id'], $productsQty, $attributes);
-//                   echo 'Flag: ' . $flagStockCheck . '<br /><br /><br />';
-                  break 3;//this will break three time, to move out of the three loops
-                } // END if zen_get_products_stock != true
-              } // END if compare
-            } // END foreach $products[$i]['attributes']
-          } // END foreach dupCOMPARE[1]
-        } // End foreach duplicatesCOMPARE
-      } //End if CartProductCount > 1
-    } /* End of if $inSBA inside STOCK_CHECK == true */ else {
-    // mc12345678 this section is as if SBA is not installed/involved.  Normal response after the expectation to check stock is included. After this section should go straight to the next default ZC action.
+  if (STOCK_CHECK == 'true') {
+    $flagStockCheck = zen_check_stock($products[$i]['id'], $products[$i]['quantity']);
     // bof: extra check on stock for mixed YES
       if ($flagStockCheck != true) {
     //echo zen_get_products_stock($products[$i]['id']) - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) . '<br>';
@@ -235,24 +143,11 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
           $flagStockCheck = '';
         } // End if/else mixed stock
       } // End flagStockCheck != true
-    } //End of ZC Basic Function inside StockCheck == 'true'
-
-      //Below seems appropriate for both ZC standard product as well as for SBA variants, therefore is outside the above "loop".
 // eof: extra check on stock for mixed YES
     if ($flagStockCheck == true) {
       $flagAnyOutOfStock = true;
     }
   } // End of STOCK_CHECK == 'true'
-
-  //Set Custom ID variable. //Indepdendent of Stock_check.
-  if(STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
-    $customid = (isset($_SESSION['pwas_class2'])
-    && method_exists($_SESSION['pwas_class2'], 'zen_get_customid')
-    && is_callable(array($_SESSION['pwas_class2'], 'zen_get_customid'))
-        ? $_SESSION['pwas_class2']->zen_get_customid($products[$i]['id'], $attributes)
-        : function_exists('zen_get_customid') && zen_get_customid($products[$i]['id'], $attributes));
-  }
-
   $linkProductsImage = zen_href_link(zen_get_info_page($products[$i]['id']), 'products_id=' . $products[$i]['id']);
   $linkProductsName = zen_href_link(zen_get_info_page($products[$i]['id']), 'products_id=' . $products[$i]['id']);
   $productsImage = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $products[$i]['image'], $products[$i]['name'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
@@ -273,15 +168,11 @@ for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 //  $productsPriceTotal = $currencies->display_price($products[$i]['final_price'], zen_get_tax_rate($products[$i]['tax_class_id']), $products[$i]['quantity']) . ($products[$i]['onetime_charges'] != 0 ? '<br />' . $currencies->display_price($products[$i]['onetime_charges'], zen_get_tax_rate($products[$i]['tax_class_id']), 1) : '');
 //  $productsPriceTotal = $currencies->display_price($products[$i]['final_price'], zen_get_tax_rate($products[$i]['tax_class_id']), $products[$i]['quantity']) . ($products[$i]['onetime_charges'] != 0 ? '<br />' . $currencies->display_price($products[$i]['onetime_charges'], zen_get_tax_rate($products[$i]['tax_class_id']), 1) : '');
 //  echo  $currencies->rateAdjusted($tmp);
-  //This array is used in the tpl_shopping_cart_default.php
   $productArray[$i] = array('attributeHiddenField'=>$attributeHiddenField,
                             'flagStockCheck'=>$flagStockCheck,
                             'flagShowFixedQuantity'=>$showFixedQuantity,
                             'linkProductsImage'=>$linkProductsImage,
                             'linkProductsName'=>$linkProductsName,
-                            'stockAvailable'=>$stockAvailable,
-                            'lowproductstock'=>$lowproductstock,
-                            'customid'=>$customid,
                             'productsImage'=>$productsImage,
                             'productsName'=>$productsName,
                             'showFixedQuantity'=>$showFixedQuantity,
