@@ -338,7 +338,7 @@ class products_with_attributes_stock_admin extends base {
 
   // ORDER_QUERY_ADMIN_COMPLETE
   function updateOrderQueryAdminComplete(&$orderClass, $notifier, $paramsArray) {
-    global $db, $products_with_attributes_stock_class;
+    global $db;
     
     $order_id = $paramsArray['orders_id'];
     

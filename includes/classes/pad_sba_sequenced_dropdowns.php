@@ -892,9 +892,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
         $out.='document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
         // Execute the code for the next attribute's selection.
         $out.='i' . $attributes[$o]['oid'] . '(document.cart_quantity);' . "\n";
-      } /*else {
-        break;
-      }*/
+      }
     }
     unset($s);
     
