@@ -78,7 +78,9 @@ class products_with_attributes_stock extends base
               array('id' => $attributes_array_ans->fields['products_attributes_id'],
                   'text' => $attributes_array_ans->fields['products_options_values_name']
                         . ' (' . $attributes_array_ans->fields['price_prefix']
-                      . '$'.zen_round($attributes_array_ans->fields['options_values_price'],2) . ')' );
+                      . '$'.zen_round($attributes_array_ans->fields['options_values_price'],2) . ')',
+                  'display_only' => $attributes_array_ans->fields['attributes_display_only'],
+                  );
           
             $attributes_array_ans->MoveNext();
           }

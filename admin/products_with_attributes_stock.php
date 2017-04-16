@@ -636,7 +636,11 @@ require(DIR_WS_INCLUDES . 'header.php');
               if (is_array($options)) {
                 if (sizeof($options) > 0) {
                   foreach ($options as $k => $a) {
-                    $arrValues[] = $a['id'];
+                    if ($a['display_only']) {
+                      unset($options[$k]);
+                    } else {
+                      $arrValues[] = $a['id'];
+                    }
                   }
                 }
               }
