@@ -90,23 +90,23 @@
 	// START "Stock by Attributes"
 	if ( (STOCK_SHOW_LOW_IN_CART == 'true') && $product['flagStockCheck'] ) {
 
-			echo '<span class="alert bold">';
-			if( $product['stockAvailable'] == 0 ){
-				echo '<br class="clearBoth" />' . PWA_OUT_OF_STOCK . '&nbsp;';
-			}
-			elseif($product['lowproductstock'] == true){
-				echo '<br class="clearBoth" />' . PWA_LOW_STOCK . '&nbsp;';
-				echo '<br class="clearBoth" />' . PWA_STOCK_AVAILABLE . '&nbsp;';
-				echo ((isset($product['stockAvailable'])) ? $product['stockAvailable']: 0);//shows stock
-			}
-			else{
-				echo '<br class="clearBoth" />' . PWA_STOCK_AVAILABLE . '&nbsp;';
-				echo ((isset($product['stockAvailable'])) ? $product['stockAvailable']: 0);//shows stock
-			}
-			echo '</span>';
+      echo '<span class="alert bold">';
+      if( $product['stockAvailable'] <= 0 ){
+        echo '<br class="clearBoth" />' . PWA_OUT_OF_STOCK . '&nbsp;';
+      }
+      elseif($product['lowproductstock'] == true){
+        echo '<br class="clearBoth" />' . PWA_LOW_STOCK . '&nbsp;';
+        echo '<br class="clearBoth" />' . PWA_STOCK_AVAILABLE . '&nbsp;';
+        echo ((isset($product['stockAvailable'])) ? $product['stockAvailable']: 0);//shows stock
+      }
+      else{
+        echo '<br class="clearBoth" />' . PWA_STOCK_AVAILABLE . '&nbsp;';
+        echo ((isset($product['stockAvailable'])) ? $product['stockAvailable']: 0);//shows stock
+      }
+      echo '</span>';
 
-	}
-	// END "Stock by Attributes"
+  }
+  // END "Stock by Attributes"
 ?>
 <br class="clearBoth" />
 

@@ -95,7 +95,7 @@
 	if ( (STOCK_SHOW_LOW_IN_CART == 'true') && $product['flagStockCheck'] ) {
 
 			echo '<span class="alert bold">';
-			if( $product['stockAvailable'] == 0 ){
+      if( $product['stockAvailable'] <= 0 ){
 				echo '<br class="clearBoth" />' . PWA_OUT_OF_STOCK . '&nbsp;';
 			}
 			elseif($product['lowproductstock'] == true){
