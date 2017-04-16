@@ -144,7 +144,7 @@ switch ($action) {
       $s_mack_noconfirm .= "customid=" . $customid . "&amp;"; //s_mack:noconfirm
       $s_mack_noconfirm .= "skuTitle=" . $skuTitle . "&amp;"; //s_mack:noconfirm
 
-      sort($attributes);
+      //sort($attributes); // Sort will rearrange the values that were passed to this function.
       $stock_attributes = implode(',', $attributes);
 
       $hidden_form .= zen_draw_hidden_field('attributes', $stock_attributes) . "\n";
