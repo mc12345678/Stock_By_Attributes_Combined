@@ -155,7 +155,8 @@ function cartProductCount($products_id){
     $customid_query = null;
     $products_id = zen_get_prid($products_id);
     $customid = null;
-  
+    $stock_attr_array = array();
+    
     // check if there are attributes for this product
    /*$stock_has_attributes_query = 'select products_attributes_id 
                         from '.TABLE_PRODUCTS_ATTRIBUTES.' 
@@ -188,7 +189,7 @@ function cartProductCount($products_id){
                             where products_id = " . (int)$products_id . ";");*/
     
         //Why not left join this below query into the above or why even have a separate/second query? Especially seeing that $attributes_stock is never used in the below results...  
-        if ($this->zen_product_is_sba($product_id)/*$attribute_stock->RecordCount() > 0*/) {
+        if ($this->zen_product_is_sba($products_id)/*$attribute_stock->RecordCount() > 0*/) {
           // search for details for the particular attributes combination
           $first_search = 'where options_values_id in ("'.implode('","',$attributes).'")';
           
@@ -201,11 +202,11 @@ function cartProductCount($products_id){
           $attributes_new = $db->Execute($query);
           
           while(!$attributes_new->EOF){
-            $stock_attributes[] = $attributes_new->fields['products_attributes_id'];
+            $stock_attr_array[] = $attributes_new->fields['products_attributes_id'];
             $attributes_new->MoveNext();
           }
 
-          $stock_attributes = implode(',',$stock_attributes);
+          $stock_attributes = implode(',',$stock_attr_array);
         }
         
         //Get product model
@@ -214,24 +215,39 @@ function cartProductCount($products_id){
                         where products_id = '. (int)$products_id . ';';*/
 
         //Get custom id as products_model
-        $customid_query = 'select customid as products_model
-                    from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
-                    where products_id = :products_id: 
-                    and stock_attributes in ( ":stock_attributes:");'; 
-        $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
-        $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes, 'passthru');
-        $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
-      // a difference in the code where there would be an error with it below...
+        if (sizeof($stock_attr_array) > 0) {
+          $customid_query = 'select customid as products_model
+                      from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
+                      where products_id = :products_id: 
+                      and stock_attributes in (:stock_attributes:);'; 
+          $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
+          $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes, 'string');
+          $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
+        // a difference in the code where there would be an error with it below...
+          // Attributes are listed separately but there is more than one.
+          if ($customid->EOF) {
+            $customid_query = 'select customid as products_model
+                        from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
+                        where products_id = :products_id: 
+                        and stock_attributes in ( :stock_attributes:)
+                        ORDER BY stock_id;'; 
+            $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
+            $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes, 'passthru');
+            $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
+          
+          }
+        }
       }
       
-      
-      if($customid->fields['products_model']){
+      if(isset($customid) && !$customid->EOF){
       
         //Test to see if a custom ID exists
         //if there are custom IDs with the attribute, then return them.
           $multiplecid = null;
           while(!$customid->EOF){
-            $multiplecid .= $customid->fields['products_model'] . ', ';
+            if ($customid->fields['products_model']) {
+              $multiplecid .= $customid->fields['products_model'] . ', ';
+            }
             $customid->MoveNext();
           }
           $multiplecid = rtrim($multiplecid, ', ');
