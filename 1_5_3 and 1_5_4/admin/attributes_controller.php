@@ -513,7 +513,9 @@ if ($_POST['image_delete'] == 1) {
         {
           $attribute_id = zen_db_prepare_input($_POST['delete_attribute_id']);
 
+  /* START STOCK BY ATTRIBUTES */
           $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE', array('attribute_id' => $attribute_id), $attribute_id);
+/* END STOCK BY ATTRIBUTES */
 
           $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES . "
                       where products_attributes_id = '" . (int)$attribute_id . "'");
@@ -530,6 +532,10 @@ if ($_POST['image_delete'] == 1) {
         break;
 // delete all attributes
       case 'delete_all_attributes':
+  /* START STOCK BY ATTRIBUTES */
+        $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL', array('pID' => $_POST['products_filter']));
+/* END STOCK BY ATTRIBUTES */
+
         zen_delete_products_attributes($_POST['products_filter']);
         $messageStack->add_session(SUCCESS_ATTRIBUTES_DELETED . ' ID#' . $products_filter, 'success');
         $action='';

@@ -165,7 +165,9 @@
         }
         $value_id = zen_db_prepare_input($_GET['value_id']);
 
+        //mc12345678 SBA Added Start
         $zco_notifier->notify('OPTIONS_VALUES_MANAGER_DELETE_VALUE', array('value_id' => $value_id));
+        //mc12345678 SBA Added End
 
 // remove all attributes from products with value
         $remove_attributes_query = $db->Execute("select products_attributes_id, options_id, options_values_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where options_values_id ='" . (int)$value_id . "'");

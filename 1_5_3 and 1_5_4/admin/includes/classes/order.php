@@ -9,7 +9,7 @@
  * Stock by Attributes 1.5.2
  */
 
-  class order {
+  class order extends base {
     var $info, $totals, $products, $customer, $delivery;
 
     function order($order_id) {
@@ -179,5 +179,8 @@
         $index++;
         $orders_products->MoveNext();
       }
+      // START "Stock by Attributes"
+      $this->notify('ORDER_QUERY_ADMIN_COMPLETE', array('orders_id' => $order_id));
+      // END "Stock by Attributes"
     }
   }

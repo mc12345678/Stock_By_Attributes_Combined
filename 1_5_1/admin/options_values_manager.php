@@ -13,9 +13,6 @@
 	// START "Stock by Attributes"
 	//include language file
 	include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
-	//new object from class
-	require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
-	$stock = new products_with_attributes_stock;
 	// END "Stock by Attributes"
 
   // verify option names and values
@@ -172,6 +169,10 @@
         }
         $value_id = zen_db_prepare_input($_GET['value_id']);
 
+        //SBA Start mc12345678
+        $zco_notifier->notify('OPTIONS_VALUES_MANAGER_DELETE_VALUE', array('value_id' => $value_id));
+        //SBA End mc12345678
+
 // remove all attributes from products with value
         $remove_attributes_query = $db->Execute("select products_attributes_id, options_id, options_values_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where options_values_id ='" . (int)$value_id . "'");
         if ($remove_attributes_query->RecordCount() > 0) {
@@ -181,14 +182,6 @@
             $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD . "
                           where products_attributes_id='" . $remove_attributes_query->fields['products_attributes_id'] . "'");
 
-            //SBA Start mc12345678
-            $stock_ids = zen_get_sba_ids_from_attribute($remove_attributes_query->fields['products_attributes_id']);
-            if (sizeof($stock_ids) > 0 /*&& zen_not_null($stock_ids)*/) {
-              $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
-                            where stock_id in (" . implode(',', $stock_ids) . ")");
-            }
-            //SBA End mc12345678
-            
             $remove_attributes_query->MoveNext();
           }
           $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES . "
@@ -475,24 +468,15 @@ die('I SEE match from products_id:' . $copy_from_products_id . ' options_id_from
             // check for associated downloads
             $downloads_remove_query = "select products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $current_products_id . "' and options_id='" . $options_id_from . "' and options_values_id='" . $options_values_values_id_from . "'";
             $downloads_remove = $db->Execute($downloads_remove_query);
-			//mc12345678 SBA Added Start
-            $downloads_remove_list = array();
+            //mc12345678 SBA Added Start
+            $remove_downloads_ids = array();
             while (!$downloads_remove->EOF) {
-              $downloads_remove_list[] = $downloads_remove->fields['products_attributes_id'];
+              $remove_downloads_ids[] = $downloads_remove->fields['products_attributes_id'];
               $downloads_remove->MoveNext();
             }
-            if (method_exists($downloads_remove, 'rewind')) {
-              $downloads_remove->rewind();
-            } else {
-            $downloads_remove->Move(0);
-            $downloads_remove->MoveNext();
-            }
-            $stock_ids = zen_get_sba_ids_from_attribute($downloads_remove_list);
-            if (sizeof($stock_ids) > 0 /*&& zen_not_null($stock_ids)*/) {
-              $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
-                            where stock_id in (" . implode(',', $stock_ids) . ")");
-            }
-			//mc12345678 SBA Added End
+            $zco_notifier->notify('OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME', array('current_products_id' => $current_products_id, 'remove_ids' => $remove_downloads_ids, 'options_id'=>$options_id_from, 'options_values_id'=>$options_values_values_id_from));
+
+            //mc12345678 SBA Added End
             $sql = "delete from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $current_products_id . "' and options_id='" . $options_id_from . "' and options_values_id='" . $options_values_values_id_from . "'";
             $delete_selected = $db->Execute($sql);
 
