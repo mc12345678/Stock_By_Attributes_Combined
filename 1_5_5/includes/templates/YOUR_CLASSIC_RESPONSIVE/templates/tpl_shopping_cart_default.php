@@ -116,10 +116,10 @@
 <?php
 
 // START "Stock by Attributes" 
-if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && !is_null($product['customid']) ){
-	echo '<div class="cartAttribsList">';
-	echo PWA_CUSTOMID_NAME . $product['customid'];
-	echo '</div>';
+if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && !is_null($product['customid']['value']) ){
+  echo '<div class="cartAttribsList">';
+  echo PWA_CUSTOMID_NAME . $product['customid']['value'];
+  echo '</div>';
 }
 // END "Stock by Attributes"
 
@@ -131,8 +131,10 @@ if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && !is_null($product['customid']) ){
     foreach ($product['attributes'] as $option => $value) {
 ?>
 
-<li><?php echo $value['products_options_name'] . TEXT_OPTION_DIVIDER . nl2br($value['products_options_values_name']); ?></li>
-
+<li><?php echo $value['products_options_name'] . TEXT_OPTION_DIVIDER . nl2br($value['products_options_values_name']);
+      if ($product['customid']['type'] == 'multi' && zen_not_null($value['customid'])) { 
+        echo ' - ' . nl2br(zen_output_string_protected($value['customid'])); 
+      } ?></li>
 <?php
     }
   echo '</ul>';

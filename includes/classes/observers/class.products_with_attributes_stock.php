@@ -52,6 +52,7 @@ class products_with_attributes_stock extends base {
     $attachNotifier = array();
     $attachNotifier[] = 'NOTIFY_ORDER_AFTER_QUERY';
     $attachNotifier[] = 'NOTIFY_ORDER_CART_ADD_PRODUCT_LIST';
+    $attachNotifier[] = 'NOTIFY_ORDER_CART_ADD_ATTRIBUTE_LIST';
     $attachNotifier[] = 'NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN';
@@ -486,6 +487,7 @@ class products_with_attributes_stock extends base {
     // Loop through each product in the order
       $product = $orderClass->products[$index];
       $customid_txt = '';
+      $custom_type = 'none';
     
       // If the product has attributes, then need to see what was logged into the orders_products_attributes_stock table.  
       //    If nothing then is a product that has attributes, but was not tracked by SBA. 
@@ -516,6 +518,7 @@ class products_with_attributes_stock extends base {
             if (zen_not_null($orders_products_sba_customid->fields['customid'])) {
                 if (!(in_array($orders_products_sba_customid->fields['customid'], $customid))) {
                   $customid[] = $orders_products_sba_customid->fields['customid'];
+                  $custom_type = 'multi';
                 }
             } 
             // I don't like this next method to find the attributes, but am having difficulty doing anything else because of the way that attributes are
@@ -525,7 +528,7 @@ class products_with_attributes_stock extends base {
             // Goal of this routine is to provide the individual customid for the specific attribute to be able to capture each individual customid for the
             //   attribute and to then also be able to capture the "total" customid for the product.
             foreach ($orderClass->products[$index]['attributes'] as $key => $value) {
-              if ($value['option'] == $orders_products_sba_customid->fields['products_options_id']
+              if ($value['option_id'] == $orders_products_sba_customid->fields['products_options_id']
                   && $value['value_id'] == $orders_products_sba_customid->fields['products_options_values_id']) {
                 $orderClass->products[$index]['attributes'][$key]['customid'] = $orders_products_sba_customid->fields['customid'];
                 break;
@@ -542,11 +545,16 @@ class products_with_attributes_stock extends base {
             //   If every customid that is and is not present is to be concatenated then above need to add all to the array
             //    not just those that have data.
             $customid_txt = implode(", ", $customid);
+            if (sizeof($customid) == 1) {
+              $custom_type = 'single';
+            }
           } // EOF if sizeof
         } // EOF if orders_products_sba_customid->RecordCount() > 0
       } // EOF array check if attributes are involved.
 
-      $orderClass->products[$index]['customid'] = $customid_txt;
+      $orderClass->products[$index]['customid'] = array('type' => $custom_type,
+                                                        'value' => $customid_txt,
+                                                        );
 
       unset($product);
 
@@ -575,10 +583,39 @@ class products_with_attributes_stock extends base {
     $productsI = $paramsArray['products'];
     
     if (array_key_exists('attributes', $productsI) && sizeof($productsI['attributes']) > 0) {
-      $orderClass->products[$index]['customid'] = $_SESSION['pwas_class2']->zen_get_customid($productsI['id'], $productsI['attributes']);
+      $orderClass->products[$index]['customid']['value'] = $_SESSION['pwas_class2']->zen_get_customid($productsI['id'], $productsI['attributes']);
+
+        $custom_multi_query = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($productsI['id'], $productsI['attributes'], 'products');
+
+        if (!isset($custom_multi_query) || $custom_multi_query === NULL || $custom_multi_query === false) {
+          $custom_type = 'none';
+        } elseif (is_array($custom_multi_query) && sizeof($custom_multi_query) > 1) {
+          $custom_type = 'multi';
+        } else {
+          $custom_type = 'single';
+        }
+      $orderClass->products[$index]['customid']['type'] = $custom_type;
     }
   }
   
+  /*
+   *NOTIFY_ORDER_CART_ADD_ATTRIBUTE_LIST
+   * $this->notify('NOTIFY_ORDER_CART_ADD_ATTRIBUTE_LIST', array('index'=>$index, 'subindex'=>$subindex, 'products'=>$products[$i], 'attributes'=>$attributes));
+   */
+  function updateNotifyOrderCartAddAttributeList(&$orderClass, $notifier, $paramsArray) {
+    $index = $paramsArray['index'];
+    $subindex = $paramsArray['subindex'];
+    $productsI = $paramsArray['products'];
+    
+    if ($orderClass->products[$index]['customid']['type']/*$productsI['customid']['type']*/ == 'multi') {
+      $orderClass->products[$index]['attributes'][$subindex]['customid'] = 
+          $_SESSION['pwas_class2']->zen_get_customid(
+            $orderClass->products[$index]['id'],
+            array($orderClass->products[$index]['attributes'][$subindex]['option_id']/*$productsI['attributes'][$subindex]['option_id']*/ 
+              => $orderClass->products[$index]['attributes'][$subindex]['value_id'],
+            ));
+    }
+  }
   /*
    * Function that is activated when NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT is encountered as a notifier.
    */
@@ -591,9 +628,8 @@ class products_with_attributes_stock extends base {
     $this->_orderIsSBA = $_SESSION['pwas_class2']->zen_product_is_sba($this->_productI['id']);
     
     if ($this->_orderIsSBA /*&& zen_product_is_sba($this->_productI['id'])*/) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
-      $this->_stock_info = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order'); // Sorted comma separated list of the attribute_id.
+      $this->_stock_info = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order'); // Sorted comma separated list of the attribute_id.      // START "Stock by Attributes"
 
-      // START "Stock by Attributes"
       $attributeList = null;
       $customid = null;
       if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) >0){
@@ -601,8 +637,8 @@ class products_with_attributes_stock extends base {
           $attributeList[] = $attributes['value_id'];
         }
         $customid = $_SESSION['pwas_class2']->zen_get_customid($this->_productI['id'],$attributeList); // Expects that customid would be from a combination product, not individual attributes on a single product.  Should return an array if the values are individual or a single value if all attributes equal a single product.
-        $productI['customid'] = $customid;
-        $this->_productI['customid'] = $customid;
+        $productI['customid']['value'] = $customid;
+        $this->_productI['customid']['value'] = $customid;
 //      $productI['model'] = (zen_not_null($customid) ? $customid : $productI['model']);
         $this->_productI['model'] = $productI['model'];
       }
@@ -685,25 +721,28 @@ class products_with_attributes_stock extends base {
    */
   // Line 776
     /**
+     * $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END', $i);
+     *
      * @param $callingClass
      * @param $notifier
      * @param $paramsArray
      */
-    function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $paramsArray) {
+    function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $i) {
     //Need to modify the email that is going out regarding low-stock.
     //paramsArray is $i at time of development.
-    if ($this->_orderIsSBA /*zen_product_is_sba($this->_productI['id'])*/) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
-      if (/*$callingClass->email_low_stock == '' && */$callingClass->doStockDecrement && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
-        // kuroi: trigger and details for attribute low stock email
-        $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid'] . ', name ' . $this->_productI['name'] . ', ';
-        foreach($this->_productI['attributes'] as $attributes){
-          $callingClass->email_low_stock .= $attributes['option'] . ': ' . $attributes['value'] . ', ';
+      if ($this->_orderIsSBA) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
+        $this->orderProcessingI = $i;
+        if (/*$callingClass->email_low_stock == '' && */$callingClass->doStockDecrement && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
+          // kuroi: trigger and details for attribute low stock email
+          $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid'] . ', name ' . $this->_productI['name'] . ', ';
+          foreach($this->_productI['attributes'] as $attributes){
+            $callingClass->email_low_stock .= $attributes['option'] . ': ' . $attributes['value'] . ', ';
+          }
+          $callingClass->email_low_stock .= 'Stock: ' . $this->_attribute_stock_left . "\n\n";
+        // kuroi: End Stock by Attribute additions
         }
-        $callingClass->email_low_stock .= 'Stock: ' . $this->_attribute_stock_left . "\n\n";
-      // kuroi: End Stock by Attribute additions
       }
     }
-  }
 
   /*
    * Function that is activated when NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM is encountered as a notifier.
@@ -715,12 +754,12 @@ class products_with_attributes_stock extends base {
      * @param      $paramsArray
      * @param null $opa_insert_id
      */
-    function updateNotifyOrderDuringCreateAddedAttributeLineItem(&$callingClass, $notifier, $paramsArray, $opa_insert_id = NULL) {
+  function updateNotifyOrderDuringCreateAddedAttributeLineItem(&$orderClass, $notifier, $paramsArray, $opa_insert_id = NULL) {
     /* First check to see if SBA is installed and if it is then look to see if a value is 
      *  supplied in the stock_id parameter (which should only be populated when a SBA tracked
      *  item is in the order */
 //      $_SESSION['paramsArray'] = $paramsArray;
-    if ($this->_orderIsSBA && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && zen_not_null($this->_stock_info['stock_id'])) {  
+    if ($this->_orderIsSBA && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK')) {  
       //Need to validate that order had attributes in it.  If so, then were they tracked by SBA and then add to appropriate table.
 /*          `orders_products_attributes_stock_id` INT(11) NOT NULL auto_increment, 
   `orders_products_attributes_id` INT(11) NOT NULL default '0',
@@ -730,13 +769,37 @@ class products_with_attributes_stock extends base {
   `stock_attribute` VARCHAR(255) NULL DEFAULT NULL, 
   `products_prid` TINYTEXT NOT NULL, */
             $sql_data_array = array('orders_products_attributes_id' =>$paramsArray['orders_products_attributes_id'],
+      $i = $this->orderProcessingI;
+
+      $customid = '';
+      $stock_info = array();
+      
+      if (zen_not_null($this->_stock_info['stock_id'])) {
+        // This is an item that is uniquely identified as a single entry in the PWAS table and is either one or multiple attributes.
+        $customid = $orderClass->products[$i]['customid']['value'];
+        $stock_info = $this->_stock_info;
+      } else {
+        if ($orderClass->products[$i]['customid']['type'] == 'multi') {
+          // Each attribute is uniquely identified as a record in the PWAS table and is made up of more than one attribute.
+          foreach ($orderClass->products[$i]['attributes'] as $key => $value) {
+            if ($value['option_id'] == $paramsArray['products_options_id'] && $value['value_id'] == $paramsArray['products_options_values_id']) {
+              $customid = $orderClass->products[$i]['attributes'][$key]['customid'];
+              $stock_info = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute_info(zen_get_prid($orderClass->products[$i]['id']), array($value), 'order'); // Sorted comma separated list of the attribute_id.
+              break;
+            }
+          }
+        }
+        // @TODO: at some point to be able to handle combinations of PWAS table items such that there are combinations of records or variants making up a single product.
+      } 
+
+      $sql_data_array = array('orders_products_attributes_id' =>$paramsArray['orders_products_attributes_id'],
                             'orders_id' =>$paramsArray['orders_id'], 
                             'orders_products_id' =>$paramsArray['orders_products_id'], 
-                            'stock_id' => $this->_stock_info['stock_id'], 
-                            'stock_attribute' => $this->_stock_info['stock_attribute'], 
-                            'customid' => $this->_productI['customid'],
+                            'stock_id' => $stock_info['stock_id'], 
+                            'stock_attribute' => $stock_info['stock_attribute'], 
+                            'customid' => $customid,
                             'products_prid' =>$paramsArray['products_prid']);
-    zen_db_perform(TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK, $sql_data_array); //inserts data into the TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK table.
+      zen_db_perform(TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK, $sql_data_array); //inserts data into the TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK table.
 
     }
   } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
@@ -752,9 +815,9 @@ class products_with_attributes_stock extends base {
     
     for ($i = 0, $n = sizeof($order->products); $i < $n; $i++) {
       if (STOCK_SBA_DISPLAY_CUSTOMID == 'true') {
-        $customid[$i] = (zen_not_null($order->products[$i]['customid']) 
-                ? '<br />(' . $order->products[$i]['customid'] . ') ' 
-                : $order->products[$i]['customid']);
+        $customid[$i] = (zen_not_null($order->products[$i]['customid']['value']) 
+                ? '<br />(' . $order->products[$i]['customid']['value'] . ') ' 
+                : $order->products[$i]['customid']['value']);
       }
       $customid[$i] .= (zen_not_null($order->products[$i]['model'])
             ? '<br />(' . $order->products[$i]['model'] . ')'
@@ -774,8 +837,8 @@ class products_with_attributes_stock extends base {
     }
     
     foreach ($order->products as $i => $productsI) {
-      if(isset($productsI['customid'])) {
-        $customid[$i] = '<br />(' . $productsI['customid'] . ')';
+      if(isset($productsI['customid']['value'])) {
+        $customid[$i] = '<br />(' . $productsI['customid']['value'] . ')';
       }
     }
   }
@@ -809,7 +872,21 @@ class products_with_attributes_stock extends base {
         //  nor $productsQty = 0; $productsQty = 0 was previously used to identify "duplicates" and is not needed.
         //  $products_options_type is not yet used for anything else, but was perhaps to address something specific in future
         //  coding.  It will remain off of here for now.
-        $productArray[$i]['customid'] = (STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $products[$i]['attributes']) : null;
+        $custom_multi_query = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($productArray[$i]['id'], $productArray[$i]['attributes'], 'products');
+
+        if (!isset($custom_multi_query) || $custom_multi_query === NULL || $custom_multi_query === false) {
+          $custom_type = 'none';
+        } elseif (is_array($custom_multi_query) && sizeof($custom_multi_query) > 1) {
+          $custom_type = 'multi';
+          foreach ($productArray[$i]['attributes'] as $key => $value) {
+            $customid_new = $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $value);
+            $productArray[$i]['attributes'][$key]['customid'] = ((STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $customid_new : null);
+          }
+        } else {
+          $custom_type = 'single';
+        }
+        $productArray[$i]['customid']['type'] = $custom_type;
+        $productArray[$i]['customid']['value'] = (STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $products[$i]['attributes']) : null;
         $productArray[$i]['stockAvailable'] = null;
         $productArray[$i]['lowproductstock'] = false;
         
@@ -932,7 +1009,7 @@ class products_with_attributes_stock extends base {
           for ($i = 0, $n = sizeof($products); $i < $n; $i++) {
             unset($attributes);
             if (isset($products[$i]) && is_array($products[$i]) && array_key_exists('attributes', $products[$i]) && isset($products[$i]['attributes']) && is_array($products[$i]['attributes'])) {
-              if (zen_product_is_sba($products[$i]['id'])) {
+              if ($_SESSION['pwas_class2']->zen_product_is_sba($products[$i]['id'])) {
                 $attributes = $products[$i]['attributes'];
               } else {
                 $attributes = null;

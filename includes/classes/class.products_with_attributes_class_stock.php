@@ -233,7 +233,7 @@ function cartProductCount($products_id){
                         ORDER BY stock_id;'; 
             $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
             $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes, 'passthru');
-            $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
+            $customid = $db->Execute($customid_query, false, false, 0, true); //moved to inside this loop as for some reason it has made
           
           }
         }

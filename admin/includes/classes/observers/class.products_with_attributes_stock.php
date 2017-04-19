@@ -355,7 +355,8 @@ class products_with_attributes_stock_admin extends base {
     // Loop through each product in the order
       $product = $orderClass->products[$index];
       $customid_txt = '';
-    
+      $custom_multi = 'none';
+
       // If the product has attributes, then need to see what was logged into the orders_products_attributes_stock table.  
       //    If nothing then is a product that has attributes, but was not tracked by SBA. 
       //    If something, then retrieve the desired data (customid)
@@ -381,6 +382,7 @@ class products_with_attributes_stock_admin extends base {
             if (zen_not_null($orders_products_sba_customid->fields['customid'])) {
                 if (!(in_array($orders_products_sba_customid->fields['customid'], $customid))) {
                   $customid[] = $orders_products_sba_customid->fields['customid'];
+                  $custom_multi = 'multi';
                 }
             } 
             // I don't like this next method to find the attributes, but am having difficulty doing anything else because of the way that attributes are
@@ -407,11 +409,16 @@ class products_with_attributes_stock_admin extends base {
             //   If every customid that is and is not present is to be concatenated then above need to add all to the array
             //    not just those that have data.
             $customid_txt = implode(", ", $customid);
+            if (sizeof($customid) == 1) {
+              $custom_multi = 'single';
+            }
           } // EOF if sizeof
         } // EOF if orders_products_sba_customid->RecordCount() > 0
       } // EOF array check if attributes are involved.
 
-      $orderClass->products[$index]['customid'] = $customid_txt;
+      $orderClass->products[$index]['customid'] = array('type' => $custom_multi, 
+                                                        'value' => $customid_txt,
+                                                        );
 
       unset($product);
 

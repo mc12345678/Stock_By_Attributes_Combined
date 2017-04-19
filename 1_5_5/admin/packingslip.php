@@ -184,12 +184,12 @@
           // END "Stock by Attributes"
           echo '<br><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
           //"Stock by Attributes" add custom ID to display
-          echo ($order->products[$i]['attributes'][$j]['customid']['type'] == 'multi' ? ' (' . $order->products[$i]['attributes'][$j]['customid']['value'] . ') ' : '');
+          echo ($order->products[$i]['customid']['type'] == 'multi' && zen_not_null($order->products[$i]['attributes'][$j]['customid']['value']) ? ' (' . $order->products[$i]['attributes'][$j]['customid']['value'] . ') ' : '');
           // END "Stock by Attributes"
           echo '</i></small></nobr>';
         }
         //"Stock by Attributes" add custom ID to display
-        echo ( zen_not_null($order->products[$i]['customid']) ? '<br />(' . $order->products[$i]['customid'] . ') ' : '');
+        echo ( $order->products[$i]['customid']['type'] == 'single' && zen_not_null($order->products[$i]['customid']['value']) ? '<br />(' . $order->products[$i]['customid']['value'] . ') ' : '');
         // END "Stock by Attributes"
       }
 
