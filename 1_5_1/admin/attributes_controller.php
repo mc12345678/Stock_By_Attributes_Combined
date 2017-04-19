@@ -842,7 +842,7 @@ if ($action == 'attributes_preview') {
 ?>
           </tr>
           <tr>
-            <!-- Start SBA --><td class="smallText" align="center" colspan="8"><?php echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_TO_CATEGORIES, '&products_filter=' . $products_filter . '&current_category_id=' . $current_category_id) . '">' . IMAGE_PRODUCTS_TO_CATEGORIES . '</a>'; ?></td><!-- End SBA -->
+            <!-- Start SBA --><td class="smallText" align="center" colspan="8"><!-- End SBA --><?php echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_TO_CATEGORIES, '&products_filter=' . $products_filter . '&current_category_id=' . $current_category_id) . '">' . IMAGE_PRODUCTS_TO_CATEGORIES . '</a>'; ?></td>
           </tr>
         </table></td>
       </form></tr>

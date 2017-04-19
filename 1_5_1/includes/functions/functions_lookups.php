@@ -218,7 +218,7 @@
       }
       $attributes = $tmp_attrib;
     }
-    	$stock_left = zen_get_products_stock($products_id, $attributes) - $products_quantity;
+    $stock_left = zen_get_products_stock($products_id, $attributes) - $products_quantity;
 // END "Stock by Attributes"
     $out_of_stock = '';
 

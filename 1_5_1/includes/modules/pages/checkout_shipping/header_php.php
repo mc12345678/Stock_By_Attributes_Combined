@@ -45,39 +45,35 @@
     $products = $_SESSION['cart']->get_products();
     for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 
-		// START "Stock by Attributes"
-		// Added to allow individual stock of different attributes
-	    unset($attributes);
-	    if(is_array($products[$i]['attributes'])){
-/*        $inSBA_query = "select stock_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :productsid:";
-        $inSBA_query = $db->bindVars($inSBA_query, ':productsid:', $products[$i]['id'], 'integer');
-        
-        $inSBA_result = $db->Execute($inSBA_query);*/
-      
+    // START "Stock by Attributes"
+    // Added to allow individual stock of different attributes
+      unset($attributes);
+      if(is_array($products[$i]['attributes'])){
+
         if (isset($_SESSION['pwas_class2'])
           && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
           && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
             ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($products[$i]['id']))
             : function_exists('zen_product_is_sba') && zen_product_is_sba($products[$i]['id'])
         ) {
-    			$attributes = $products[$i]['attributes'];
+          $attributes = $products[$i]['attributes'];
         } else {
-		      $attributes = null; //Force normal operation if the product is not monitored by SBA.
+          $attributes = null; //Force normal operation if the product is not monitored by SBA.
         }
-	    } else {
+      } else {
         $attributes = null;
-	    }
-	
-		  if(zen_not_null($attributes)){ // Called if the product is only in the SBA table, not just has attributes.
-	    	if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
-	    		zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
-	    		break;
-	    	}
-	    } else {
+      }
+  
+      if(zen_not_null($attributes)){ // Called if the product is only in the SBA table, not just has attributes.
+        if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
+          zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+          break;
+        } // Currently seems to Ignore possibility of mixed product/ mixed YES otherwise, change below to reference zen_get_products_stock($products[$i]['id'], $attributes)
+      } else {
         if (zen_check_stock($products[$i]['id'], $products[$i]['quantity']) ) {
-	      	zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
-	      	break;
-	      } else {
+          zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+          break;
+        } else {
           // extra check on stock for mixed YES
           if ( zen_get_products_stock($products[$i]['id']) - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
             zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));

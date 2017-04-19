@@ -131,7 +131,7 @@
 <?php // if there are attributes, loop thru them and display one per line
     // START "Stock by Attributes" mc12345678 
     echo $customid[$i]; 
-  	// END "Stock by Attributes"
+    // END "Stock by Attributes"
     if (isset($order->products[$i]['attributes']) && sizeof($order->products[$i]['attributes']) > 0 ) {
     echo '<ul class="cartAttribsList">';
       for ($j=0, $n2=sizeof($order->products[$i]['attributes']); $j<$n2; $j++) {

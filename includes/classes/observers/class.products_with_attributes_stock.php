@@ -456,7 +456,7 @@ class products_with_attributes_stock extends base {
   }
    
   /*
-   * Functino that populates order class product data if order has been finalized.
+   * Function that populates order class product data if order has been finalized.
    */
   //  $attachNotifier[] = 'NOTIFY_ORDER_AFTER_QUERY';
   //  $this->notify('NOTIFY_ORDER_AFTER_QUERY', array(), $order_id);
@@ -658,45 +658,46 @@ class products_with_attributes_stock extends base {
      * @param int $attribute_stock_left
      */
     function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left = 0){
-    global $db; //, $pwas_class;
+      global $db; //, $pwas_class;
 
-    $this->_stock_values = $stock_values;
+      $this->_stock_values = $stock_values;
 
-    if ($this->_orderIsSBA && $stock_values->RecordCount() > 0) {
-      // kuroi: Begin Stock by Attributes additions
-      // added to update quantities of products with attributes
-      // $stock_attributes_search = array();
-      $attribute_stock_left = STOCK_REORDER_LEVEL + 1;  // kuroi: prevent false low stock triggers
-      $this->_attribute_stock_left = $attribute_stock_left;
+      if ($this->_orderIsSBA && $stock_values->RecordCount() > 0) {
+        // kuroi: Begin Stock by Attributes additions
+        // added to update quantities of products with attributes
+        // $stock_attributes_search = array();
+        $attribute_stock_left = STOCK_REORDER_LEVEL + 1;  // kuroi: prevent false low stock triggers
+        $this->_attribute_stock_left = $attribute_stock_left;
 
-      // mc12345678 If the has attibutes then perform the following work.
-      if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) > 0){
-        // Need to identify which records in the PWAS table need to be updated to remove stock from
+        // mc12345678 If the has attibutes then perform the following work.
+        if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) > 0){
+          // Need to identify which records in the PWAS table need to be updated to remove stock from
           // them.  Ie. provide a list of attributes and get a list of stock_ids from pwas.
           // Then process that list of stock_ids to decrement based on their impact on stock.  This
           // all should be a consistent application.
-        // mc12345678 Identify a list of attributes associated with the product
-        $stock_attributes_search = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
-        $stock_attributes_search_new = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($this->_productI['id'], $this->_productI['attributes'], 'order', 'ids');
+          // mc12345678 Identify a list of attributes associated with the product
+          $stock_attributes_search = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
+          $stock_attributes_search_new = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($this->_productI['id'], $this->_productI['attributes'], 'order', 'ids');
           if (isset($stock_attributes_search_new) && $stock_attributes_search_new === false) {
               
           } elseif (isset($stock_attributes_search_new) && is_array($stock_attributes_search_new) && count($stock_attributes_search_new) == 0) {
               
           } elseif (isset($stock_attributes_search_new) && $stock_attributes_search_new && count($stock_attributes_search_new) > 0) {
-              foreach ($stock_attributes_search_new as $stock_id) {
-                  // @todo: address in PWAS table whether particular variant should be altered with stock quantities.
-                  $get_quantity_query = 'SELECT quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = ' . zen_get_prid($this->_productI['id']) . ' and stock_id = ' . (int)$stock_id;
-                  $attribute_stock_available = $db->Execute($get_quantity_query, false, false, 0, true);
-                  if (true) { // Goal here is to identify if the particular attribute/stock item should be affected by a stock change.  If it is not, then this should be false or not performed.
-                      $attribute_stock_left_test = $attribute_stock_available->fields['quantity'] - $this->_productI['qty'];
-                      $attribute_update_query = 'UPDATE ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' SET quantity = "'.$attribute_stock_left_test.'" where products_id = ' . zen_get_prid($this->_productI['id']) . ' and stock_id = ' . (int)$stock_id;
-                      $db->Execute($attribute_update_query, false, false, 0, true);
-                      if ($attribute_stock_left_test < $attribute_stock_left) {
-                          $this->_attribute_stock_left = min($attribute_stock_left_test, $this->_attribute_stock_left);
-                          $attribute_stock_left = $this->_attribute_stock_left;
-                      }
-                  }
+
+            foreach ($stock_attributes_search_new as $stock_id) {
+              // @todo: address in PWAS table whether particular variant should be altered with stock quantities.
+              $get_quantity_query = 'SELECT quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = ' . zen_get_prid($this->_productI['id']) . ' and stock_id = ' . (int)$stock_id;
+              $attribute_stock_available = $db->Execute($get_quantity_query, false, false, 0, true);
+              if (true) { // Goal here is to identify if the particular attribute/stock item should be affected by a stock change.  If it is not, then this should be false or not performed.
+                $attribute_stock_left_test = $attribute_stock_available->fields['quantity'] - $this->_productI['qty'];
+                $attribute_update_query = 'UPDATE ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' SET quantity = "'.$attribute_stock_left_test.'" where products_id = ' . zen_get_prid($this->_productI['id']) . ' and stock_id = ' . (int)$stock_id;
+                $db->Execute($attribute_update_query, false, false, 0, true);
+                if ($attribute_stock_left_test < $attribute_stock_left) {
+                  $this->_attribute_stock_left = min($attribute_stock_left_test, $this->_attribute_stock_left);
+                  $attribute_stock_left = $this->_attribute_stock_left;
+                }
               }
+            }
           }
           
 /*        $get_quantity_query = 'select quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = "' . zen_get_prid($this->_productI['id']) . '" and stock_attributes = "' . $stock_attributes_search . '"';
@@ -711,10 +712,10 @@ class products_with_attributes_stock extends base {
         $attribute_update_query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set quantity = '.$attribute_stock_left.' where products_id = "' . zen_get_prid($this->_productI['id']) . '" and stock_attributes = "' . $stock_attributes_search . '"';
         $db->Execute($attribute_update_query, false, false, 0, true);  
         //$this->_attribute_stock_left = $attribute_stock_left;*/
+        }
+        $attribute_stock_left = $this->_attribute_stock_left;
       }
-      $attribute_stock_left = $this->_attribute_stock_left;
     }
-  }
 
   /*
    * Function that is activated when NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END is encountered as a notifier.
@@ -761,14 +762,15 @@ class products_with_attributes_stock extends base {
 //      $_SESSION['paramsArray'] = $paramsArray;
     if ($this->_orderIsSBA && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK')) {  
       //Need to validate that order had attributes in it.  If so, then were they tracked by SBA and then add to appropriate table.
-/*          `orders_products_attributes_stock_id` INT(11) NOT NULL auto_increment, 
-  `orders_products_attributes_id` INT(11) NOT NULL default '0',
-  `orders_id` INT(11) NOT NULL default '0', 
-  `orders_products_id` INT(11) NOT NULL default '0', 
-  `stock_id` INT(11) NOT NULL default '0', 
-  `stock_attribute` VARCHAR(255) NULL DEFAULT NULL, 
-  `products_prid` TINYTEXT NOT NULL, */
-            $sql_data_array = array('orders_products_attributes_id' =>$paramsArray['orders_products_attributes_id'],
+
+/*    `orders_products_attributes_stock_id` INT(11) NOT NULL auto_increment, 
+      `orders_products_attributes_id` INT(11) NOT NULL default '0',
+      `orders_id` INT(11) NOT NULL default '0', 
+      `orders_products_id` INT(11) NOT NULL default '0', 
+      `stock_id` INT(11) NOT NULL default '0', 
+      `stock_attribute` VARCHAR(255) NULL DEFAULT NULL, 
+      `products_prid` TINYTEXT NOT NULL, */
+
       $i = $this->orderProcessingI;
 
       $customid = '';

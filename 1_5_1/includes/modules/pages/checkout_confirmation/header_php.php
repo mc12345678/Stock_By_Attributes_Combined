@@ -107,7 +107,7 @@ $flagAnyOutOfStock = false;
 $stock_check = array();
 if (STOCK_CHECK == 'true') {
   for ($i=0, $n=sizeof($order->products); $i<$n; $i++) {
-    if ($stock_check[$i] = zen_check_stock($order->products[$i]['id'], $order->products[$i]['qty'], $order->products[$i]['attributes'], 'order')) {
+    if ($stock_check[$i] = zen_check_stock($order->products[$i]['id'], $order->products[$i]['qty'], $order->products[$i]['attributes'], 'order')) { //mc12345678 SBA 1.5.4 2015-10-09
       $flagAnyOutOfStock = true;
     }
   }

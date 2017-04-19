@@ -65,7 +65,7 @@
         zen_redirect(zen_href_link(FILENAME_OPTIONS_NAME_MANAGER));
         break;
       case 'add_product_options':
-      	//clr 030714 update to add option type to products_option.
+        //clr 030714 update to add option type to products_option.
         $products_options_id = zen_db_prepare_input($_POST['products_options_id']);
         $option_name_array = $_POST['option_name'];
         $products_options_sort_order = $_POST['products_options_sort_order'];
@@ -124,7 +124,7 @@
         zen_redirect(zen_href_link(FILENAME_OPTIONS_NAME_MANAGER, $_SESSION['page_info'] . '&option_order_by=' . $option_order_by));
         break;
       case 'update_option_name':
-      	//clr 030714 update to add option type to products_option.
+        //clr 030714 update to add option type to products_option.
         $option_name_array = $_POST['option_name'];
         $option_type = (int)$_POST['option_type'];
         $option_id = zen_db_prepare_input($_POST['option_id']);
@@ -201,7 +201,7 @@
         if (zen_admin_demo()) {
           $_GET['action']= '';
           $messageStack->add_session(ERROR_ADMIN_DEMO, 'caution');
-	        zen_redirect(zen_href_link(FILENAME_OPTIONS_NAME_MANAGER, $_SESSION['page_info'] . '&option_order_by=' . $option_order_by));
+          zen_redirect(zen_href_link(FILENAME_OPTIONS_NAME_MANAGER, $_SESSION['page_info'] . '&option_order_by=' . $option_order_by));
         }
         $option_id = zen_db_prepare_input($_GET['option_id']);
 
@@ -430,16 +430,16 @@ function go_option() {
 <!-- body_text //-->
 
     <!-- options and values//-->
-	<table border="0" width="75%" cellspacing="0" cellpadding="0" align="center">
+  <table border="0" width="75%" cellspacing="0" cellpadding="0" align="center">
       <tr>
         <td width="100%">
-    	    <table width="100%" border="0" cellspacing="0" cellpadding="2">
-    	      <tr>
-  	          <td height="40" valign="bottom">
-  	            <a href="<?php echo  zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, '', 'NONSSL') ?>"><?php echo zen_image_button('button_edit_attribs.gif', IMAGE_EDIT_ATTRIBUTES); ?></a> &nbsp;
+          <table width="100%" border="0" cellspacing="0" cellpadding="2">
+            <tr>
+              <td height="40" valign="bottom">
+                <a href="<?php echo  zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, '', 'NONSSL') ?>"><?php echo zen_image_button('button_edit_attribs.gif', IMAGE_EDIT_ATTRIBUTES); ?></a> &nbsp;
                 <a href="<?php echo  zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, '', 'NONSSL') ?>"><?php echo zen_image_button('button_option_values.gif', IMAGE_OPTION_VALUES); ?></a>
-  	          </td>
-  	          <td class="main" height="40" valign="bottom">
+              </td>
+              <td class="main" height="40" valign="bottom">
                 <?php
 // toggle switch for show copier features
                   $option_names_values_copier_array = array(array('id' => '0', 'text' => TEXT_SHOW_OPTION_NAMES_VALUES_COPIER_OFF),
@@ -787,10 +787,10 @@ function go_option() {
   </table>
 
 <!-- ADD - additional features //-->
-	<table border="2" width="75%" cellspacing="0" cellpadding="0" align="center">
+  <table border="2" width="75%" cellspacing="0" cellpadding="0" align="center">
       <tr>
         <td width="100%">
-    	    <table width="100%" border="0" cellspacing="0" cellpadding="2">
+          <table width="100%" border="0" cellspacing="0" cellpadding="2">
 
 <!-- bof: add all option values to products with current Option Name -->
             <tr>
@@ -880,9 +880,9 @@ function go_option() {
             </tr>
 <!-- eof: add all option values to products with current Option Name -->
 
-    	    </table>
-    	  </td>
-    	</tr>
+          </table>
+        </td>
+      </tr>
    </table>
 <!-- ADD - additional features eof //-->
 
@@ -893,10 +893,10 @@ function go_option() {
   </table>
 
 <!-- DELETE - additional features //-->
-	<table border="2" width="75%" cellspacing="0" cellpadding="0" align="center">
+  <table border="2" width="75%" cellspacing="0" cellpadding="0" align="center">
       <tr>
         <td width="100%">
-    	    <table width="100%" border="0" cellspacing="0" cellpadding="2">
+          <table width="100%" border="0" cellspacing="0" cellpadding="2">
 
 <!-- bof: delete all option values to products with current Option Name -->
             <tr>
@@ -986,9 +986,9 @@ function go_option() {
             </tr>
 <!-- eof: delete all option values to products with current Option Name -->
 
-    	    </table>
-    	  </td>
-    	</tr>
+          </table>
+        </td>
+      </tr>
    </table>
 <!-- DELETE - additional features eof //-->
 
@@ -1001,10 +1001,10 @@ function go_option() {
 
 
 <!-- COPY - additional features //-->
-	<table border="2" width="75%" cellspacing="0" cellpadding="0" align="center">
+  <table border="2" width="75%" cellspacing="0" cellpadding="0" align="center">
       <tr>
         <td width="100%">
-    	    <table width="100%" border="0" cellspacing="0" cellpadding="2">
+          <table width="100%" border="0" cellspacing="0" cellpadding="2">
 
 <!-- bof: copy all option values to another Option Name -->
             <tr>
@@ -1043,10 +1043,10 @@ function go_option() {
               </table></td>
             </tr>
 <!-- eof: copy all option values to another Option Name -->
-    	    </table>
+          </table>
 <?php } // show copier features ?>
-    	  </td>
-    	</tr>
+        </td>
+      </tr>
    </table>
 
 

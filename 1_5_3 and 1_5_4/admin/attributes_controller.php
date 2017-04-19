@@ -515,7 +515,7 @@ if ($_POST['image_delete'] == 1) {
 
   /* START STOCK BY ATTRIBUTES */
           $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE', array('attribute_id' => $attribute_id), $attribute_id);
-/* END STOCK BY ATTRIBUTES */
+  /* END STOCK BY ATTRIBUTES */
 
           $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES . "
                       where products_attributes_id = '" . (int)$attribute_id . "'");

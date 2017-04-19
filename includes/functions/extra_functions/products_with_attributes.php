@@ -14,7 +14,7 @@
 
 //test for multiple entry of same product in customer's shopping cart
 //This does not yet account for multiple quantity of the same product (2 of a specific attribute type, but instead 2 different types of attributes.)
-function cartProductCount($products_id){
+/*function cartProductCount($products_id){
   
   global $db;
   $products_id = zen_get_prid($products_id);
@@ -28,7 +28,7 @@ function cartProductCount($products_id){
   $productCount = $db->Execute($query);
             
   return $productCount->RecordCount();
-}
+}*/
 
 /*  Update for Stock by Attributes
  *  Output a form pull down menu
@@ -40,13 +40,13 @@ function cartProductCount($products_id){
  *
  * Use Jquery to change image 'SBA_ProductImage' on selection change
  */
-  function zen_draw_pull_down_menu_SBAmod($name, $values, $default = '', $parameters = '', $required = false, $disable = null, $options_menu_images = null) {
+/*  function zen_draw_pull_down_menu_SBAmod($name, $values, $default = '', $parameters = '', $required = false, $disable = null, $options_menu_images = null) {
     
     global $template_dir;
     $tmp_attribID = trim($name, 'id[]');//used to get the select ID reference to be used in jquery
     if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO != '0' && (isset($_GET['products_id']) && $_GET['products_id'] != '' ? zen_product_is_sba($_GET['products_id']) : false)) 
     {
-      $field = /*'<script ' . *//*src="'.DIR_WS_TEMPLATES . $template_dir . '/jscript/jquery-1.10.2.min.js"*//* '></script> */
+      $field = *//*'<script ' . *//*src="'.DIR_WS_TEMPLATES . $template_dir . '/jscript/jquery-1.10.2.min.js"*//* '></script> *//*
         '<script type="text/javascript">
           $(function(){
           $("#attrib-'.$tmp_attribID.'").change(function(){
@@ -92,9 +92,9 @@ function cartProductCount($products_id){
         $field .= ' selected="selected"';
       }
       
-      //"Stock by Attributes" // Need to determine this being disabled by a 
+      *///"Stock by Attributes" // Need to determine this being disabled by a 
       // numerical method rather than a text possessing method.  If PWA_OUTOF_STOCK is not present then the item may not be disabled... :/
-      if( $disable && strpos($values[$i]['text'], trim(PWA_OUT_OF_STOCK)) ){
+      /*if( $disable && strpos($values[$i]['text'], trim(PWA_OUT_OF_STOCK)) ){
         $field .= $disable;
       }
       //add image link if available
@@ -102,9 +102,9 @@ function cartProductCount($products_id){
         $field .= ' data-src="' . $options_menu_images[$i]['src'] . '"';
       }
       
-      //close tag and display text
-//      $field .= '>' . zen_output_string($values[$i]['text'], array('"' => '&quot;', '\'' => '&#039;', '<' => '&lt;', '>' => '&gt;')) . '</option>' . "\n";
-      $field .= '>' . zen_output_string_protected($values[$i]['text']) . '</option>' . "\n";
+      *///close tag and display text
+//      $field .= '>' . zen_output_string($values[$i]['text'], array('"' => '&quot;', '\'' => '&#039;', '<' => '<', '>' => '&gt;')) . '</option>' . "\n";
+/*      $field .= '>' . zen_output_string_protected($values[$i]['text']) . '</option>' . "\n";
     }
     
     $field .= '</select>' . "\n";
@@ -112,21 +112,21 @@ function cartProductCount($products_id){
     if ($required == true) $field .= TEXT_FIELD_REQUIRED;
 
     return $field;
-  }
+  }*/
 
   /* ********************************************************************* */
   /*  Ported from rhuseby: (my_stock_id MOD) and modified for SBA customid */
   /*  Added function to support attribute specific part numbers            */
   /* ********************************************************************* */
-  function zen_get_customid($products_id, $attributes = null) {
+ /* function zen_get_customid($products_id, $attributes = null) {
     global $db;
     $customid_model_query = null;
     $customid_query = null;
     $products_id = zen_get_prid($products_id);
   $customid = null;
   
-    // check if there are attributes for this product
-   $stock_has_attributes_query = 'select products_attributes_id 
+*/    // check if there are attributes for this product
+/*   $stock_has_attributes_query = 'select products_attributes_id 
                         from '.TABLE_PRODUCTS_ATTRIBUTES.' 
                         where products_id = :products_id:';
   $stock_has_attributes_query = $db->bindVars($stock_has_attributes_query, ':products_id:', $products_id, 'integer');
@@ -134,8 +134,8 @@ function cartProductCount($products_id){
 
     if ( $stock_has_attributes->RecordCount() < 1 ) {
       
-        //if no attributes return products_model
-      $no_attribute_stock_query = 'select products_model 
+*/        //if no attributes return products_model
+/*      $no_attribute_stock_query = 'select products_model 
                       from '.TABLE_PRODUCTS.' 
                       where products_id = :products_id:';
     $no_attribute_stock_query = $db->bindVars($no_attribute_stock_query, ':products_id:', $products_id, 'integer');
@@ -145,19 +145,19 @@ function cartProductCount($products_id){
     else {
       
       if(is_array($attributes) and sizeof($attributes) > 0){
-        // check if attribute stock values have been set for the product
+*/        // check if attribute stock values have been set for the product
         // if there are will we continue, otherwise we'll use product level data
-      $attribute_stock = $db->Execute("select stock_id 
+/*      $attribute_stock = $db->Execute("select stock_id 
                           from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
                           where products_id = " . (int)$products_id . ";");
     
-        //Why not left join this below query into the above or why even have a separate/second query? Especially seeing that $attributes_stock is never used in the below results...  
-        if ($attribute_stock->RecordCount() > 0) {
+*/        //Why not left join this below query into the above or why even have a separate/second query? Especially seeing that $attributes_stock is never used in the below results...  
+/*        if ($attribute_stock->RecordCount() > 0) {
           // search for details for the particular attributes combination
             $first_search = 'where options_values_id in ("'.implode('","',$attributes).'")';
           
-          // obtain the attribute ids
-          $query = 'select products_attributes_id 
+*/          // obtain the attribute ids
+/*          $query = 'select products_attributes_id 
               from '.TABLE_PRODUCTS_ATTRIBUTES.' 
                   '.$first_search.' 
                   and products_id='.$products_id.' 
@@ -219,7 +219,7 @@ function cartProductCount($products_id){
       return;//nothing to return, should never reach this return
     }
   }//end of function
-
+*/
   /*
    * Function to return the desired stock_attribute field for use with the SBA table products_with_attributes_stock.
    * 
@@ -229,7 +229,7 @@ function cartProductCount($products_id){
    * @param   string    $from             The source of the attribute list as created differently in order class than shopping_cart class.
    * @returns string    $stock_attributes A comma separated (if >1 attribute) string of the products_attributes_id sorted by products_attributes_id. This is the current set of information stored in the SBA table for stock_attributes.
    */
-  function zen_get_sba_stock_attribute($products_id, $attribute_list = array(), $from = 'order'){
+/*  function zen_get_sba_stock_attribute($products_id, $attribute_list = array(), $from = 'order'){
   global $db;
 
     $temp_attributes = array();
@@ -257,7 +257,7 @@ function cartProductCount($products_id){
     }
     
     return $stock_attributes;
-  }
+  }*/
 
   /*
    * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to zen_get_sba_stock_attribute in order to identify data to help with this search.
@@ -267,7 +267,7 @@ function cartProductCount($products_id){
    * @param   array     $attribute_list   The attribute array of the product identified in products_id
    * @returns array     stock_id          The value of the unique id in the SBA table products_with_attributes_stock
    */
-  function zen_get_sba_attribute_ids($products_id, $attribute_list = array(), $from = 'order'){
+/*  function zen_get_sba_attribute_ids($products_id, $attribute_list = array(), $from = 'order'){
     global $db;
 
     $temp_attributes = array();
@@ -286,7 +286,7 @@ function cartProductCount($products_id){
     }
 
    // Need to evaluate if product information provided is SBA tracked in case the page is posted with incorrect attributes as a separate check.
-    if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
+    if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {*/
       // Should check against the product designation, what option names should be expected.
       // Then compare the provided option names against the expected list.
       // For those option names that were not provided evaluate if their omission
@@ -306,7 +306,7 @@ function cartProductCount($products_id){
 //      if (zen_product_is_sba($products_id)) {
 
         // prepare to search for details for the particular attribute combination passed as a parameter
-
+/*
 
         if (defined('TEXT_PREFIX')) {
           $text_prefix = TEXT_PREFIX;
@@ -390,7 +390,7 @@ function cartProductCount($products_id){
         return false;
       }
     }
-  }
+  }*/
 
   /*
    * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to zen_get_sba_stock_attribute in order to identify data to help with this search.
@@ -400,10 +400,10 @@ function cartProductCount($products_id){
    * @param   array     $attribute_list   The attribute array of the product identified in products_id
    * @returns integer   stock_id          The value of the unique id in the SBA table products_with_attributes_stock
    */
-  function zen_get_sba_stock_attribute_id($products_id, $attribute_list = array(), $from = 'order'){
+/*  function zen_get_sba_stock_attribute_id($products_id, $attribute_list = array(), $from = 'order'){
     global $db;
 
-    /*if (isset($attribute_list) && (($k = sizeof($attribute_list)) > 0)) {*/
+*/    /*if (isset($attribute_list) && (($k = sizeof($attribute_list)) > 0)) {*/
 
 /*
   Discussion:
@@ -453,7 +453,7 @@ Of the attributes provided, determine the number of those attributes that are
     
     return;*/
 
-    $temp_attributes = array();
+/*    $temp_attributes = array();
     $specAttributes = array();
     $stock_attributes_list = array();
     $stock_attributes = '';
@@ -542,13 +542,13 @@ Of the attributes provided, determine the number of those attributes that are
             $i++;
           } // end for each attribute.
 
-          /*foreach ($stockResultArray as $stockResult) {
+*/          /*foreach ($stockResultArray as $stockResult) {
             if (!zen_not_null($stockResult)) {
               $stockResultArray = false;
               continue;
             }
           }*/
-
+/*
           if ($notAccounted) {
             return false;
           } else {
@@ -560,8 +560,8 @@ Of the attributes provided, determine the number of those attributes that are
 
     return;
     
-  }
-  
+  }*/
+/*  
   function zen_sba_has_text_field($sba_table_ids = array()){
     global $db;
     
@@ -607,10 +607,10 @@ Of the attributes provided, determine the number of those attributes that are
     }
 
     return false;
-  }
+  }*/
 
 
-  
+  /*
   function zen_sba_attribs_no_text($products_id, $attribute_list, $from = 'products', $how = 'add') {
     global $db;
 
@@ -730,11 +730,11 @@ Of the attributes provided, determine the number of those attributes that are
 //              $_SESSION['compArray_after_'.$products_id] = $compArray;
             } elseif ($how == 'addNoText') {
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-              array((/*$text_prefix .*/ $products_options_names->fields['products_options_id']) => $text_value) + 
+              array((*//*$text_prefix .*//* $products_options_names->fields['products_options_id']) => $text_value) + 
               array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
             } else {
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-               array((/*$text_prefix .*/ $products_options_names->fields['products_options_id']) => $text_value) + 
+               array((*//*$text_prefix .*//* $products_options_names->fields['products_options_id']) => $text_value) + 
                array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
             }
             $lastIndex = $products_options_names->cursor + 1;
@@ -751,15 +751,15 @@ Of the attributes provided, determine the number of those attributes that are
 //              $_SESSION['compArray_after_'.$products_id] = $compArray;
             } elseif ($how == 'addNoText') {
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-              array((/*$file_prefix .*/ $products_options_names->fields['products_options_id']) => $file_value) + 
+              array((*//*$file_prefix .*//* $products_options_names->fields['products_options_id']) => $file_value) + 
               array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
             } else {
              $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-               array((/*$file_prefix .*/ $products_options_names->fields['products_options_id']) => $file_value) + 
+               array((*//*$file_prefix .*//* $products_options_names->fields['products_options_id']) => $file_value) + 
                array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
             }
             $lastIndex = $products_options_names->cursor + 1;
-//            $compArray[/*$file_prefix . */$products_options_names->fields['products_options_id']] = $file_value;
+//            $compArray[*//*$file_prefix . *//*$products_options_names->fields['products_options_id']] = $file_value;
 //            $compArray[$products_options_names->fields['products_options_id']] = $file_value;
           }
         } else {
@@ -769,7 +769,7 @@ Of the attributes provided, determine the number of those attributes that are
 //                    $_SESSION['key_exist']++;
 //                    $_SESSION['key_exist_spec_' . $_SESSION['key_exist']] = $products_options_names->fields['products_options_id'];
         }
-      } elseif ($how != 'add' /*&& $how != 'addNoText'*/) {
+      } elseif ($how != 'add' *//*&& $how != 'addNoText'*//*) {
         if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_TEXT || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_FILE) {
           // May need to check/verify that is okay to be empty.
           //   For now... Just accept it as empty.
@@ -779,7 +779,7 @@ Of the attributes provided, determine the number of those attributes that are
             unset($compArray[$text_prefix . $products_options_names->fields['products_options_id']]);
 
             $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-            array((/*$text_prefix .*/ $products_options_names->fields['products_options_id']) => $text_value) + 
+            array((*//*$text_prefix .*//* $products_options_names->fields['products_options_id']) => $text_value) + 
             array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
 
             $lastIndex = $products_options_names->cursor + 1;
@@ -791,7 +791,7 @@ Of the attributes provided, determine the number of those attributes that are
 //            $compArray[$file_prefix . $products_options_names->fields['products_options_id']] = $file_value;
 //            $compArray[$products_options_names->fields['products_options_id']] = $file_value;
             $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
-            array((/*$file_prefix .*/ $products_options_names->fields['products_options_id']) => $file_value) + 
+            array((*//*$file_prefix .*//* $products_options_names->fields['products_options_id']) => $file_value) + 
             array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
 
             $lastIndex = $products_options_names->cursor + 1;
@@ -806,7 +806,7 @@ Of the attributes provided, determine the number of those attributes that are
 //    $_SESSION['attrib_list2'.$pro_id] = $attribute_list;
 
     if (sizeof($compArray) > 0) {
-//      $attribute_list = $compArray; // + $attribute_list /*+ $compArray*/;
+//      $attribute_list = $compArray; // + $attribute_list *//*+ $compArray*//*;
       if ($how == 'add' && $how != 'addNoText') {
         if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
           $attribute_list = $attribute_list + $compArray;
@@ -826,7 +826,7 @@ Of the attributes provided, determine the number of those attributes that are
 
     return $attribute_list;
     
-  }
+  }*/
   
   /*
    * Function to return the stock_attribute_id field from the SBA table products_with_attributes_stock. Makes a call to zen_get_sba_stock_attribute in order to identify data to help with this search.
@@ -837,10 +837,10 @@ Of the attributes provided, determine the number of those attributes that are
    * @returns integer   stock_id          The value of the unique id in the SBA table products_with_attributes_stock
    */
   
-  function zen_get_sba_attribute_info($products_id, $attribute_list = array(), $from = 'order', $datatype = 'ids'){
+/*  function zen_get_sba_attribute_info($products_id, $attribute_list = array(), $from = 'order', $datatype = 'ids'){
     global $db;
 
-    /*if (isset($attribute_list) && (($k = sizeof($attribute_list)) > 0)) {*/
+    *//*if (isset($attribute_list) && (($k = sizeof($attribute_list)) > 0)) {*/
 
 /*
   Discussion:
@@ -912,7 +912,7 @@ Of the attributes provided, determine the number of those attributes that are
             //  zeroable.. if so, then return the quantity(ies) 
 
 
-
+/*
     $specAttributes = array();
     $temp_attributes = array();
     $stock_attributes_list = array();
@@ -935,7 +935,7 @@ Of the attributes provided, determine the number of those attributes that are
       return NULL;
     } 
     
-    $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Gets an imploded list of $attribute_list
+    $stock_attribute = zen_get_sba_stock_attribute($products_id, $attribute_list, $from); */// Gets an imploded list of $attribute_list
 
     // NEED TO ENSURE ATTRIBUTES ARE PROPERLY/FULLY PROVIDED REGARDING "TEXT" OR OTHER ZC DELETES ATTRIBUTES.
     
@@ -965,7 +965,7 @@ Of the attributes provided, determine the number of those attributes that are
     //      *   that were not passed.  If any of those are looked up to be
     //      *   a text field then add them into the finals list, but if any
     //      *   that remain are anything else, then have an unresolved issue.
-    
+    /*
     if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
       $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0")';
     } else {
@@ -1060,14 +1060,14 @@ Of the attributes provided, determine the number of those attributes that are
           if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_FILE) {
             $compArray[$file_prefix . $products_options_names->fields['products_options_id']] = $file_value;
           }
-        } else {
+        } else {*/
           // Potential problem as option name expected is not
           //  one that is a text field and was not assigned to the
           //  product. mc12345678 01-02-2016
 //                    $_SESSION['key_exist']++;
 //                    $_SESSION['key_exist_spec_' . $_SESSION['key_exist']] = $products_options_names->fields['products_options_id'];
-        }
-      } /*else {
+     /*    }
+      } *//*else {
                    if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_TEXT || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_FILE) {
                      // May need to check/verify that is okay to be empty.
                      //   For now... Just accept it as empty.
@@ -1081,7 +1081,7 @@ Of the attributes provided, determine the number of those attributes that are
                        $compArray[$file_prefix . $products_options_names->fields['products_options_id']] = $file_value;
                      }
                    }
-                }*/
+                }*//*
 
       $products_options_names->MoveNext();
     }              
@@ -1089,12 +1089,12 @@ Of the attributes provided, determine the number of those attributes that are
 //              $_SESSION['compArray2'] = $compArray;
 
     if (sizeof($compArray) > 0) {
-      $attribute_list = /*$compArray +*/ $attribute_list + $compArray;
+      $attribute_list = *//*$compArray +*//* $attribute_list + $compArray;
     }
 //              $_SESSION['compArray3'] = $attribute_list;
 //              $_SESSION['compArray2'] = $compArray;
     
-/*    if ($datatype == 'products' && (!zen_product_is_sba($products_id) || !isset($attribute_list) || !is_array($attribute_list) || !(($k = sizeof($attribute_list)) > 0))) {
+*//*    if ($datatype == 'products' && (!zen_product_is_sba($products_id) || !isset($attribute_list) || !is_array($attribute_list) || !(($k = sizeof($attribute_list)) > 0))) {
       //Used with products that have attributes But the attribute is not listed in the SBA Stock table.
       //Get product level stock quantity
       $stock_query = "select products_quantity from " . TABLE_PRODUCTS . " where products_id = :products_id:";
@@ -1103,7 +1103,7 @@ Of the attributes provided, determine the number of those attributes that are
       return $stock_values->fields['products_quantity'];
     } elseif (!zen_product_is_sba($products_id)) {
       $return NULL;
-    } */
+    } *//*
 
     $stock_attributes_list = zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
     // Summary of the above, if the product is not tracked by SBA, then return null.
@@ -1127,7 +1127,7 @@ Of the attributes provided, determine the number of those attributes that are
           default:
             return array($stock_values->fields['stock_id']);
         }
-      } else {
+      } else {*/
         // Known: product is tracked by SBA, product is reported as 
         //  having one attribute, though if there is one or more 
         //  attributes that can be blank (text/upload file) then this
@@ -1144,7 +1144,7 @@ Of the attributes provided, determine the number of those attributes that are
         //  review all of the other attributes to see if they could be
         //  zeroable.. if so, then return the quantity(ies) 
 
-        return false;
+/*        return false;
       }
     } elseif (sizeof($stock_attributes_list) > 1) {
       // mc12345678 multiple attributes are associated with the product
@@ -1210,18 +1210,18 @@ Of the attributes provided, determine the number of those attributes that are
 
           if ($stock_values->EOF) {
   //              $_SESSION['not_account']++;
-            $notAccounted = true;
+            $notAccounted = true;*/
   //              $_SESSION['stockResultN' . $_SESSION['not_account']] = $stockResult;
   //              $_SESSION['stockvaluesN' . $_SESSION['not_account']] = $stock_values;
   //              $_SESSION['curr_account' . ($_SESSION['not_account'] + $_SESSION['accounted'])] = 'n';
   //              $_SESSION['stock_quer' . ($_SESSION['not_account'] + $_SESSION['accounted'])] = $stock_query;
-          } /* for testing */ else {
+          /*} *//* for testing *//* else {*/
   //              $_SESSION['accounted']++;
   //              $_SESSION['stockResult' . $_SESSION['accounted']] = $stockResult;
   //              $_SESSION['stockvalues' . $_SESSION['accounted']] = $stock_values;
   //              $_SESSION['curr_account' . ($_SESSION['not_account'] + $_SESSION['accounted'])] = 'a';
   //              $_SESSION['stock_quer' . ($_SESSION['not_account'] + $_SESSION['accounted'])] = $stock_query;
-          }
+          /*}
           //special test to account for qty when all attributes are listed seperetly
           if (!zen_not_null($returnedStock) && $i == 0) {
             //set initial value
@@ -1237,12 +1237,12 @@ Of the attributes provided, determine the number of those attributes that are
           $i++;
         } // end for each attribute.
 
-        /* foreach ($stockResultArray as $stockResult) {
+        *//* foreach ($stockResultArray as $stockResult) {
           if (!zen_not_null($stockResult)) {
           $stockResultArray = false;
           continue;
           }
-          } */
+          } *//*
 
         if ($notAccounted) {
           return false;
@@ -1261,7 +1261,7 @@ Of the attributes provided, determine the number of those attributes that are
     }
 
     return;
-  }
+  }*/
 
   /*
    * Function to return the information related to the SBA tracked stock based on receiving the product id and the attributes associated with the product.
@@ -1271,7 +1271,7 @@ Of the attributes provided, determine the number of those attributes that are
    * @param   array     $attribute_list   The attribute array of the product identified in products_id
    * @returns array   $attribute_info     The values to be collected/used by the calling function.  This includes the stock_attribute and the stock_id both information to be contained in the SBA table.
    */
-  function zen_get_sba_stock_attribute_info($products_id, $attribute_list = array(), $from = 'order'){
+/*  function zen_get_sba_stock_attribute_info($products_id, $attribute_list = array(), $from = 'order'){
     global $db;
     
     $attribute_info = array();
@@ -1290,7 +1290,7 @@ Of the attributes provided, determine the number of those attributes that are
         return $attribute_info;
       }
     }
-  }  
+  }  */
   
   /**
   *  Uses a single attribute to identify all of the SBA variants 
@@ -1370,18 +1370,18 @@ Of the attributes provided, determine the number of those attributes that are
     return $stock_id_list;
   }
 
-  function zen_sba_dd_allowed($products_options_names, $data_type = 'attributes') {
+/*  function zen_sba_dd_allowed($products_options_names, $data_type = 'attributes') {*/
 //  if (!is_array($products_options_names)) $products_options_names = array($products_options_names);
 
     // mc12345678 Below is a list of product types that are currently not supported
     //  by dynamic dropdowns and therefore should not be displayed with dropdowns 
     //  until the option type is properly worked around and supported in the dropdowns.
-    $special = array(PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_FILE, /*PRODUCTS_OPTIONS_TYPE_READONLY,*/ PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_GRID, PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID);
+    /*$special = array(PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_FILE, *//*PRODUCTS_OPTIONS_TYPE_READONLY,*//* PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_GRID, PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID);*/
 
     // This is the default "reason" for using this code, and will handle 
     //   the data that is default provided ($products_options_names from: 
     //   includes/modules/YOUR_TEMPLATE/attributes.php
-    if ($data_type == 'attributes') {
+/*    if ($data_type == 'attributes') {
       $opt_array = array();
       // If there is at least one option name then perform the testing.
       if ($products_options_names->RecordCount() > 0) { 
@@ -1400,7 +1400,7 @@ Of the attributes provided, determine the number of those attributes that are
 
     return true;  // Default to trying to use the dynamic dropdown option if
                   //  not specifically excluded above.
-
+*/
 /*  if (sizeof($attributes) > 0) {
       $sql = "select products_options_type, products_options_id from " . TABLE_PRODUCTS_OPTIONS . " where products_options_id in (:products_options_ids:)";
       $sql = $db->bindVars($sql, ':products_options_ids:', implode(',', $opt_array), 'noquotestring');
@@ -1414,13 +1414,13 @@ Of the attributes provided, determine the number of those attributes that are
       }
     } else {
       return false;
-    }*/
-  }
+    }*//*
+  }*/
 
   // function zen_is_SBA was removed as it was a duplicate of zen_product_is_sba.  If code
   // has been written to use that function, please consider using zen_product_is_sba instead.
   
-  function zen_product_is_sba($product_id) {
+/*  function zen_product_is_sba($product_id) {
     global $db;
     
     if (!isset($product_id) && !is_numeric(zen_get_prid($product_id))) {
@@ -1449,4 +1449,4 @@ Of the attributes provided, determine the number of those attributes that are
     }
 
     return false;
-  }  
+  }  */
