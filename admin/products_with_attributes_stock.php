@@ -51,7 +51,7 @@ switch ($action) {
     if (isset($_GET['products_id']) && is_numeric((int) $_GET['products_id'])) {
       $products_id = (int) $_GET['products_id'];
     }
-    if (isset($_POST['products_id']) && is_numeric((int) $_POST['products_id'])) {
+    if (isset($_POST['products_id'])) {
       $products_id = (int) $_POST['products_id'];
     }
 
@@ -111,7 +111,7 @@ switch ($action) {
     break;
 
   case 'confirm':
-    if (isset($_POST['products_id']) && is_numeric((int) $_POST['products_id'])) {
+    if (isset($_POST['products_id'])) {
 
       if (!isset($_POST['quantity']) || !is_numeric($_POST['quantity'])) {
         $messageStack->add_session("Missing Quantity!", 'failure');
@@ -125,7 +125,7 @@ switch ($action) {
       $skuTitle = trim($_POST['skuTitle']);
 
       if (is_numeric($_POST['quantity'])) {
-        $quantity = $db->getBindVarValue($_POST['quantity'], 'float');
+        $quantity = (float) $_POST['quantity'];
       }
 
       $attributes = $_POST['attributes'];
