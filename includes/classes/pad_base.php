@@ -489,7 +489,10 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
               default:       $newtext=substr($newtext,2);
                              break;
             }
-            if ($productAttrAreSBA !== false) {
+            if ($productAttrAreSBA !== false && (true /* <- true to only display product variants available as entered, 
+                                                         false to display every attribute combination possible from the attributes controller data for that product  */ 
+                                                  ? !is_null($productAttrAreSBA) 
+                                                  : true)) {
               $combinations[] = array('comb'=>$newcomb, 'id'=>substr($newid,1), 'text'=>$newtext);
               if ($newisselected) {
                 $selected_combination = sizeof($combinations)-1;
