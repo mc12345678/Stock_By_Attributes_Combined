@@ -48,10 +48,10 @@ if (zen_not_null($action)) {
 //case selection 'add', 'edit', 'confirm', 'execute', 'delete_all', 'delete', 'resync', 'resync_all', 'auto_sort'
 switch ($action) {
   case 'add':
-    if (isset($_GET['products_id']) && is_numeric((int) $_GET['products_id'])) {
+    if (isset($_GET['products_id']) && (int) $_GET['products_id'] > 0) {
       $products_id = (int) $_GET['products_id'];
     }
-    if (isset($_POST['products_id'])) {
+    if (isset($_POST['products_id']) && (int) $_POST['products_id'] > 0) {
       $products_id = (int) $_POST['products_id'];
     }
 
@@ -90,8 +90,11 @@ switch ($action) {
 
   case 'edit':
     $hidden_form = '';
-    if (isset($_GET['products_id']) && is_numeric((int) $_GET['products_id'])) {
+    if (isset($_GET['products_id']) && (int) $_GET['products_id'] > 0) {
       $products_id = (int)$_GET['products_id'];
+    }
+    if (isset($_POST['products_id']) && (int) $_POST['products_id'] > 0) {
+      $products_id = (int)$_POST['products_id'];
     }
 
     if (isset($_GET['attributes']) && $_GET['attributes'] != '') {
@@ -111,7 +114,7 @@ switch ($action) {
     break;
 
   case 'confirm':
-    if (isset($_POST['products_id'])) {
+    if (isset($_POST['products_id']) && (int) $_POST['products_id'] > 0) {
 
       if (!isset($_POST['quantity']) || !is_numeric($_POST['quantity'])) {
         $messageStack->add_session("Missing Quantity!", 'failure');
@@ -176,35 +179,43 @@ switch ($action) {
 
   case 'execute':
 
-    $attributes = $_POST['attributes'];
     if ($_GET['attributes']) {
       $attributes = $_GET['attributes']; // Why is this overriding the POST version of the same? Shouldn't it be one or the other not both?
     } //s_mack:noconfirm
+    if (isset($_POST['attributes'])) {
+      $attributes = $_POST['attributes'];
+    }
 
-    $products_id = doubleval($_POST['products_id']);
     if ($_GET['products_id']) {
       $products_id = doubleval($_GET['products_id']);  // Why is this overriding the POST version of the same? Shouldn't it be one or the other not both?
     } //s_mack:noconfirm
+    if (isset($_POST['products_id'])) {
+      $products_id = doubleval($_POST['products_id']);
+    }
 
-    $customid = zen_db_input(trim($_POST['customid']));
     if (isset($_GET['customid']) && $_GET['customid']) {
       $customid = zen_db_input(trim($_GET['customid']));
     } //s_mack:noconfirm
+    if (isset($_POST['customid'])) {
+      $customid = zen_db_input(trim($_POST['customid']));
+    }
 
-    $skuTitle = zen_db_input(trim($_POST['skuTitle']));
     if ($_GET['skuTitle']) {
       $skuTitle = zen_db_input(trim($_GET['skuTitle']));
     }
+    if (isset($_POST['skuTitle'])) {
+      $skuTitle = zen_db_input(trim($_POST['skuTitle']));
+    }
 
     //$quantity = $_GET['quantity']; //s_mack:noconfirm
-    if (isset($_GET['quantity']) && $_GET['quantity']) {
+    if (isset($_GET['quantity'])/* && $_GET['quantity']*/) {
       $quantity = doubleval($_GET['quantity']);
     } //s_mack:noconfirm
     //if invalid entry return to product
-    if (!is_numeric((int) $products_id) || is_null($products_id)) {
+    if ((int) $products_id === 0 || is_null($products_id)) {
       $messageStack->add_session("Missing or bad products_id!", 'failure');
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $products_id, $request_type));
-    } elseif (!is_numeric((int) $quantity) || is_null($quantity) && $quantity != 0) {
+    } elseif (!is_numeric($quantity) || is_null($quantity) && $quantity != 0) {
       $messageStack->add_session("Missing or bad Quantity!", 'failure');
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $products_id, $request_type));
     } elseif (is_null($attributes) || str_replace(',', null, $attributes) == null) {
@@ -388,11 +399,13 @@ switch ($action) {
         $saveResult = $stock->insertNewAttribQty($products_id, $productAttributeCombo, $strAttributes, $quantity, $customid, $skuTitle);
       }
     } elseif (($_POST['add_edit'] == 'edit') || ($_GET['add_edit'] == 'edit')) { //s_mack:noconfirm
-      $stock_id = (int)$_POST['stock_id']; //s_mack:noconfirm
       if ($_GET['stock_id']) {
         $stock_id = (int)$_GET['stock_id'];
       } //s_mack:noconfirm
-      if (!is_numeric((int) $stock_id)) { //s_mack:noconfirm
+      if (isset($_POST['stock_id']) && $_POST['stock_id'] !== '') {
+        $stock_id = (int)$_POST['stock_id']; //s_mack:noconfirm
+      }
+      if (!($stock_id > 0)) { //s_mack:noconfirm
         zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action')), $request_type));
       }
       //update existing records
@@ -456,7 +469,7 @@ switch ($action) {
     break;
 
   case 'resync':
-    if (is_numeric((int)$_GET['products_id'])) {
+    if (isset($_GET['products_id']) && (int)$_GET['products_id'] > 0) {
 
       $stock->update_parent_products_stock((int) $_GET['products_id']);
       $messageStack->add_session('Parent Product Quantity Updated', 'success');
