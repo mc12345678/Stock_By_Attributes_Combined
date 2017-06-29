@@ -613,7 +613,7 @@ Array(
       while (!$products_options_name->EOF) {
         $products_options_array = array();
 //        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: order by pa.products_options_sort_order";
-        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix, pa.attributes_display_only, pa.attributes_default, pa.products_options_sort_order from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: :order_by:";
+        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix, pa.attributes_display_only, pa.attributes_default, pa.products_options_sort_order " . (isset($_SESSION['customer_whole']) && (int)$_SESSION['customer_whole'] !== 0 ? ", pa.options_values_price_w ": "" ) .  " from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: :order_by:"; // mc12345678 2017-06-25 edited to support wholesale display
 
         $products_options_query = $db->bindVars($products_options_query, ':products_id:', $this->products_id, 'integer');
         $products_options_query = $db->bindVars($products_options_query, ':languages_id:', $_SESSION['languages_id'], 'integer');
@@ -635,11 +635,39 @@ Array(
 //}
             $products_options_array[] = array('id' => $products_options->fields['products_options_values_id'], 'text' => $value_name);
 
+// mc12345678 2017-06-25 BOF edited to support wholesale display
+if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
+    $customers_id = $_SESSION['customer_id'];
+	$customer_check = $db->Execute("select * from " . TABLE_CUSTOMERS . " where customers_id = '$customers_id'");
+		if ($customer_check->fields['customers_whole'] != "0") {
+			$i = (int)$_SESSION['customer_whole'];
+			$i--;	
+			$option_price_array = $products_options->fields['options_values_price_w'];
+			$optionprice = explode("-",$option_price_array);
+			$option_price = (float)$optionprice[$i];
+		
+			if ($option_price=='0' || $option_price==''){
+				$option_price = (float)$optionprice[0];
+			}
+			if ($option_price == '0'){
+				$option_price = $products_options->fields['options_values_price'];
+			}
+//			$option_price = (float)$products_options->fields['options_values_price_w'] /*+ $products_options->fields['options_values_price']*/;
+		} else {
+		  $option_price = $products_options->fields['options_values_price'];
+		}
+
+} else {
+	$option_price = $products_options->fields['options_values_price']; //<- to display "normal" price, otherwise set to '0' to not attach/display price in field.
+}
+// mc12345678 2017-06-25 EOF edited to support wholesale display
+
             /**** AGF - end of new logic ******/
 
             // AGF commented out +/- amount to show actual price
-            if ($products_options->fields['options_values_price'] != '0') {
-              $products_options_array[sizeof($products_options_array)-1]['text'] .= /* mc12345678 This TEXT is actually a defined variable and should be used here instead */ ' (' . $products_options->fields['price_prefix'] . $currencies->display_price($products_options->fields['options_values_price'], zen_get_tax_rate($this->products_tax_class_id)) .')' /* mc12345678 This TEXT is actually a defined variable and should be used here instead */;
+            if ($option_price != '0') {
+              $products_options_array[sizeof($products_options_array)-1]['text'] .= /* mc12345678 This TEXT is actually a defined variable and should be used here instead */ ' (' . $products_options->fields['price_prefix'] . $currencies->display_price($option_price, zen_get_tax_rate($this->products_tax_class_id)) .')' /* mc12345678 This TEXT is actually a defined variable and should be used here instead */;
+              // mc12345678 2017-06-25 EOF edited to support wholesale display
             }
 
             /// Start of Changes- display actual prices instead of +/- Actual Price Pull Down v1.2.3a
