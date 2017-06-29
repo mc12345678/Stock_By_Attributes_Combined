@@ -229,19 +229,22 @@ switch ($action) {
       Allow inserting "ALL" attributes at once
      */
     if (($_POST['add_edit'] == 'add') || ($_GET['add_edit'] == 'add')) { //s_mack:noconfirm
-      $attributes = ltrim($attributes, ','); //remove extra comma seperators
+      $attributes = ltrim($attributes, ','); //remove extra comma separators
 
       if (preg_match("/\|/", $attributes) && preg_match("/\;/", $attributes)) {
         $saveResult = null;
         $messageStack->add_session("Do NOT mix 'All - Attributes' and 'All - Attributes - Combo'", 'failure');
       } elseif (preg_match("/\|/", $attributes)) {
+        // All attributes individually added.
         //explode array on ,
+        $attributes = preg_replace("/\,{2,}/i", ",", $attributes);
         $arrTemp = preg_split("/\,/", $attributes);
         $arrMain = array();
 //        $intCount = 0;
 
         for ($i = 0, $arrTempCount = sizeof($arrTemp); $i < $arrTempCount; $i++) {
           //explode array on |
+          $arrTemp[$i] = preg_replace("/\|{2,}/i", "|", $arrTemp[$i]);
           $arrTemp1 = preg_split("/\|/", $arrTemp[$i]);
           $arrMain[] = $arrTemp1;
 
@@ -252,12 +255,17 @@ switch ($action) {
                   unset($arrMain[$key][$k2]);
                 }
               }
+              if (!sizeof($arrMain[$key])) {
+                unset($arrMain[$key]);
+              }
             } else {
               if (!zen_not_null($value)) {
                 unset($arrMain[$key]);
               }
             }
-            $arrMain[$key] = array_values($arrMain[$key]);
+            if (sizeof($arrMain[$key])) {
+              $arrMain[$key] = array_values($arrMain[$key]);
+            }
           }
 
           $arrMain = array_values($arrMain);
@@ -291,13 +299,16 @@ switch ($action) {
           }
         }
       } elseif (preg_match("/\;/", $attributes)) {
+        // Attributes combined with others.
         //explode array on ,
+        $attributes = preg_replace("/,{2,}/i", ",", $attributes);
         $arrTemp = preg_split("/\,/", $attributes);
         $arrMain = array();
 //        $intCount = 0;
 
         for ($i = 0, $arrTempSize = sizeof($arrTemp); $i < $arrTempSize; $i++) {
           //explode array on ;
+          $arrTemp[$i] = preg_replace("/;{2,}/i", ";", $arrTemp[$i]);
           $arrTemp1 = preg_split("/\;/", $arrTemp[$i]);
           $arrMain[] = $arrTemp1;
 
@@ -308,12 +319,17 @@ switch ($action) {
                   unset($arrMain[$key][$k2]);
                 }
               }
+              if (!sizeof($arrMain[$key])) {
+                unset($arrMain[$key]);
+              }
             } else {
               if (!zen_not_null($value)) {
                 unset($arrMain[$key]);
               }
             }
-            $arrMain[$key] = array_values($arrMain[$key]);
+            if (sizeof($arrMain[$key])) {
+              $arrMain[$key] = array_values($arrMain[$key]);
+            }
           }
 
           $arrMain = array_values($arrMain);
@@ -392,9 +408,19 @@ switch ($action) {
           $saveResult = $stock->insertNewAttribQty($products_id, $productAttributeCombo, $strAttributes, $quantity); //can not include the $customid since it must be unique
         }
       } else {
+        // Individual or N/A attributes
         //used for adding one attribute or attribute combination at a time
         $strAttributes = ltrim($attributes, ","); //remove extra , if present
         $strAttributes = rtrim($strAttributes, ","); //remove extra , if present
+        $strAttributes = preg_replace("/,{2,}/i", ",", $strAttributes);
+        $arrAttributes = array_map('zen_string_to_int', explode(",", $strAttributes));
+/*        foreach ($arrAttributes as $arrAttrKey => $arrAttrVal) {
+          if ($arrAttrVal === 0) {
+            unset($arrAttributes[$arrAttrKey]);
+          }
+        }*/
+        sort($arrAttributes);
+        $strAttributes = implode(",", $arrAttributes);
         $productAttributeCombo = $products_id . '-' . str_replace(',', '-', $strAttributes);
         $saveResult = $stock->insertNewAttribQty($products_id, $productAttributeCombo, $strAttributes, $quantity, $customid, $skuTitle);
       }
