@@ -1248,10 +1248,54 @@ Of the attributes provided, determine the number of those attributes that are
     } elseif (!$this->zen_product_is_sba($products_id)) {
       $return NULL;
     } */
+    
+    $stocked_overrides = true; // true: Value(s) in PWAS table will be used if they exist otherwise any non-stocked entries will be used
+                               // false: non-stock attributes will override and the stocked variants will be ignored if they include a non-stocked attribute.
+    if ($stocked_overrides) {
+      $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
+    } else {
 
-    $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
+//    $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
     // Summary of the above, if the product is not tracked by SBA, then return null.
     // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
+      $new_attrib_list = $attribute_list;
+      foreach ($new_attrib_list as $keyhere => $products_attribute_id) {
+        $attrib_ids_list = $this->zen_get_sba_attribute_ids($products_id, array($keyhere => $products_attribute_id), $from);
+        if (zen_not_null($attrib_ids_list) && is_array($attrib_ids_list)) {
+          foreach($attrib_ids_list as $key_attrib_id => $val_attrib_id) {
+            if ($this->non_stock_attribute($val_attrib_id)) {
+              unset($new_attrib_list[$keyhere]);
+            }
+          }
+        }
+      }
+      $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $new_attrib_list, $from);
+    }
+//    $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
+    // Summary of the above, if the product is not tracked by SBA, then return null.
+    // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
+    $retry = 1;
+    while ($retry >= 0) {
+    if (!$retry) {
+      if ($stocked_overrides) {
+        $new_attrib_list = $attribute_list;
+        foreach ($new_attrib_list as $keyhere => $products_attribute_id) {
+          $attrib_ids_list = $this->zen_get_sba_attribute_ids($products_id, array($keyhere => $products_attribute_id), $from);
+          if (zen_not_null($attrib_ids_list) && is_array($attrib_ids_list)) {
+            foreach($attrib_ids_list as $key_attrib_id => $val_attrib_id) {
+              if ($this->non_stock_attribute($val_attrib_id)) {
+                unset($new_attrib_list[$keyhere]);
+              }
+            }
+          }
+        }
+        $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $new_attrib_list, $from);
+      } else {
+        $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
+      }
+
+      $retry--;
+    }
 
     if (isset($stock_attributes_list) && is_array($stock_attributes_list) && sizeof($stock_attributes_list) == 1 && $datatype != 'dupTest') {
       //         echo '<br />Single Attribute <br />';
@@ -1389,7 +1433,9 @@ Of the attributes provided, determine the number of those attributes that are
           } */
 
         if ($notAccounted) {
-          return false;
+          if (!$retry) {
+            return false;
+          }
         } else {
           switch ($datatype) {
             case 'stock':
@@ -1402,6 +1448,8 @@ Of the attributes provided, determine the number of those attributes that are
           return $stockResultArray;
         }
       }
+    }
+    $retry--;
     }
 
     return;
