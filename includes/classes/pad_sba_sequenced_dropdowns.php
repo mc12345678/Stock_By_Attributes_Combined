@@ -670,6 +670,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
               // mc12345678 2017-06-25 EOF edited to support wholesale display
             }
 
+            // None of the remainder of this "function" is used except to add a space at the end of the text.
             /// Start of Changes- display actual prices instead of +/- Actual Price Pull Down v1.2.3a
             $new_price ? $original_price = $new_price : $original_price = $this->products_original_price; //// check if set special price note $this variable
 
