@@ -86,6 +86,9 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
       return parent::_draw_stocked_attributes();
     }
 
+    if (!defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK')) {
+      define('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK', DB_PREFIX . 'products_with_attributes_stock_attributes_non_stock');
+    }
     /* for ($o=0; $o<=sizeof($attributes); $o++) */ {
       $o = 0;
       // Check stock
@@ -95,21 +98,261 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 
 // mc12345678 NEED TO PERFORM ABOVE QUERY BASED OFF OF THE INFORMATION IN $attributes[0]['ovals'] to pull only the data associated with the one attribute in the first selection... Needs to be clear enough that the sequence of the data searched for identifies the appropriate attribute.  Also need to make sure that the subsequent data forced to display below actually pulls the out of stock information associated with the sub (sub-sub(sub-sub-sub)) attribute.
 
-        $attribute_stock_query = "select sum(pwas.quantity) as quantity from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pwas where pwas.products_id = :products_id: AND pwas.quantity >= 0 AND pwas.stock_attributes like (SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " WHERE products_id = :products_id: and options_values_id = :options_values_id:) OR pwas.stock_attributes like CONCAT((SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " WHERE products_id = :products_id: and options_values_id = :options_values_id:),',%') or pwas.stock_attributes like CONCAT('%,',(SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " WHERE products_id = :products_id: and options_values_id = :options_values_id:),',%') or pwas.stock_attributes like CONCAT('%,',(SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " WHERE products_id = :products_id: and options_values_id = :options_values_id:))";
+/*
+select  ( pwas.quantity) as quantity, ( pwasans.attribute_type) as pwasans_quantity, pwasans.attribute_type_id from temp5_products_with_attributes_stock pwas, temp5_products_with_attributes_stock_attributes_non_stock pwasans where pwasans.attribute_type = 'PO' and pwasans.attribute_type_source_id = 2 AND pwasans.attribute_type_id = ( SELECT pa.options_id FROM temp5_products_attributes pa WHERE pa.products_id = 2 AND pa.options_values_id = 6) OR ( pwasans.attribute_type = 'PV' AND pwasans.attribute_type_source_id = 2 AND pwasans.attribute_type_id = 6 ) OR pwas.products_id = 2 AND pwas.stock_attributes like (SELECT products_attributes_id from temp5_products_attributes WHERE products_id = 2 and options_values_id = 6) OR pwas.stock_attributes like CONCAT((SELECT products_attributes_id from temp5_products_attributes WHERE products_id = 2 and options_values_id = 6),',%') or pwas.stock_attributes like CONCAT('%,',(SELECT products_attributes_id from temp5_products_attributes WHERE products_id = 2 and options_values_id = 6),',%') or pwas.stock_attributes like CONCAT('%,',(SELECT products_attributes_id from temp5_products_attributes WHERE products_id = 2 and options_values_id = 6))
+*/
+
+
+       /* EARLY ATTEMPT $attribute_stock_query = "select count(pwas.quantity) as quantity, count(pwasans.attribute_type) as pwasans_quantity from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pwas, " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK . " pwasans 
+            where pwasans.attribute_type = :products_options: 
+              and pwasans.attribute_type_source_id = :products_id: 
+              AND pwasans.attribute_type_id = (
+                SELECT pa.products_attributes_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa 
+                   WHERE pa.products_id = :products_id: 
+                     AND pa.options_values_id = :options_values_id:) 
+              OR (
+                  pwasans.attribute_type = :products_values: 
+                  AND pwasans.attribute_type_source_id = :products_id:
+                    AND pwasans.attribute_type_id = :options_values_id:
+                    " . *//*(SELECT pa.options_values_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa 
+                      WHERE pa.products_attributes_id = :check_attribute_id:) *//* "
+                )
+              OR pwas.products_id = :products_id: 
+              " . (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ") . "
+                AND pwas.stock_attributes 
+                   like (SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                     WHERE products_id = :products_id: 
+                       and options_values_id = :options_values_id:) 
+              OR pwas.stock_attributes 
+                like CONCAT((SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                   WHERE products_id = :products_id: 
+                     and options_values_id = :options_values_id:),',%') 
+              " . (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ") . "
+              or pwas.stock_attributes 
+                like CONCAT('%,',(SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                  WHERE products_id = :products_id: 
+                    and options_values_id = :options_values_id:),',%') 
+              " . (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ") . "
+              or pwas.stock_attributes 
+                like CONCAT('%,',(SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                  WHERE products_id = :products_id: 
+                    and options_values_id = :options_values_id:))
+              " . (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ");*/
+
+
+/* Newer attempt */
+     /*   $attribute_stock_query = "select count(distinct pwas.quantity) as quantity, count(distinct pwasans.attribute_type) as pwasans_quantity from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pwas, " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK . " pwasans 
+            where pwasans.attribute_type = :products_options: 
+              and pwasans.attribute_type_source_id = :products_id: 
+              AND pwasans.attribute_type_id = (
+                SELECT pa.options_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa 
+                   WHERE pa.products_id = :products_id: 
+                     AND pa.options_values_id = :options_values_id:) 
+              OR (
+                  pwasans.attribute_type = :products_values: 
+                  AND pwasans.attribute_type_source_id = :products_id:
+                    AND pwasans.attribute_type_id = :options_values_id:
+                    " . *//*(SELECT pa.options_values_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa 
+                      WHERE pa.products_attributes_id = :check_attribute_id:) *//* "
+                )
+              
+              
+              OR pwas.products_id = :products_id: 
+              " . (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ") . "
+                AND pwas.stock_attributes 
+                   like (SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                     WHERE products_id = :products_id: 
+                       and options_values_id = :options_values_id:) 
+              OR pwas.stock_attributes 
+                like CONCAT((SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                   WHERE products_id = :products_id: 
+                     and options_values_id = :options_values_id:),',%') 
+              " *//*. (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ")*//* . "
+              or pwas.stock_attributes 
+                like CONCAT('%,',(SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                  WHERE products_id = :products_id: 
+                    and options_values_id = :options_values_id:),',%') 
+              " *//*. (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ")*//* . "
+              or pwas.stock_attributes 
+                like CONCAT('%,',(SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                  WHERE products_id = :products_id: 
+                    and options_values_id = :options_values_id:))
+              " *//*. (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ")*/   //;
+
+
+
+        $attribute_stock_query = "select distinct pwas.quantity as quantity, count(distinct pwasans.attribute_type) as pwasans_quantity from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pwas, " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK . " pwasans 
+            where pwasans.attribute_type = :products_options: 
+              and pwasans.attribute_type_source_id = :products_id: 
+              AND pwasans.attribute_type_id = (
+                SELECT pa.options_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa 
+                   WHERE pa.products_id = :products_id: 
+                     AND pa.options_values_id = :options_values_id:) 
+              OR (
+                  pwasans.attribute_type = :products_values: 
+                  AND pwasans.attribute_type_source_id = :products_id:
+                    AND pwasans.attribute_type_id = :options_values_id:
+                    " . /*(SELECT pa.options_values_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa 
+                      WHERE pa.products_attributes_id = :check_attribute_id:) */ "
+                )
+              OR (
+                  pwasans.attribute_type = :values: 
+                  AND pwasans.attribute_type_source_id = 0
+                    AND pwasans.attribute_type_id = :options_values_id:
+                    AND pwasans.attribute_type_id = (SELECT pa.options_values_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa
+                      WHERE pa.products_id = :products_id:
+                          AND pa.options_values_id = :options_values_id:)
+                    " . /*(SELECT pa.options_values_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa 
+                      WHERE pa.products_attributes_id = :check_attribute_id:) */ "
+                )
+              OR (
+                  pwasans.attribute_type = :options: 
+                  AND pwasans.attribute_type_source_id = 0
+                    AND pwasans.attribute_type_id = :options_values_id:
+                    AND pwasans.attribute_type_id = (SELECT pa.options_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa
+                      WHERE pa.products_id = :products_id:
+                          AND pa.options_values_id = :options_values_id:)
+                    " . /*(SELECT pa.options_values_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa 
+                      WHERE pa.products_attributes_id = :check_attribute_id:) */ "
+                )
+              
+              
+              OR pwas.products_id = :products_id: 
+              " . (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ") . "
+                AND pwas.stock_attributes 
+                   like (SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                     WHERE products_id = :products_id: 
+                       and options_values_id = :options_values_id:) 
+              OR pwas.products_id = :products_id: AND pwas.stock_attributes 
+                like CONCAT((SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                   WHERE products_id = :products_id: 
+                     and options_values_id = :options_values_id:),',%') 
+              " . (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ") . "
+              or pwas.products_id = :products_id: 
+                AND pwas.stock_attributes 
+                like CONCAT('%,',(SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                  WHERE products_id = :products_id: 
+                    and options_values_id = :options_values_id:),',%') 
+              " . (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ") . "
+              or pwas.products_id = :products_id: 
+                AND pwas.stock_attributes 
+                like CONCAT('%,',(SELECT products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " 
+                  WHERE products_id = :products_id: 
+                    and options_values_id = :options_values_id:))
+              " . (STOCK_ALLOW_CHECKOUT !== 'false' 
+                ? "" 
+                : "AND pwas.quantity > 0 ");
+
+
+
+
+
+
         $attribute_stock_query = $db->bindVars($attribute_stock_query, ':products_id:', $this->products_id, 'integer');
         $attribute_stock_query = $db->bindVars($attribute_stock_query, ':options_values_id:', $attributes[$o]['ovals'][$a]['id'], 'integer');
 
+        $attribute_stock_query = $db->bindVars($attribute_stock_query, ':products_values:', PWAS_NON_STOCK_PRODUCT_OPTION_VALUE, 'string');
+        $attribute_stock_query = $db->bindVars($attribute_stock_query, ':products_options:', PWAS_NON_STOCK_PRODUCT_OPTION, 'string');
+        $attribute_stock_query = $db->bindVars($attribute_stock_query, ':options:', PWAS_NON_STOCK_ATTRIB_OPTION, 'string');
+        $attribute_stock_query = $db->bindVars($attribute_stock_query, ':values:', PWAS_NON_STOCK_ATTRIB_OPTION_VALUE, 'string');
 
         $attribute_stock = $db->Execute($attribute_stock_query);
 //echo 'Attrib stock_' . $a . ' is: ' . $attribute_stock->RecordCount();
-        $out_of_stock = (($attribute_stock->fields['quantity']) <= 0);  // This looks at all variants indicating 0 or no variant being present.  Need to modify to look at the quantity for each variant... So look at the quantity of each and if that quantity is zero then, that line needs to be modified...
-        if ($out_of_stock && ($this->show_out_of_stock == 'True')) {
+  $out_of_stock = true;
+  $backorder = true;
+
+
+  while (!$attribute_stock->EOF) {
+    if (($attribute_stock->fields['quantity'] > 0 && STOCK_ALLOW_CHECKOUT === 'false') || STOCK_ALLOW_CHECKOUT !== 'false' ) {
+      if (STOCK_ALLOW_CHECKOUT !== 'false') {
+        if ($attribute_stock->fields['pwasans_quantity'] === '0') {
+          $out_of_stock = false;
+          $backorder = false;
+          unset($attributes[$o]['ovals'][$a]);
+          break;
+        } else {
+        $out_of_stock = false;
+        if ($attribute_stock->fields['quantity'] > 0) {
+          $backorder = false;
+          $out_of_stock = false;
+          break;
+        }
+        }
+      } else {
+        $out_of_stock = false;
+        break;
+      }
+    }
+    $attribute_stock->MoveNext();
+  }
+
+/*
+
+
+select  (pwas.quantity) as quantity, pwas.stock_attributes, ( pwasans.attribute_type) as pwasans_quantity from temp5_products_with_attributes_stock pwas left join temp5_products_with_attributes_stock_attributes_non_stock pwasans on ( pwasans.attribute_type = 'PV' AND pwasans.attribute_type_source_id = pwas.products_id AND pwasans.attribute_type_id = 4 ) WHERE (pwas.products_id = 2 AND pwas.stock_attributes like (SELECT products_attributes_id from temp5_products_attributes WHERE products_id = 2 and options_values_id = 4)) OR (pwas.products_id = 2 and pwas.stock_attributes like CONCAT((SELECT products_attributes_id from temp5_products_attributes WHERE products_id = 2 and options_values_id = 4),',%')) or (pwas.products_id = 2 AND pwas.stock_attributes like CONCAT('%,',(SELECT products_attributes_id from temp5_products_attributes WHERE products_id = 2 and options_values_id = 4),',%')) or (pwas.products_id AND pwas.stock_attributes like CONCAT('%,',(SELECT products_attributes_id from temp5_products_attributes WHERE products_id = 2 and options_values_id = 4)))
+
+
+
+
+
+Array( 
+[0] => 
+   Array ( [oid] => 1 
+          [oname] => Color 
+          [oimgstyle] => 0 
+          [ovals] => Array ( 
+                 [0] => Array ( [id] => 26 [text] => Green ) 
+                 [1] => Array ( [id] => 15 [text] => Blue ) 
+                 [2] => Array ( [id] => 31 [text] => Silver ) ) 
+          [otype] => 0 
+          [default] => 0 ) 
+[1] => 
+    Array ( [oid] => 6 
+            [oname] => Media Type 
+            [oimgstyle] => 0 
+            [ovals] => Array ( 
+                [0] => Array ( [id] => 23 [text] => DVD ) 
+                [1] => Array ( [id] => 22 [text] => VHS (+$4.99) ) 
+                [2] => Array ( [id] => 14 [text] => DVD/VHS Combo Pak (+$19.99) ) ) 
+            [otype] => 0 
+            [default] => 0 ))
+
+*/
+//}
+//        $out_of_stock = (($attribute_stock->fields['quantity'] <= 0) && (STOCK_ALLOW_CHECKOUT === 'false' || STOCK_ALLOW_CHECKOUT !== 'false' && $attribute_stock->fields['pwasans_quantity'] === '0'));  // This looks at all variants indicating 0 or no variant being present.  Need to modify to look at the quantity for each variant... So look at the quantity of each and if that quantity is zero then, that line needs to be modified...
+        if ($out_of_stock && ($this->show_out_of_stock == 'True') || $backorder == true && ($this->show_out_of_stock == 'True')) {
           switch ($this->mark_out_of_stock) {
-            case 'Left': $attributes[$o]['ovals'][$a]['text'] = TEXT_OUT_OF_STOCK . ' - ' . zen_output_string_protected($attributes[$o]['ovals'][$a]['text']);
+            case 'Left': $attributes[$o]['ovals'][$a]['text'] = ($backorder ? "Back order: " : TEXT_OUT_OF_STOCK) . ' - ' . zen_output_string_protected($attributes[$o]['ovals'][$a]['text']);
               break;
-            case 'Right': $attributes[$o]['ovals'][$a]['text'] =zen_output_string_protected($attributes[$o]['ovals'][$a]['text']) . ' - ' . TEXT_OUT_OF_STOCK;
+            case 'Right': $attributes[$o]['ovals'][$a]['text'] =zen_output_string_protected($attributes[$o]['ovals'][$a]['text']) . ' - ' . ($backorder ? "Back order: " : TEXT_OUT_OF_STOCK);
               break;
           } //end switch
+          // If this particular record doesn't or can not exist then remove the possibility of it being displayed.
+/*          if ($attribute_stock->fields['quantity'] === '0' && $attribute_stock->fields['pwasans_quantity'] === '0') {
+            unset($attributes[$o]['ovals'][$a]);
+          }*/
         } //end if
         elseif ($out_of_stock && ($this->show_out_of_stock != 'True')) {
           unset($attributes[$o]['ovals'][$a]);
