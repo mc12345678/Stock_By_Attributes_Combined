@@ -40,6 +40,61 @@ class products_with_attributes_class_stock extends base {
     $this->_isSBA = array();
   }
 
+function non_stock_attribute($check_attribute_id/*, $non_stock_id, $non_stock_type, $non_stock_source = '0', $non_stock_language_id = $_SESSION['languages_id']*/) {
+  global $db;
+
+
+  if (!defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK')) {
+    define('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK' , DB_PREFIX . 'products_with_attributes_stock_attributes_non_stock');
+  }
+      $sql = 'SELECT COUNT(*) as quantity 
+              FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK . ' pwasans 
+              WHERE 
+                (pwasans.attribute_type = :products_options: 
+                  AND pwasans.attribute_type_id = 
+                    (SELECT pa2.options_id FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa2 
+                      WHERE pa2.products_attributes_id = :check_attribute_id:) 
+                  AND pwasans.attribute_type_source_id = 
+                    (SELECT pa2.products_id FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa2 
+                      WHERE pa2.products_attributes_id = :check_attribute_id:)
+                ) OR (
+                  pwasans.attribute_type = :products_values: 
+                    AND pwasans.attribute_type_id = 
+                    (SELECT pa2.options_values_id FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa2 
+                      WHERE pa2.products_attributes_id = :check_attribute_id:) 
+                  AND pwasans.attribute_type_source_id = 
+                    (SELECT pa2.products_id FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa2 
+                      WHERE pa2.products_attributes_id = :check_attribute_id:)
+                ) OR (
+                  pwasans.attribute_type = :options: 
+                    AND pwasans.attribute_type_id = 
+                    (SELECT pa2.options_id FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa2 
+                      WHERE pa2.products_attributes_id = :check_attribute_id:) 
+                  AND pwasans.attribute_type_source_id = 0
+                ) OR (
+                  pwasans.attribute_type = :values: 
+                    AND pwasans.attribute_type_id = 
+                    (SELECT pa2.options_values_id FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa2 
+                      WHERE pa2.products_attributes_id = :check_attribute_id:) 
+                  AND pwasans.attribute_type_source_id = 0
+                )';
+
+      $sql = $db->bindVars($sql, ':products_values:', PWAS_NON_STOCK_PRODUCT_OPTION_VALUE, 'string');
+      $sql = $db->bindVars($sql, ':products_options:', PWAS_NON_STOCK_PRODUCT_OPTION, 'string');
+      $sql = $db->bindVars($sql, ':options:', PWAS_NON_STOCK_ATTRIB_OPTION, 'string');
+      $sql = $db->bindVars($sql, ':values:', PWAS_NON_STOCK_ATTRIB_OPTION_VALUE, 'string');
+      $sql = $db->bindVars($sql, ':check_attribute_id:', $check_attribute_id, 'integer');
+
+      $non_stock_result = $db->Execute($sql, false, false, 0, true);
+
+       $total = $non_stock_result->fields['quantity'];
+        if (!$total) {
+          return false;
+        } else {
+          return true; //'products_attributes_id'
+        }
+}
+
 //test for multiple entry of same product in customer's shopping cart
 //This does not yet account for multiple quantity of the same product (2 of a specific attribute type, but instead 2 different types of attributes.)
 function cartProductCount($products_id){
