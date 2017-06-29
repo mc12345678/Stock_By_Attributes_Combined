@@ -476,6 +476,26 @@ function dropSBATable(){
   return;
 }
 
+function dropSBANonStockTable() {
+  global $db, $resultMmessage;
+
+  /*
+   * DROP TABLE IF EXISTS 'products_with_attributes_stock_attributes_non_stock';
+   */
+  array_push($resultMmessage, '<br /><b>Clean-Up</b>, Removing Table products_with_attributes_stock_attributes_non_stock: ');
+
+  $sql = "DROP TABLE IF EXISTS ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK;
+
+  $db->Execute($sql);
+  if($db->error){
+    $msg = ' Error Message: ' . $db->error;
+  }
+  array_push($resultMmessage, '&bull; Deleted table products_with_attributes_stock_attributes_non_stock ' . $msg);
+  zen_record_admin_activity('Deleted the products_with_attributes_stock_attributes_non_stock table from the install file.', 'warning');
+
+  return;
+}
+
 //Clean-up Drop table products_with_attributes_stock
 function dropSBAOrdersTable(){
   global $db, $resultMmessage;
@@ -859,6 +879,28 @@ function insertDynDropdownsConfiguration(){
     }
 
 
+}
+
+function addSBANonStockTable() {
+  global $db, $resultMmessage, $failed;
+
+  if(!checkSBAtable(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK)) {
+
+    $result = $db->Execute("CREATE TABLE IF NOT EXISTS " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK . " (
+      attribute_type varchar(64) NOT NULL default '',
+      attribute_type_source_id int(11) NOT NULL default '0',
+      attribute_type_id int(11) NOT NULL default '0',
+      language_id int(11) NOT NULL default '0',
+      PRIMARY KEY (attribute_type,attribute_type_source_id,attribute_type_id,language_id),
+      KEY idx_attribute_type_id (attribute_type,attribute_type_id,language_id)
+    ) ENGINE=MyISAM;");
+
+    if($db->error){
+      $msg = ' Error Message: ' . $db->error;
+      $failed = true;
+    }
+    array_push($resultMmessage, '<br /><b>Added New Table</b> products_with_attributes_stock_attributes_non_stock. ' . $msg);
+  }
 }
 
 //Add new table products_with_attributes_stock
@@ -2394,6 +2436,7 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
 
       <optgroup label="Installation">
        <option value="installAll">Full/Upgrade DB Install</option>
+       <option value="installNonStock">Non-Stock DB Table Install</option>
 
       <optgroup label="Remove Settings">
       <option value="removeSettings">Remove Configuration Settings</option>
@@ -2448,6 +2491,7 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
     insertDynDropdownsConfigurationMenu();
     insertDynDropdownsConfiguration();
     addSBAtable();//Call function to Add New table products_with_attributes_stock
+    addSBANonStockTable();
     insertSBAconfigurationMenu();//add install script to configuration menu
     verifyProductOptionsTypes();// Verify that at least PRODUCTS_OPTIONS_TYPE_DROPDOWN is still in the database
     // and "tucked" away.
@@ -2455,6 +2499,10 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
     //Test for proper New file placement
     checkSBAfileLocation();//Call to check for proper placement of New files
     echo showScriptResult('Full Install');//show script result
+  }
+  elseif ($action == 'installNonStock') {
+    addSBANonStockTable();
+    echo showScriptResult('Non-Stock DB Table Install');//show script result
   }
   elseif($action == 'removeSettings'){
     removeSBAconfiguration();  // Call function to remove configuration entries.
@@ -2471,6 +2519,7 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
     removeDynDropdownsConfiguration();
     removeDynDropdownsAdminPages();
     dropSBATable();//Call function to remove SBA table
+    dropSBANonStockTable(); // Call function to remove the SBA table that tracks non-stock attributes.
 //    dropSBAOrdersTable(); // Not sure this should be performed, as it will remove historical data.
     echo removeSBAfiles();//show instructions for file removal/reversion to previous state
     echo showScriptResult('Remove All');//show results of table modifications
