@@ -431,6 +431,7 @@ function saveAttrib(){
   global $db;
 //  $stock = $products_with_attributes_stock_class; // Should replace all cases of $stock with the class variable name.
     $i = 0;
+
     foreach ($_POST as $key => $value) {
       $matches = array();
       
@@ -447,7 +448,7 @@ function saveAttrib(){
         switch ($tabledata) {
           case 'quantity':
           case 'sort':
-            $value = doubleval($value); // Get a float value
+//            $value = (float)$value; // Get a float value
             $value = $db->getBindVarValue($value, 'float');
             break;
           case 'customid':
