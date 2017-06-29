@@ -969,7 +969,8 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
           } else {
             
 
-            $out.='    if (' . $outArrayTestArray[$nextattr - 1] . $outArrayListedArray[$nextattr - 1];
+            $out.='    if (' . $outArrayTestArray[$nextattr - 1] . 'true'; //. ' (' . $outArrayListedArray[$nextattr - 1];
+//            $out.=' ||' . ' frm["id[' . $attributes[$nextattr - 1]['oid'] . ']"].value === "0")';
             $out.= ') {' . "\n";            
             $out.='        if (frm["id[' . $attributes[$i]['oid'] . ']"] !== undefined) {' . "\n";
             // Reset the dropdown to have only one item.
