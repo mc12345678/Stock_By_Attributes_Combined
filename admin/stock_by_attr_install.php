@@ -2127,6 +2127,13 @@ function instructionsSBA(){
   $output = "<p><h2>How To Use</h2>
         <form method='get' action='" . zen_href_link('stock_by_attr_install', '', 'NONSSL')."' >
         <ul>
+          <li>To support the newly added non-stock table entry, follow the following guidance:
+          <li>A single product's value can be considered non-stock by entering the products_id as the source_id, the options_values_id as the type_id and the type as PV.</li>
+          <li>A single product's options can be considered non-stock by entering the products_id as the source_id, the options_id as the type_id and the type as PO.</li>
+          <li>A single option value (potentially applicable to all product) can be considered non-stock by entering 0 as the source_id, the options_values_id as the type_id and the type as AV.</li>
+          <li>A single option (potentially applicable to all product) can be considered non-stock by entering 0 as the source_id, the options_id as the type_id and the type as AO.</li>
+          <li>The expectation (upon software completion) is that an option_value will only be defined by only one of the above rules such that once all option values for an option name has been populated, then the option name itself will be defined and the individual records removed.</li>
+          <p></p>
           <li>Read the instructions located in the folder '<b>Instructions</b>'.</li>
           <li>Backup the site and database prior to using these files or making any database changes with the script.</li>
           <li>An 'Optional.sql.txt' file is available, Use at your own risk!</li>
