@@ -792,7 +792,7 @@ function nullDataEntry($fieldtoNULL){
   //Need to test for absolute 0 (===), else compare will convert $fieldtoNULL to a number (null) and evauluate as a null 
   //This is due to PHP string to number compare "feature"
   if(!empty($fieldtoNULL) || $fieldtoNULL === 0){
-    if(is_numeric($fieldtoNULL) || $fieldtoNULL === 0){
+    if((is_numeric($fieldtoNULL) && ($fieldtoNULL > 0 && strpos($fieldtoNULL, '0') !== 0 || $fieldtoNULL < 0 && strpos($fieldtoNULL, '0') !== 1)) || $fieldtoNULL === 0){
       $output = $fieldtoNULL;//returns number without quotes
     }
     else{
