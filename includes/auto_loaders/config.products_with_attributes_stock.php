@@ -42,4 +42,3 @@
   'className' => 'products_with_attributes_stock',
   'objectName' => 'products_with_attributes_stock_observe'
   ); 
-?>
