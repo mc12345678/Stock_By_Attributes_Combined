@@ -79,7 +79,7 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
 
     $out = '';
     $out2 = '';
-    $attributes = array();
+    // $attributes = array();
 
     $attributes = $this->_build_attributes_array(true, true);
     if (count($attributes) <= 1) {

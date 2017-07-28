@@ -125,7 +125,7 @@ function cartProductCount($products_id){
  */
   function zen_draw_pull_down_menu_SBAmod($name, $values, $default = '', $parameters = '', $required = false, $disable = array(), $options_menu_images = null) {
     
-    global $template_dir;
+//    global $template_dir;
     $tmp_attribID = trim($name, 'id[]');//used to get the select ID reference to be used in jquery
     if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO != '0' && (isset($_GET['products_id']) && $_GET['products_id'] != '' ? $this->zen_product_is_sba($_GET['products_id']) : false)) 
     {
@@ -1445,7 +1445,6 @@ Of the attributes provided, determine the number of those attributes that are
             default:
               return $stockResultArray;
           }
-          return $stockResultArray;
         }
       }
     }

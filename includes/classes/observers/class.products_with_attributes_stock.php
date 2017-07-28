@@ -287,7 +287,7 @@ class products_with_attributes_stock extends base {
     * NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE
     */
   function updateNotifyAttributesModuleOriginalPrice(&$callingClass, $notifier, $paramsArray){
-    global $db, $products_options, $products_options_names, $currencies, $new_attributes_price, $product_info, $products_options_display_price, $PWA_STOCK_QTY;
+    global /*$db, */$products_options, $products_options_names, $currencies, $new_attributes_price, $product_info, $products_options_display_price, $PWA_STOCK_QTY;
     
     if ($this->_isSBA && ( $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA || ((PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' && $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1)))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
       // START "Stock by Attributes" SBA added original price for display, and some formatting
