@@ -121,7 +121,7 @@ switch ($action) {
         zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $_POST['products_id'], $request_type));
       }
 
-      $products_id = $db->getBindVarValue($_POST['products_id'], 'integer');
+      $products_id = (int)$_POST['products_id'];
       $product_name = zen_get_products_name($products_id);
 
       $customid = trim($_POST['customid']);
