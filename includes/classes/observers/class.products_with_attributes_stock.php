@@ -686,7 +686,9 @@ class products_with_attributes_stock extends base {
           // Then process that list of stock_ids to decrement based on their impact on stock.  This
           // all should be a consistent application.
           // mc12345678 Identify a list of attributes associated with the product
-          $stock_attributes_search = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
+
+          //  mc12345678 17-07-10 the variable $stock_attributes_search is not used further down or elswhere applicable to this function, therefore should not attempt to perform the associated work
+          // $stock_attributes_search = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
           $stock_attributes_search_new = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($this->_productI['id'], $this->_productI['attributes'], 'order', 'ids');
           if (isset($stock_attributes_search_new) && $stock_attributes_search_new === false) {
               // There is one attribute, but there are no items within the PWAS table that relate to the provided attribute.
