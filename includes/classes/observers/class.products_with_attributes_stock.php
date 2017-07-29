@@ -618,6 +618,9 @@ class products_with_attributes_stock extends base {
   }
   /*
    * Function that is activated when NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT is encountered as a notifier.
+   * Doesn't exist in ZC 1.5.1; however, operation of it is needed and can be accomplished in conjunction with NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN.
+   * ZC 1.5.3 - 1.5.4: $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT', array(), $this->products[$i], $i);
+   * ZC 1.5.5: $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT', array('i'=>$i), $this->products[$i], $i);
    */
   //NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT //Line 716
   function updateNotifyOrderProcessingStockDecrementInit(&$callingClass, $notifier, $paramsArray, & $productI, & $i) {
@@ -636,18 +639,24 @@ class products_with_attributes_stock extends base {
         foreach($this->_productI['attributes'] as $attributes){
           $attributeList[] = $attributes['value_id'];
         }
-        $customid = $_SESSION['pwas_class2']->zen_get_customid($this->_productI['id'],$attributeList); // Expects that customid would be from a combination product, not individual attributes on a single product.  Should return an array if the values are individual or a single value if all attributes equal a single product.
+        $customid = $_SESSION['pwas_class2']->zen_get_customid($this->_productI['id'],$attributeList); // Expects that customid is the string of text representing either the combination product or comma imploded customid of each individual attribute that comprises this variant, or if none is provided/available then the model is returned.
         $productI['customid']['value'] = $customid;
         $this->_productI['customid']['value'] = $customid;
 //      $productI['model'] = (zen_not_null($customid) ? $customid : $productI['model']);
         $this->_productI['model'] = $productI['model'];
       }
+
+    // @TODO: work with not decreasing overall stock for items that are generally Tracked by SBA, but have non-stock selections that would not affect the quantities tracked by SBA or in some cases ZC.  
+    //   This can be done by setting $callingClass->doStockDecrement as necessary to prevent decreasing the total stock item(s).
     }
     // END "Stock by Attributes"
   }
 
   /*
    * Function that is activated when NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN is encountered as a notifier.
+   * ZC 1.5.1(orig): $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN');
+   * Provided: $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN', array('i'=>$i, 'stock_values'=>$stock_values));
+   * ZC 1.5.3 - 1.5.5: $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN', $i, $stock_values);
    */
   // Line 739
     /**
@@ -679,8 +688,13 @@ class products_with_attributes_stock extends base {
           $stock_attributes_search = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order');
           $stock_attributes_search_new = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($this->_productI['id'], $this->_productI['attributes'], 'order', 'ids');
           if (isset($stock_attributes_search_new) && $stock_attributes_search_new === false) {
-              
+              // There is one attribute, but there are no items within the PWAS table that relate to the provided attribute.
+              // ie. this could be a non-stock single attribute.
+              // There are multiple attributes and neither the combination of them nor if they are evaluated individually results in records found in the PWAS table and therefore the PWAS table stock is not to be affected.
+              // Question here is whether the product's stock should be affected? If not, additional action needs to be taken
+              //   to prevent stock reduction.
           } elseif (isset($stock_attributes_search_new) && is_array($stock_attributes_search_new) && count($stock_attributes_search_new) == 0) {
+              // There are multiple attributes but somehow the returned array has been declared, but nothing assigned to it.
               
           } elseif (isset($stock_attributes_search_new) && $stock_attributes_search_new && count($stock_attributes_search_new) > 0) {
 
@@ -722,7 +736,9 @@ class products_with_attributes_stock extends base {
    */
   // Line 776
     /**
-     * $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END', $i);
+     * ZC 1.5.1(orig): $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END');
+     *  Provided(orig).
+     * ZC 1.5.3 - 1.5.5: $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END', $i);
      *
      * @param $callingClass
      * @param $notifier
@@ -1088,6 +1104,9 @@ class products_with_attributes_stock extends base {
 //      $stock_id = zen_get_sba_stock_attribute_id(zen_get_prid($this->products[$i]['id']), $this->products[$i]['attributes'], 'order'); //true; // Need to use the $stock_attribute/attributes to obtain the attribute id.
     }
 
+    /**
+     *Provided in ZC 1.5.1: $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN', array('i'=>$i, 'stock_values'=>$stock_values));
+     **/
     if ($notifier == 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN'){
       global $attribute_stock_left;
 
