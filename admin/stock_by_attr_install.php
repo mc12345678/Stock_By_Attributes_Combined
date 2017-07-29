@@ -24,7 +24,7 @@ $version_check_index=true;//used in admin/includes/header.php
 $languages = zen_get_languages();
 $languages_array = array();
 $languages_selected = DEFAULT_LANGUAGE;
-for ($i = 0, $n = sizeof($languages); $i < $n; $i++) {
+for ($i = 0, $n = count($languages); $i < $n; $i++) {
   $languages_array[] = array('id' => $languages[$i]['code'],
       'text' => $languages[$i]['name']);
   if ($languages[$i]['directory'] == $_SESSION['language']) {
@@ -1723,7 +1723,7 @@ function installOptionalSQL5(){
             unset($attributes_id[$loc]);
           }
         }
-        if (sizeof($attributes_id)) {
+        if (!empty($attributes_id)) {
 
           $sql = "SELECT pwas.stock_id FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pwas where products_id = :products_id: and stock_attributes = :stock_attributes:";
           $sql = $db->bindVars($sql, ':stock_attributes:', implode(',',$attributes_id), 'string');

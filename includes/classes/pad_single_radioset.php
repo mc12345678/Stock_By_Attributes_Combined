@@ -71,7 +71,7 @@
       $out='';
       
       $attributes = $this->_build_attributes_array(true, false);
-      if (sizeof($attributes)>0) {
+      if (!empty($attributes)) {
         $combinations = array();
         $selected_combination = 0;
         $this->_build_attributes_combinations($attributes, $this->show_out_of_stock == 'True', $this->mark_out_of_stock, $combinations, $selected_combination);
@@ -82,7 +82,7 @@
         }
         $combname=substr($combname,2).':';
         
-        for ($i = 0; $i<sizeof($combinations); $i++) {
+        for ($i = 0; $i<count($combinations); $i++) {
           if (isset($_GET['products_id']) && $_SESSION['cart']->contents[$_GET['products_id']]) {
             if ($combinations[$i]['comb'] == $_SESSION['cart']->contents[$_GET['products_id']]['attributes']) {
               $selected_combination = $i;

@@ -170,7 +170,7 @@ function cartProductCount($products_id){
 
     if (empty($default) && isset($GLOBALS[$name]) && is_string($GLOBALS[$name]) ) {$default = stripslashes($GLOBALS[$name]);}
 
-    for ($i=0, $n=sizeof($values); $i<$n; $i++) {
+    for ($i=0, $n=count($values); $i<$n; $i++) {
       $field .= '  <option value="' . zen_output_string($values[$i]['id']) . '"';
       if ($default == $values[$i]['id']) {
         $field .= ' selected="selected"';
@@ -236,7 +236,7 @@ function cartProductCount($products_id){
     } 
     else {
       
-      if(is_array($attributes) and sizeof($attributes) > 0){
+      if(is_array($attributes) and !empty($attributes)){
         // check if attribute stock values have been set for the product
         // if there are will we continue, otherwise we'll use product level data
         /*$attribute_stock = $db->Execute("select stock_id 
@@ -270,7 +270,7 @@ function cartProductCount($products_id){
                         where products_id = '. (int)$products_id . ';';*/
 
         //Get custom id as products_model
-        if (sizeof($stock_attr_array) > 0) {
+        if (!empty($stock_attr_array)) {
           $customid_query = 'select customid as products_model
                       from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
                       where products_id = :products_id: 
@@ -347,9 +347,9 @@ function cartProductCount($products_id){
     $specAttributes = array();
     $stock_attributes_list = array();
     $stock_attributes = '';
-    $multi = (sizeof($attribute_list) > 1 ? true : false);
+    $multi = (count($attribute_list) > 1 ? true : false);
     
-    if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
+    if (is_array($attribute_list) && !empty($attribute_list)) {
       if ($from == 'order') {
         foreach ($attribute_list as $attrib_data) {
           if (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.  This is probably the best place to do the review because all aspects of the attribute are available.
@@ -389,7 +389,7 @@ function cartProductCount($products_id){
     $specAttributes = array();
     $stock_attributes_list = array();
     $stock_attributes = '';
-    $multi = (sizeof($attribute_list) > 1 ? true : false);
+    $multi = (count($attribute_list) > 1 ? true : false);
 
     $products_id = zen_get_prid($products_id);
 
@@ -401,7 +401,7 @@ function cartProductCount($products_id){
     }
 
    // Need to evaluate if product information provided is SBA tracked in case the page is posted with incorrect attributes as a separate check.
-    if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
+    if (is_array($attribute_list) && !empty($attribute_list)) {
       // Should check against the product designation, what option names should be expected.
       // Then compare the provided option names against the expected list.
       // For those option names that were not provided evaluate if their omission
@@ -453,7 +453,7 @@ function cartProductCount($products_id){
           } elseif ($optvalid == 0) {
             $specAttributes[$optid] = (int)$optvalid;
           } elseif (is_array($optvalid)) {
-            if ($multi == false && sizeof($optvalid) > 1) {
+            if ($multi == false && count($optvalid) > 1) {
               $multi = true;
             }
             foreach($optvalid as $optid2=>$optvalid2) {
@@ -484,7 +484,7 @@ function cartProductCount($products_id){
 
         $query = $db->bindVars($query, ':first_search:', $first_search, 'passthru');
 
-      if (sizeof($specAttributes) > 0) {
+      if (!empty($specAttributes)) {
         $specAttrib_query = '';
         foreach ($specAttributes as $optid=>$optvalid) {
           $specAttrib_query .= ' OR (options_id = :optid: AND options_values_id = :optvalid: AND products_id = :products_id:) ';
@@ -506,7 +506,7 @@ function cartProductCount($products_id){
         $attributes_new->MoveNext();
       }
       
-      if (sizeof(stock_attributes_list) > 0) {
+      if (!empty(stock_attributes_list)) {
         return $stock_attributes_list;
       } else {
         return false;
@@ -593,7 +593,7 @@ Of the attributes provided, determine the number of those attributes that are
 
    // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
 
-      if (isset($stock_attributes_list) && is_array($stock_attributes_list) && sizeof($stock_attributes_list) == 1) {
+      if (isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) == 1) {
         // Product has one unique record in the database for the list of attributes.  This could be a single option value/option name or it could be a myriad of attributes but entered as a single variant.
         //         echo '<br />Single Attribute <br />';
         // @TODO: what sanitization is in place here?
@@ -609,7 +609,7 @@ Of the attributes provided, determine the number of those attributes that are
         } else {
           return false;
         }
-      } elseif (isset($stock_attributes_list) && is_array($stock_attributes_list) && sizeof($stock_attributes_list) > 1) {
+      } elseif (isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) > 1) {
         //       echo '<br />Multiple attributes <br />';
         $stockResult = null;
         //This part checks for "attribute combinations" in the SBA table. (Multiple attributes per Stock ID Row, Multiple Attribute types in stock_attributes Field  i.e, 123,234,321)
@@ -697,7 +697,7 @@ Of the attributes provided, determine the number of those attributes that are
       $sba_table_ids = array($sba_table_ids);
     }
     
-    if (!isset($sba_table_ids) || !is_array($sba_table_ids) || sizeof($sba_table_ids) < 1 || !zen_not_null($sba_table_ids)) {
+    if (!isset($sba_table_ids) || !is_array($sba_table_ids) || count($sba_table_ids) < 1 || !zen_not_null($sba_table_ids)) {
       return false;
     }
     
@@ -813,7 +813,7 @@ Of the attributes provided, determine the number of those attributes that are
       $file_value = '0';
     }
 
-    if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
+    if (is_array($attribute_list) && !empty($attribute_list)) {
       $compArray = $attribute_list;
     }
 
@@ -850,7 +850,7 @@ Of the attributes provided, determine the number of those attributes that are
 //              $_SESSION['compArray_before_'.$products_id] = $compArray;
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
               array((($how == 'add' ? $text_prefix : '') . $products_options_names->fields['products_options_id']) => $text_value) +
-              array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true) ;
+              array_slice($compArray, $products_options_names->cursor, count($compArray) - $products_options_names->cursor, true) ;
  //            }
 //              $_SESSION['compArray_after_'.$products_id] = $compArray;
             } /*elseif ($how == 'addNoText') {
@@ -859,11 +859,11 @@ Of the attributes provided, determine the number of those attributes that are
             } /*elseif ($how == 'addNoText') {
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
               array((*//*$text_prefix .*//* $products_options_names->fields['products_options_id']) => $text_value) +
-              array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+              array_slice($compArray, $products_options_names->cursor, count($compArray) - $products_options_names->cursor, true);
             } else {
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
                array((*//*$text_prefix .*//* $products_options_names->fields['products_options_id']) => $text_value) +
-               array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+               array_slice($compArray, $products_options_names->cursor, count($compArray) - $products_options_names->cursor, true);
             }*/
             $lastIndex = $products_options_names->cursor + 1;
 //                       $_SESSION['key_not_exist_add_' . $_SESSION['key_not_exist']] = $text_prefix . $products_options_names->fields['products_options_id'];
@@ -874,17 +874,17 @@ Of the attributes provided, determine the number of those attributes that are
 //              $_SESSION['compArray_before_'.$products_id] = $compArray;
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
               array((($how == 'add' ? $file_prefix : '') . $products_options_names->fields['products_options_id']) => $file_value) +
-              array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+              array_slice($compArray, $products_options_names->cursor, count($compArray) - $products_options_names->cursor, true);
  //            }
 //              $_SESSION['compArray_after_'.$products_id] = $compArray;
             } /*elseif ($how == 'addNoText') {
               $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
               array((*//*$file_prefix .*//* $products_options_names->fields['products_options_id']) => $file_value) +
-              array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+              array_slice($compArray, $products_options_names->cursor, count($compArray) - $products_options_names->cursor, true);
             } else {
              $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
                array((*//*$file_prefix .*//* $products_options_names->fields['products_options_id']) => $file_value) +
-               array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+               array_slice($compArray, $products_options_names->cursor, count($compArray) - $products_options_names->cursor, true);
             }*/
             $lastIndex = $products_options_names->cursor + 1;
 //            $compArray[/*$file_prefix . */$products_options_names->fields['products_options_id']] = $file_value;
@@ -908,7 +908,7 @@ Of the attributes provided, determine the number of those attributes that are
 
             $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
             array((/*$text_prefix .*/ $products_options_names->fields['products_options_id']) => $text_value) + 
-            array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+            array_slice($compArray, $products_options_names->cursor, count($compArray) - $products_options_names->cursor, true);
 
             $lastIndex = $products_options_names->cursor + 1;
 //            $_SESSION['key_not_exist_add_' . $_SESSION['key_not_exist']] = $text_prefix . $products_options_names->fields['products_options_id'];
@@ -920,7 +920,7 @@ Of the attributes provided, determine the number of those attributes that are
 //            $compArray[$products_options_names->fields['products_options_id']] = $file_value;
             $compArray = ($products_options_names->cursor != 0 ? array_slice($compArray, $lastIndex, $products_options_names->cursor, true) : array()) +
             array((/*$file_prefix .*/ $products_options_names->fields['products_options_id']) => $file_value) + 
-            array_slice($compArray, $products_options_names->cursor, sizeof($compArray) - $products_options_names->cursor, true);
+            array_slice($compArray, $products_options_names->cursor, count($compArray) - $products_options_names->cursor, true);
 
             $lastIndex = $products_options_names->cursor + 1;
           }
@@ -933,10 +933,10 @@ Of the attributes provided, determine the number of those attributes that are
 //    $_SESSION['compArray2'.$pro_id] = $compArray;
 //    $_SESSION['attrib_list2'.$pro_id] = $attribute_list;
 
-    if (sizeof($compArray) > 0) {
+    if (!empty($compArray)) {
 //      $attribute_list = $compArray; // + $attribute_list /*+ $compArray*/;
       if ($how == 'add'/* && $how != 'addNoText'*/) {
-        if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
+        if (is_array($attribute_list) && !empty($attribute_list)) {
           $attribute_list = $attribute_list + $compArray;
         } else {
           $attribute_list = $compArray;
@@ -944,7 +944,7 @@ Of the attributes provided, determine the number of those attributes that are
       } elseif ($how == 'update') {
         $attribute_list = $compArray;
       } else {
-        if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
+        if (is_array($attribute_list) && !empty($attribute_list)) {
           $attribute_list = $compArray + $attribute_list;
         } else {
           $attribute_list = $compArray;
@@ -1046,7 +1046,7 @@ Of the attributes provided, determine the number of those attributes that are
     $stock_attributes_list = array();
     $stock_attributes = '';
     $compArray = array();
-  //    $multi = (sizeof($attribute_list) > 1 ? true : false);
+  //    $multi = (count($attribute_list) > 1 ? true : false);
 
     $products_id = zen_get_prid($products_id);
 
@@ -1162,7 +1162,7 @@ Of the attributes provided, determine the number of those attributes that are
       $file_value = '0';
     }
 
-    if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
+    if (is_array($attribute_list) && !empty($attribute_list)) {
       $compArray = $attribute_list;
     }
 
@@ -1232,7 +1232,7 @@ Of the attributes provided, determine the number of those attributes that are
 //              $_SESSION['specAttribs2'] = $specAttributes;
 //              $_SESSION['compArray2'] = $compArray;
 
-    if (sizeof($compArray) > 0) {
+    if (!empty($compArray)) {
       $attribute_list = /*$compArray +*/ $attribute_list + $compArray;
     }
 //              $_SESSION['compArray3'] = $attribute_list;
@@ -1297,7 +1297,7 @@ Of the attributes provided, determine the number of those attributes that are
       $retry--;
     }
 
-    if (isset($stock_attributes_list) && is_array($stock_attributes_list) && sizeof($stock_attributes_list) == 1 && $datatype != 'dupTest') {
+    if (isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) == 1 && $datatype != 'dupTest') {
       //         echo '<br />Single Attribute <br />';
       $stock_attributes = $stock_attributes_list[0];
       // create the query to find single attribute stock
@@ -1334,7 +1334,7 @@ Of the attributes provided, determine the number of those attributes that are
 
         return false;
       }
-    } elseif (isset($stock_attributes_list) && is_array($stock_attributes_list) && sizeof($stock_attributes_list) > 1) {
+    } elseif (isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) > 1) {
       // mc12345678 multiple attributes are associated with the product
       //   question is how these relate to the SBA variant.
       //       echo '<br />Multiple attributes <br />';
@@ -1468,14 +1468,14 @@ Of the attributes provided, determine the number of those attributes that are
     
     $attribute_info = array();
 
-    if (isset($attribute_list) && is_array($attribute_list) && sizeof($attribute_list) > 0) {
+    if (is_array($attribute_list) && !empty($attribute_list)) {
       $attribute_info['stock_attribute'] = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
       $query = 'select stock_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . 
                 ' where `stock_attributes` = "' . $attribute_info['stock_attribute'] . '" and products_id = ' . (int)$products_id;
 
       $stock_id = $db->Execute($query);
 
-      if (!$stock_id->EOF && $stock_id->RecordCount() > 1 /*zen_not_null($stock_id) && sizeof($stock_id) > 1*/) {
+      if (!$stock_id->EOF && $stock_id->RecordCount() > 1 /*zen_not_null($stock_id) && count($stock_id) > 1*/) {
         // Log an error instead of displaying it.  This way the store operator can identify additional information.
         trigger_error('This is an error situation, as only one record should be returned.  More than one stock id was returned which should not be possible.', E_USER_WARNING);
       } else {
@@ -1541,7 +1541,7 @@ Of the attributes provided, determine the number of those attributes that are
       }
       
       // If need to return a stock id that contains all of the attributes
-      if ($loopC == sizeof($products_attributes_id)) {
+      if ($loopC == count($products_attributes_id)) {
         // Do Nothing as the variant contains all of the desired attributes.
       } elseif ($stock_attribute_unique == true) {
         unset($stock_id_list[$products_stock_attributes->fields['stock_id']]);

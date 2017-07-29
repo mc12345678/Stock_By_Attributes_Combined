@@ -85,7 +85,7 @@
       nothing
   
 */
-    function pad_base($products_id=0) {
+    function __construct($products_id=0) {
 
   global $db;
       $this->products_id  = $products_id;
@@ -212,7 +212,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
       $out = '';
     
       $attributes = $this->_build_attributes_array(true, false);
-      if (sizeof($attributes)>0) {
+      if (!empty($attributes)) {
         foreach ($attributes as $stocked) {
           $out .= '<tr><td align="right" class=main><b>' . $stocked['oname'] . ":</b></td><td class=main>" . zen_draw_pull_down_menu('id['.$stocked['oid'].']',array_values($stocked['ovals']),$stocked['default']) . "</td></tr>\n";
         }
@@ -363,7 +363,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
 
           // AGF commented out +/- amount to show actual price
           if ($products_options->fields['options_values_price'] != '0') {
-            $products_options_array[sizeof($products_options_array)-1]['text'] .= /* mc12345678 This TEXT is actually a defined variable and should be used here instead */ ' (' . $products_options->fields['price_prefix'] . $currencies->display_price($products_options->fields['options_values_price'], zen_get_tax_rate($this->products_tax_class_id)) .')' /* mc12345678 This TEXT is actually a defined variable and should be used here instead */;
+            $products_options_array[count($products_options_array)-1]['text'] .= /* mc12345678 This TEXT is actually a defined variable and should be used here instead */ ' (' . $products_options->fields['price_prefix'] . $currencies->display_price($products_options->fields['options_values_price'], zen_get_tax_rate($this->products_tax_class_id)) .')' /* mc12345678 This TEXT is actually a defined variable and should be used here instead */;
           }
 
           /// Start of Changes- display actual prices instead of +/- Actual Price Pull Down v1.2.3a
@@ -378,7 +378,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
           }
           //  if ($products_options['options_values_price'] != '0') 
           {
-            $products_options_array[sizeof($products_options_array)-1]['text'] .= ' '; // note $this variable //HW: THIS WAS BROKEN - tax class ID was being used as the tax rate.. so a fixed 8 percent in my case.
+            $products_options_array[count($products_options_array)-1]['text'] .= ' '; // note $this variable //HW: THIS WAS BROKEN - tax class ID was being used as the tax rate.. so a fixed 8 percent in my case.
           }
           // End Of MOD 
 
@@ -495,7 +495,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
                                                   : true)) {
               $combinations[] = array('comb'=>$newcomb, 'id'=>substr($newid,1), 'text'=>$newtext);
               if ($newisselected) {
-                $selected_combination = sizeof($combinations)-1;
+                $selected_combination = count($combinations)-1;
               }
             }
             continue;
@@ -512,7 +512,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
             }
             $combinations[] = array('comb'=>$newcomb, 'id'=>substr($newid,1), 'text'=>$newtext);
             if ($newisselected) {
-              $selected_combination = sizeof($combinations)-1;
+              $selected_combination = count($combinations)-1;
             }
           } // EOF if !$is_out_of_stock etc...
         } // EOF Else
@@ -548,7 +548,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
   
 */
     function _draw_js_stock_array($combinations) {
-      if (!((isset($combinations)) && (is_array($combinations)) && (sizeof($combinations) > 0))){
+      if (!(is_array($combinations) && !empty($combinations))){
         return '{}';
       }
       $out='';
@@ -558,22 +558,22 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
       }
       $out.='1';
       
-      for ($combindex=1; $combindex<sizeof($combinations); $combindex++) {
+      for ($combindex=1; $combindex<count($combinations); $combindex++) {
         $comb=$combinations[$combindex]['comb'];
-        for ($i=0; $i<sizeof($opts)-1; $i++) {
+        for ($i=0; $i<count($opts)-1; $i++) {
           if ($comb[$opts[$i]]!=$combinations[$combindex-1]['comb'][$opts[$i]]){
             break;
           }
         }
-        $out.=str_repeat('}',sizeof($opts)-1-$i).', ';
-        if ($i<sizeof($opts)-1) {
-          for ($j=$i; $j<sizeof($opts)-1; $j++){
+        $out.=str_repeat('}',count($opts)-1-$i).', ';
+        if ($i<count($opts)-1) {
+          for ($j=$i; $j<count($opts)-1; $j++){
             $out.=zen_output_string_protected($comb[$opts[$j]]).': {';
           }
         }
-        $out.=zen_output_string_protected($comb[$opts[sizeof($opts)-1]]).': 1';
+        $out.=zen_output_string_protected($comb[$opts[count($opts)-1]]).': 1';
       }
-      $out.=str_repeat('}',sizeof($opts));
+      $out.=str_repeat('}',count($opts));
       
       return $out;
     }

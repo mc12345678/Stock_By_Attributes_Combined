@@ -193,12 +193,12 @@ $sql = "select count(*) as total
                   $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE');
                   // End "Stock By Attributes" SBA
 
-                  $products_options_array[sizeof($products_options_array)-1]['text'] .= $products_options_display_price;
+                  $products_options_array[count($products_options_array)-1]['text'] .= $products_options_display_price;
 
                   // collect weight information if it exists
                   if (($flag_show_weight_attrib_for_this_prod_type=='1' and $products_options->fields['products_attributes_weight'] != '0')) {
                     $products_options_display_weight = ATTRIBUTES_WEIGHT_DELIMITER_PREFIX . $products_options->fields['products_attributes_weight_prefix'] . round($products_options->fields['products_attributes_weight'],2) . TEXT_PRODUCT_WEIGHT_UNIT . ATTRIBUTES_WEIGHT_DELIMITER_SUFFIX;
-                    $products_options_array[sizeof($products_options_array)-1]['text'] .= $products_options_display_weight;
+                    $products_options_array[count($products_options_array)-1]['text'] .= $products_options_display_weight;
                   } else {
                     // reset
                     $products_options_display_weight='';

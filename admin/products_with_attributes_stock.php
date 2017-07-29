@@ -27,7 +27,7 @@ if (isset($_SESSION['languages_id'])) {
   $languages = zen_get_languages();
   $languages_array = array();
   $languages_selected = DEFAULT_LANGUAGE;
-  for ($i = 0, $n = sizeof($languages); $i < $n; $i++) {
+  for ($i = 0, $n = count($languages); $i < $n; $i++) {
     $languages_array[] = array('id' => $languages[$i]['code'],
       'text' => $languages[$i]['name']);
     if ($languages[$i]['directory'] == $_SESSION['language']) {
@@ -242,7 +242,7 @@ switch ($action) {
         $arrMain = array();
 //        $intCount = 0;
 
-        for ($i = 0, $arrTempCount = sizeof($arrTemp); $i < $arrTempCount; $i++) {
+        for ($i = 0, $arrTempCount = count($arrTemp); $i < $arrTempCount; $i++) {
           //explode array on |
           $arrTemp[$i] = preg_replace("/\|{2,}/i", "|", $arrTemp[$i]);
           $arrTemp1 = preg_split("/\|/", $arrTemp[$i]);
@@ -255,7 +255,7 @@ switch ($action) {
                   unset($arrMain[$key][$k2]);
                 }
               }
-              if (!sizeof($arrMain[$key])) {
+              if (empty($arrMain[$key])) {
                 unset($arrMain[$key]);
               }
             } else {
@@ -263,7 +263,7 @@ switch ($action) {
                 unset($arrMain[$key]);
               }
             }
-            if (sizeof($arrMain[$key])) {
+            if (!empty($arrMain[$key])) {
               $arrMain[$key] = array_values($arrMain[$key]);
             }
           }
@@ -271,19 +271,19 @@ switch ($action) {
           $arrMain = array_values($arrMain);
 
 /*          if ($intCount) {
-            $intCount = $intCount * sizeof($arrTemp1);
+            $intCount = $intCount * count($arrTemp1);
           } else {
-            $intCount = sizeof($arrTemp1);
+            $intCount = count($arrTemp1);
           }*/
         }
-        $intVars = sizeof($arrMain);
+        $intVars = count($arrMain);
         $arrNew = array();
 
         if ($intVars >= 1) {
           $a = 0;
           while ($a <= $intVars) {
             //adds each attribute (no combinations)
-            for ($i = 0, $arrMainSize = sizeof($arrMain[$a]); $i < $arrMainSize; $i++) {
+            for ($i = 0, $arrMainSize = count($arrMain[$a]); $i < $arrMainSize; $i++) {
               $arrNew[] = array($arrMain[$a][$i]);
             }
             $a++;
@@ -291,7 +291,7 @@ switch ($action) {
 
           //loop through the list of variables / attributes
           //add each one to the database
-          for ($i = 0, $arrNewSize = sizeof($arrNew); $i < $arrNewSize; $i++) {
+          for ($i = 0, $arrNewSize = count($arrNew); $i < $arrNewSize; $i++) {
             //used to add multi attribute combinations at one time
             $strAttributes = implode(",", $arrNew[$i]);
             $productAttributeCombo = $products_id . '-' . str_replace(',', '-', $strAttributes);
@@ -306,7 +306,7 @@ switch ($action) {
         $arrMain = array();
 //        $intCount = 0;
 
-        for ($i = 0, $arrTempSize = sizeof($arrTemp); $i < $arrTempSize; $i++) {
+        for ($i = 0, $arrTempSize = count($arrTemp); $i < $arrTempSize; $i++) {
           //explode array on ;
           $arrTemp[$i] = preg_replace("/;{2,}/i", ";", $arrTemp[$i]);
           $arrTemp1 = preg_split("/\;/", $arrTemp[$i]);
@@ -319,7 +319,7 @@ switch ($action) {
                   unset($arrMain[$key][$k2]);
                 }
               }
-              if (!sizeof($arrMain[$key])) {
+              if (empty($arrMain[$key])) {
                 unset($arrMain[$key]);
               }
             } else {
@@ -327,7 +327,7 @@ switch ($action) {
                 unset($arrMain[$key]);
               }
             }
-            if (sizeof($arrMain[$key])) {
+            if (count($arrMain[$key])) {
               $arrMain[$key] = array_values($arrMain[$key]);
             }
           }
@@ -335,12 +335,12 @@ switch ($action) {
           $arrMain = array_values($arrMain);
           
 /*          if ($intCount) {
-            $intCount = $intCount * sizeof($arrTemp1);
+            $intCount = $intCount * count($arrTemp1);
           } else {
-            $intCount = sizeof($arrTemp1);
+            $intCount = count($arrTemp1);
           }*/
         }
-        $intVars = sizeof($arrMain);
+        $intVars = count($arrMain);
         $arrNew = array();
 
         $arrNew = return_attribute_combinations($arrMain, $intVars);
@@ -356,19 +356,19 @@ switch ($action) {
           // and ALL PREVIOUS VALUES to the multi-dimensional array
           // below supports up to 5 variables / attributes
           // to add more, just copy and paste into the last for loop and go up from $n is the last one
-          for ($i = 0;$i < sizeof($arrMain[0]);$i++) {
+          for ($i = 0;$i < count($arrMain[0]);$i++) {
           if ($intVars >= 2) {
-          for ($j = 0;$j < sizeof($arrMain[1]);$j++) {
+          for ($j = 0;$j < count($arrMain[1]);$j++) {
           if ($intVars >= 3) {
-          for ($k = 0;$k < sizeof($arrMain[2]);$k++) {
+          for ($k = 0;$k < count($arrMain[2]);$k++) {
           if ($intVars >= 4) {
-          for ($l = 0;$l < sizeof($arrMain[3]);$l++) {
+          for ($l = 0;$l < count($arrMain[3]);$l++) {
           if ($intVars >= 5) {
-          for ($m = 0;$m < sizeof($arrMain[4]);$m++) {
+          for ($m = 0;$m < count($arrMain[4]);$m++) {
           if ($intVars >= 6) {
-          for ($n = 0;$n < sizeof($arrMain[5]);$n++) {
+          for ($n = 0;$n < count($arrMain[5]);$n++) {
           if ($intVars >= 7){
-          for ($o = 0; $o < sizeof($arrMain[6]); $o++) {
+          for ($o = 0; $o < count($arrMain[6]); $o++) {
           $arrNew[] = array($arrMain[0][$i], $arrMain[1][$j], $arrMain[2][$k], $arrMain[3][$l], $arrMain[4][$m], $arrMain[5][$n], $arrMain[6][$o]);
           }
           } else {
@@ -400,7 +400,7 @@ switch ($action) {
 
         //loop through the list of variables / attributes
         //add each one to the database
-        for ($i = 0, $arrNewSize = sizeof($arrNew); $i < $arrNewSize; $i++) {
+        for ($i = 0, $arrNewSize = count($arrNew); $i < $arrNewSize; $i++) {
           //used to add multi attribute combinations at one time
           sort($arrNew[$i]); // Ensures that values are in order prior to imploding
           $strAttributes = implode(",", $arrNew[$i]);
@@ -571,7 +571,7 @@ switch ($action) {
           $param[] = SORT_ASC;
           $param[] = SORT_NUMERIC;
         }
-        if(isset($param) && sizeof($param) > 0) {
+        if(!empty($param)) {
           $param[] = &$name;
           call_user_func_array('array_multisort', $param);
         }
@@ -673,7 +673,7 @@ require(DIR_WS_INCLUDES . 'header.php');
               // MULTI
               $arrValues = array();
               if (is_array($options)) {
-                if (sizeof($options) > 0) {
+                if (!empty($options)) {
                   foreach ($options as $k => $a) {
                     if ($a['display_only']) {
                       unset($options[$k]);
@@ -694,15 +694,15 @@ require(DIR_WS_INCLUDES . 'header.php');
             } elseif ($products_options_type->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_READONLY && PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true') {
               // MULTI
               if (is_array($options)) {
-                if (sizeof($options) > 0) {
+                if (!empty($options)) {
                   ?><div class="READONLY" style="border: 1px solid black;
     line-height: normal;"
     ><p><strong><?php echo $products_options_type->fields['products_options_types_name'] . ': ' . $option_name; ?>: </strong></p><?php
                   foreach ($options as $k => $a) {
                     $arrValues = array();
                     $arrValues[] = array('id'=>$a['id'], 'text'=>$a['text']);
-                    array_unshift($arrValues, array('id' => $arrValues[sizeof($arrValues) - 1]['id'] . ";", 'text' => 'All - Attributes - Combo'));
-                    array_unshift($arrValues, array('id' => $arrValues[sizeof($arrValues) - 1]['id'] . "|", 'text' => 'All - Attributes'));
+                    array_unshift($arrValues, array('id' => $arrValues[count($arrValues) - 1]['id'] . ";", 'text' => 'All - Attributes - Combo'));
+                    array_unshift($arrValues, array('id' => $arrValues[count($arrValues) - 1]['id'] . "|", 'text' => 'All - Attributes'));
                     array_unshift($arrValues, array('id' => null, 'text' => 'N/A'));
                     ?><p><strong><?php echo $a['text']; ?>: </strong><?php
                     echo zen_draw_pull_down_menu('attributes[]', $arrValues);
@@ -714,15 +714,15 @@ require(DIR_WS_INCLUDES . 'header.php');
               }
             } elseif ($products_options_type->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
               if (is_array($options)) {
-                if (sizeof($options) > 0) {
+                if (!empty($options)) {
                   ?><div class="CHECKBOX" style="border: 1px solid black;
     line-height: normal;"
     ><p><strong><?php echo $products_options_type->fields['products_options_types_name'] . ': ' . $option_name; ?>: </strong></p><?php
                   foreach ($options as $k => $a) {
                     $arrValues = array();
                     $arrValues[] = array('id'=>$a['id'], 'text'=>$a['text']);
-                    array_unshift($arrValues, array('id' => $arrValues[sizeof($arrValues) - 1]['id'] . ";", 'text' => 'All - Attributes - Combo'));
-                    array_unshift($arrValues, array('id' => $arrValues[sizeof($arrValues) - 1]['id'] . "|", 'text' => 'All - Attributes'));
+                    array_unshift($arrValues, array('id' => $arrValues[count($arrValues) - 1]['id'] . ";", 'text' => 'All - Attributes - Combo'));
+                    array_unshift($arrValues, array('id' => $arrValues[count($arrValues) - 1]['id'] . "|", 'text' => 'All - Attributes'));
                     array_unshift($arrValues, array('id' => null, 'text' => 'N/A'));
                     ?><p><strong><?php echo $a['text']; ?>: </strong><?php
                     echo zen_draw_pull_down_menu('attributes[]', $arrValues);

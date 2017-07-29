@@ -79,9 +79,9 @@ THIS ALSO DOESN'T WORK BECAUSE OF THE COMPARISON(S) BEING PERFORMED... BECAUSE T
 	//The true/false below has to do with information in the 
 	//	products_options table being tracked or not tracked.
       $attributes = $this->_build_attributes_array(true, false);
-      if (sizeof($attributes)>0) {
-        for($o=0; $o<sizeof($attributes); $o++) {
-          $s=sizeof($attributes[$o]['ovals']);
+      if (!empty($attributes)) {
+        for($o=0; $o<count($attributes); $o++) {
+          $s=count($attributes[$o]['ovals']);
           for ($a=0; $a<$s; $a++) {
                $attribute_stock_query_query = "SELECT quantity FROM " .  TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " AS a LEFT JOIN " . TABLE_PRODUCTS_ATTRIBUTES . " AS b ON (b.options_id = :oid: AND b.options_values_id = :ovals:) WHERE a.products_id = :products_id: AND a.stock_attributes = b.products_attributes_id AND a.quantity > 0 order by b.products_options_sort_order";
 
@@ -148,7 +148,7 @@ THIS ALSO DOESN'T WORK BECAUSE OF THE COMPARISON(S) BEING PERFORMED... BECAUSE T
       
         // build javascript if statement to test level by level for existence  
         $out.='    ';
-        for ($i=0; $i<sizeof($attributes); $i++) {
+        for ($i=0; $i<count($attributes); $i++) {
           $out.='if (stk';
           for ($j=0; $j<=$i; $j++) { //Isn't this missing a repeat of stk or something??? Otherwise looks like: if (stk[frm['id[5]'].value][frm['id[7]'].value]) instk=true; //when there are two oids of 5 and 7.
             $out.="[frm['id[".$attributes[$j]['oid']."]'].value]";

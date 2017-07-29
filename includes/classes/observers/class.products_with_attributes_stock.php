@@ -177,7 +177,7 @@ class products_with_attributes_stock extends base {
         //test, only applicable to products with-out the display-only attribute set
         if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
           $products_options_fields['products_options_values_name'] = $products_options_fields['products_options_values_name'] . PWA_OUT_OF_STOCK;
-          $products_options_array[sizeof($products_options_array)-1] = array('id' =>
+          $products_options_array[$i-1] = array('id' =>
               $products_options_fields['products_options_values_id'],
               'text' => $products_options_fields['products_options_values_name']);
         }
@@ -213,7 +213,7 @@ class products_with_attributes_stock extends base {
                       $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options_fields['products_quantity'] . ' ';
                     } else {
                       $products_options_fields['products_options_values_name'] = $products_options_fields['products_options_values_name'] . PWA_OUT_OF_STOCK;
-                      $products_options_array[sizeof($products_options_array)-1] = array('id' =>
+                      $products_options_array[count($products_options_array)-1] = array('id' =>
                           $products_options_fields['products_options_values_id'],
                           'text' => $products_options_fields['products_options_values_name']);
 
@@ -492,7 +492,7 @@ class products_with_attributes_stock extends base {
       // If the product has attributes, then need to see what was logged into the orders_products_attributes_stock table.  
       //    If nothing then is a product that has attributes, but was not tracked by SBA. 
       //    If something, then retrieve the desired data (customid)
-      if (array_key_exists('attributes', $product) && sizeof($product['attributes']) > 0) {
+      if (is_array($product) && array_key_exists('attributes', $product) && is_array($product['attributes']) && !empty($product['attributes'])) {
         $orders_products_sba_customid = $db->Execute("select 
                            opas.orders_products_attributes_stock_id, opas.orders_products_attributes_id, 
                            opas.stock_id, opas.stock_attribute, opas.customid, opas.products_prid, 
@@ -539,16 +539,16 @@ class products_with_attributes_stock extends base {
           }
           unset($orders_products_sba_customid);
           
-          if (sizeof($customid) > 0) {
+          if (!empty($customid)) {
             // Combine the various customids to apply to the ordered product information.
             // Default method is to combine with a comma between each value when multiple exist.
             //   If every customid that is and is not present is to be concatenated then above need to add all to the array
             //    not just those that have data.
             $customid_txt = implode(", ", $customid);
-            if (sizeof($customid) == 1) {
+            if (count($customid) == 1) {
               $custom_type = 'single';
             }
-          } // EOF if sizeof
+          } // EOF if count
         } // EOF if orders_products_sba_customid->RecordCount() > 0
       } // EOF array check if attributes are involved.
 
@@ -582,14 +582,14 @@ class products_with_attributes_stock extends base {
     $index = $paramsArray['index'];
     $productsI = $paramsArray['products'];
     
-    if (array_key_exists('attributes', $productsI) && sizeof($productsI['attributes']) > 0) {
+    if (is_array($productsI) && array_key_exists('attributes', $productsI) && is_array($productsI['attributes']) && !empty($productsI['attributes'])) {
       $orderClass->products[$index]['customid']['value'] = $_SESSION['pwas_class2']->zen_get_customid($productsI['id'], $productsI['attributes']);
 
         $custom_multi_query = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($productsI['id'], $productsI['attributes'], 'products');
 
         if (!isset($custom_multi_query) || $custom_multi_query === NULL || $custom_multi_query === false) {
           $custom_type = 'none';
-        } elseif (is_array($custom_multi_query) && sizeof($custom_multi_query) > 1) {
+        } elseif (is_array($custom_multi_query) && count($custom_multi_query) > 1) {
           $custom_type = 'multi';
         } else {
           $custom_type = 'single';
@@ -632,7 +632,7 @@ class products_with_attributes_stock extends base {
 
       $attributeList = null;
       $customid = null;
-      if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) >0){
+      if (is_array($this->_productI) && array_key_exists('attributes', $this->_productI) && is_array($this->_productI['attributes']) && !empty($this->_productI['attributes'])) {
         foreach($this->_productI['attributes'] as $attributes){
           $attributeList[] = $attributes['value_id'];
         }
@@ -670,7 +670,7 @@ class products_with_attributes_stock extends base {
         $this->_attribute_stock_left = $attribute_stock_left;
 
         // mc12345678 If the has attibutes then perform the following work.
-        if(isset($this->_productI['attributes']) and sizeof($this->_productI['attributes']) > 0){
+        if (is_array($this->_productI) && array_key_exists('attributes', $this->_productI) && is_array($this->_productI['attributes']) && !empty($this->_productI['attributes'])) {
           // Need to identify which records in the PWAS table need to be updated to remove stock from
           // them.  Ie. provide a list of attributes and get a list of stock_ids from pwas.
           // Then process that list of stock_ids to decrement based on their impact on stock.  This
@@ -815,7 +815,7 @@ class products_with_attributes_stock extends base {
       $customid = array();
     }
     
-    for ($i = 0, $n = sizeof($order->products); $i < $n; $i++) {
+    for ($i = 0, $n = count($order->products); $i < $n; $i++) {
       if (STOCK_SBA_DISPLAY_CUSTOMID == 'true') {
         $customid[$i] = (zen_not_null($order->products[$i]['customid']['value']) 
                 ? '<br />(' . $order->products[$i]['customid']['value'] . ') ' 
@@ -856,8 +856,8 @@ class products_with_attributes_stock extends base {
     
     $products = $_SESSION['cart']->get_products();
     
-    for ($i = 0, $n = sizeof($productArray); $i < $n; $i++) {
-      if (isset($productArray[$i]['attributes']) && is_array($productArray[$i]['attributes']) && sizeof($productArray[$i]['attributes']) > 0 && $_SESSION['pwas_class2']->zen_product_is_sba($productArray[$i]['id'])) {
+    for ($i = 0, $n = count($productArray); $i < $n; $i++) {
+      if (is_array($productArray[$i]) && array_key_exists('attributes', $productArray[$i]) && is_array($productArray[$i]['attributes']) && !empty($productArray[$i]['attributes']) && $_SESSION['pwas_class2']->zen_product_is_sba($productArray[$i]['id'])) {
         $productArray[$i]['attributeImage'] = array();
 
         if (STOCK_CHECK == 'true') {
@@ -878,7 +878,7 @@ class products_with_attributes_stock extends base {
 
         if (!isset($custom_multi_query) || $custom_multi_query === NULL || $custom_multi_query === false) {
           $custom_type = 'none';
-        } elseif (is_array($custom_multi_query) && sizeof($custom_multi_query) > 1) {
+        } elseif (is_array($custom_multi_query) && count($custom_multi_query) > 1) {
           $custom_type = 'multi';
           foreach ($productArray[$i]['attributes'] as $key => $value) {
             $customid_new = $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $value);
@@ -964,8 +964,8 @@ class products_with_attributes_stock extends base {
           }
           $products_options_names->MoveNext();
         }
-        if (sizeof($productArray[$i]['attributeImage']) > 0) {
-          $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][sizeof($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
+        if (!empty($productArray[$i]['attributeImage'])) {
+          $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][count($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
         }
         unset($productArray[$i]['attributeImage']);
 
@@ -986,8 +986,8 @@ class products_with_attributes_stock extends base {
             $productArray[$i]['attributeImage'][] = $attribute_image->fields['attributes_image'];
           }
         }
-        if (sizeof($productArray[$i]['attributeImage']) > 0) {
-          $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][sizeof($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
+        if (count($productArray[$i]['attributeImage']) > 0) {
+          $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][count($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
         }
         unset($productArray[$i]['attributeImage']); */
       }
@@ -1008,7 +1008,7 @@ class products_with_attributes_stock extends base {
         //  move forward in the cart.
         if ((STOCK_CHECK == 'true') && (STOCK_ALLOW_CHECKOUT != 'true')) {
           $products = $_SESSION['cart']->get_products();
-          for ($i = 0, $n = sizeof($products); $i < $n; $i++) {
+          for ($i = 0, $n = count($products); $i < $n; $i++) {
             unset($attributes);
             if (isset($products[$i]) && is_array($products[$i]) && array_key_exists('attributes', $products[$i]) && isset($products[$i]['attributes']) && is_array($products[$i]['attributes'])) {
               if ($_SESSION['pwas_class2']->zen_product_is_sba($products[$i]['id'])) {

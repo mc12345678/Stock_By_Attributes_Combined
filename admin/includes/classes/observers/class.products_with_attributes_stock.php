@@ -166,8 +166,8 @@ class products_with_attributes_stock_admin extends base {
     }
     
     if ($products_with_attributes_stock_class->zen_product_is_sba($pInfo->products_id)){
-      $last_content = $contents[sizeof($contents) - 2];
-      $contents[sizeof($contents) - 2] = array('text' => '<br />' . TEXT_COPY_SBA_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_yes', true) . ' ' . TEXT_COPY_SBA_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_no') . ' ' . TEXT_COPY_SBA_ATTRIBUTES_NO); 
+      $last_content = $contents[count($contents) - 2];
+      $contents[count($contents) - 2] = array('text' => '<br />' . TEXT_COPY_SBA_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_yes', true) . ' ' . TEXT_COPY_SBA_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_no') . ' ' . TEXT_COPY_SBA_ATTRIBUTES_NO);
       $contents[] = $last_content;
     }
   }
@@ -178,7 +178,7 @@ class products_with_attributes_stock_admin extends base {
     
     $stock_ids = zen_get_sba_ids_from_attribute($attribute_id);
 
-    if (sizeof($stock_ids) > 0) {
+    if (!empty($stock_ids) && is_array($stock_ids)) {
       $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
            where stock_id in (" . implode(',', $stock_ids) . ")");
     }
@@ -212,7 +212,7 @@ class products_with_attributes_stock_admin extends base {
     while (!$delete_attributes_options_id->EOF) {
       $stock_ids = zen_get_sba_ids_from_attribute($delete_attributes_options_id->fields['products_attributes_id']);
     
-      if(sizeof($stock_ids) > 0) {
+    if (!empty($stock_ids) && is_array($stock_ids)) {
         $delete_attributes_stock_options_id_values = $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id='" . $pID . "' and stock_id in (" . implode(',', $stock_ids) . ")");
       }
       $delete_attributes_options_id->MoveNext();
@@ -255,7 +255,7 @@ class products_with_attributes_stock_admin extends base {
     $stock_ids = zen_get_sba_ids_from_attribute($remove_attributes_list);
     unset($remove_attributes_list);
 
-    if (sizeof($stock_ids) > 0) {
+    if (!empty($stock_ids) && is_array($stock_ids)) {
       $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                     where stock_id in (" . implode(',', $stock_ids) . ")");
     }
@@ -280,7 +280,7 @@ class products_with_attributes_stock_admin extends base {
 
     $stock_ids = zen_get_sba_ids_from_attribute($check_all_options_values->fields['products_attributes_id']);
     unset($check_all_options_values);
-    if (sizeof($stock_ids) > 0) {
+    if (!empty($stock_ids) && is_array($stock_ids)) {
       $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                     where stock_id in (" . implode(',', $stock_ids) . ")");
     }
@@ -305,7 +305,7 @@ class products_with_attributes_stock_admin extends base {
       while (!$remove_attributes_query->EOF) {
         $stock_ids = zen_get_sba_ids_from_attribute($remove_attributes_query->fields['products_attributes_id']);
         
-        if (sizeof($stock_ids) > 0) {
+        if (is_array($stock_ids) && !empty($stock_ids)) {
           $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                         where stock_id in (" . implode(',', $stock_ids) . ")");
         }
@@ -329,7 +329,7 @@ class products_with_attributes_stock_admin extends base {
     $stock_ids = zen_get_sba_ids_from_attribute($remove_ids);
     unset($remove_ids);
 
-    if (sizeof($stock_ids) > 0) {
+    if (is_array($stock_ids) && !empty($stock_ids)) {
       $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                     where stock_id in (" . implode(',', $stock_ids) . ")");
     }
@@ -360,7 +360,7 @@ class products_with_attributes_stock_admin extends base {
       // If the product has attributes, then need to see what was logged into the orders_products_attributes_stock table.  
       //    If nothing then is a product that has attributes, but was not tracked by SBA. 
       //    If something, then retrieve the desired data (customid)
-      if (array_key_exists('attributes', $product) && sizeof($product['attributes']) > 0) {
+      if (!empty($product) && is_array($product) && array_key_exists('attributes', $product) && !empty($product['attributes'])) {
         $orders_products_sba_customid = $db->Execute("select 
                            opas.orders_products_attributes_stock_id, opas.orders_products_attributes_id, 
                            opas.stock_id, opas.stock_attribute, opas.customid, opas.products_prid, 
@@ -403,16 +403,16 @@ class products_with_attributes_stock_admin extends base {
           }
           unset($orders_products_sba_customid);
           
-          if (sizeof($customid) > 0) {
+          if (!empty($customid)) {
             // Combine the various customids to apply to the ordered product information.
             // Default method is to combine with a comma between each value when multiple exist.
             //   If every customid that is and is not present is to be concatenated then above need to add all to the array
             //    not just those that have data.
             $customid_txt = implode(", ", $customid);
-            if (sizeof($customid) == 1) {
+            if (count($customid) == 1) {
               $custom_multi = 'single';
             }
-          } // EOF if sizeof
+          } // EOF if !empty
         } // EOF if orders_products_sba_customid->RecordCount() > 0
       } // EOF array check if attributes are involved.
 
@@ -462,7 +462,7 @@ class products_with_attributes_stock_admin extends base {
       // START "Stock by Attributes"
             $attributeList = null;
             $customid = null;
-            if(isset($product['attributes']) and sizeof($product['attributes']) >0){
+            if(!empty($product['attributes'])){
                 foreach($product['attributes'] as $attributes){
                     $attributeList[] = $attributes['value_id'];
                 }
@@ -489,7 +489,7 @@ class products_with_attributes_stock_admin extends base {
             $_attribute_stock_left = $attribute_stock_left;
 
             // mc12345678 If the has attibutes then perform the following work.
-            if(isset($product['attributes']) and sizeof($product['attributes']) > 0){
+            if(!empty($product['attributes'])){
                 // Need to identify which records in the PWAS table need to be updated to remove stock from
                 // them.  Ie. provide a list of attributes and get a list of stock_ids from pwas.
                 // Then process that list of stock_ids to decrement based on their impact on stock.  This

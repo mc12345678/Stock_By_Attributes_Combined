@@ -82,18 +82,18 @@ class pad_sba_sequenced_dropdowns extends pad_multiple_dropdowns {
     $attributes = array();
 
     $attributes = $this->_build_attributes_array(true, true);
-    if (sizeof($attributes) <= 1) {
+    if (count($attributes) <= 1) {
       return parent::_draw_stocked_attributes();
     }
 
     if (!defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK')) {
       define('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK', DB_PREFIX . 'products_with_attributes_stock_attributes_non_stock');
     }
-    /* for ($o=0; $o<=sizeof($attributes); $o++) */ {
+    /* for ($o=0; $o<=count($attributes); $o++) */ {
       $o = 0;
       // Check stock
 //var_dump($attributes[0]);
-      $s = sizeof($attributes[$o]['ovals']);
+      $s = count($attributes[$o]['ovals']);
       for ($a = 0; $a < $s; $a++) {
 
 // mc12345678 NEED TO PERFORM ABOVE QUERY BASED OFF OF THE INFORMATION IN $attributes[0]['ovals'] to pull only the data associated with the one attribute in the first selection... Needs to be clear enough that the sequence of the data searched for identifies the appropriate attribute.  Also need to make sure that the subsequent data forced to display below actually pulls the out of stock information associated with the sub (sub-sub(sub-sub-sub)) attribute.
@@ -360,7 +360,7 @@ Array(
 //$attribute_stock->MoveNext();
       } // end for $a
     } // end for $o      
-    if (sizeof($attributes[0]['ovals']) == 0) {
+    if (count($attributes[0]['ovals']) == 0) {
       // NEED TO DISPLAY A MESSAGE OR ADD SOMETHING TO THE LIST AS THERE
       //  IS NO PRODUCT TO DISPLAY (ALL OUT OF ORDER) SO NEED TO DO WHAT
       //  NEEDS TO BE DONE IN THAT CONDITION. 
@@ -409,7 +409,7 @@ Array(
       // Need to load all readonly option values for this option name that are 
       //  associated with this product.
       $out.='<tr id="' . $options_html_id[0] . '"><td align="right" class="main"><b>' . $attributes[0]['oname'] . ':</b></td><td class="main">';
-      for ($j = 0, $n = sizeof($attributes[0]['ovals']); $j < $n; $j++) {
+      for ($j = 0, $n = count($attributes[0]['ovals']); $j < $n; $j++) {
         if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true') {
           $out.='<input type = "hidden" name = "id[' . $attributes[0]['oid'] . ']"' . ' value="' . stripslashes($attributes[0]['ovals'][$j]['id']) . '" />'; // Used to track Read Only Stock
         }
@@ -440,7 +440,7 @@ Array(
     }
 
     // Draw second to next to last option dropdowns - no values, with onchange
-    for ($o = 1, $s = sizeof($attributes); $o < $s - 1; $o++) {
+    for ($o = 1, $s = count($attributes); $o < $s - 1; $o++) {
       // Need to consider if the option name is read only.  If it is, then simply display it and do not make it "selectable"
       //  May need to modify the array for the attributes in order to accomodate identification.
       $sql2 = $db->bindVars($sql, ':products_options_id:', $attributes[$o]['oid'], 'integer');
@@ -459,7 +459,7 @@ Array(
         // Need to load all readonly option values for this option name that are 
         //  associated with this product.
         $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">';
-        for ($j = 0, $n = sizeof($attributes[$o]['ovals']); $j < $n; $j++) {
+        for ($j = 0, $n = count($attributes[$o]['ovals']); $j < $n; $j++) {
           if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true') {
             $out.='<input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][$j]['id']) . '" />'; // Used to track Read Only Stock
           }
@@ -507,7 +507,7 @@ Array(
       // Need to load all readonly option values for this option name that are 
       //  associated with this product.
       $out.='<tr id="' . $options_html_id[$o] . '"><td align="right" class="main"><b>' . $attributes[$o]['oname'] . ':</b></td><td class="main">';
-      for ($j = 0, $n = sizeof($attributes[$o]['ovals']); $j < $n; $j++) {
+      for ($j = 0, $n = count($attributes[$o]['ovals']); $j < $n; $j++) {
         if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true') {
           $out.='<input type = "hidden" name = "id[' . $attributes[$o]['oid'] . ']"' . ' value="' . stripslashes($attributes[$o]['ovals'][$j]['id']) . '" />'; // Used to track Read Only stock
         }
@@ -666,7 +666,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
 
             // AGF commented out +/- amount to show actual price
             if ($option_price != '0') {
-              $products_options_array[sizeof($products_options_array)-1]['text'] .= /* mc12345678 This TEXT is actually a defined variable and should be used here instead */ ' (' . $products_options->fields['price_prefix'] . $currencies->display_price($option_price, zen_get_tax_rate($this->products_tax_class_id)) .')' /* mc12345678 This TEXT is actually a defined variable and should be used here instead */;
+              $products_options_array[count($products_options_array)-1]['text'] .= /* mc12345678 This TEXT is actually a defined variable and should be used here instead */ ' (' . $products_options->fields['price_prefix'] . $currencies->display_price($option_price, zen_get_tax_rate($this->products_tax_class_id)) .')' /* mc12345678 This TEXT is actually a defined variable and should be used here instead */;
               // mc12345678 2017-06-25 EOF edited to support wholesale display
             }
 
@@ -683,7 +683,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
             }
             //  if ($products_options['options_values_price'] != '0') 
             {
-              $products_options_array[sizeof($products_options_array)-1]['text'] .= ' '; // note $this variable //HW: THIS WAS BROKEN - tax class ID was being used as the tax rate.. so a fixed 8 percent in my case.
+              $products_options_array[count($products_options_array)-1]['text'] .= ' '; // note $this variable //HW: THIS WAS BROKEN - tax class ID was being used as the tax rate.. so a fixed 8 percent in my case.
             }
             // End Of MOD 
           }
@@ -696,7 +696,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
           $selected = 0;
         }
     
-        if (sizeof($products_options_array) > 0) {
+        if (!empty($products_options_array)) {
           $attributes[]=array('oid'=>$products_options_name->fields['products_options_id'],
                               'oname'=>$products_options_name->fields['products_options_name'],
                               'oimgstyle'=>$products_options_name->fields['products_options_images_style'], // rcloke
@@ -825,7 +825,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
 
     // js arrays of possible option values/text for dropdowns
     // do all but the first attribute (its dropdown never changes)
-    for ($curattr = 1, $s = sizeof($attributes); $curattr < $s; $curattr++) {
+    for ($curattr = 1, $s = count($attributes); $curattr < $s; $curattr++) {
       $attr = $attributes[$curattr];
       $out.='var txt' . $attr['oid'] . ' = {';
       foreach ($attr['ovals'] as $oval) {
@@ -845,7 +845,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
     
 //    $out.="    var instk = false;\n";
     // Begin the cycle 
-    for ($j = 0, $s = sizeof($attributes); $j < $s; $j++) {
+    for ($j = 0, $s = count($attributes); $j < $s; $j++) {
       if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY != 'true' && $attributes[$j]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
         continue;
       }
@@ -872,7 +872,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
       $out.='    ' . str_repeat("    ", 0);
       $out.='}' . "\n";
       // If the above have not caused a response, then it is safe to move.
-      if ($j == /*0 <-- used for size-1 to 0 */ sizeof($attributes) - 1 /*<--used for 0 to < size - 1*/) {
+      if ($j == /*0 <-- used for size-1 to 0 */ count($attributes) - 1 /*<--used for 0 to < size - 1*/) {
         $out.='    ' . str_repeat("    ", 0);
         $out.='return true;' . "\n";
       }
@@ -899,7 +899,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
       $out.='};' . "\n";
     }
 
-    for ($i = 0, $s = sizeof($attributes); $i < $s; $i++) {
+    for ($i = 0, $s = count($attributes); $i < $s; $i++) {
       $outArrayPart = 'frm["id[' . $attributes[$i]['oid'] . ']"]';
           
       $outArrayAdd[$i] = '["_" + ' . $outArrayPart . '.value]';
@@ -919,8 +919,8 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
     
     // js functions to set next dropdown options when a dropdown selection is made
     // do all but last attribute (nothing needs to happen when it changes except additional validation action to improve the customer experience)
-    for ($curattr = sizeof($attributes) - 1 ; $curattr >= 0; $curattr-- /* $curattr = 0; $curattr < sizeof($attributes); $curattr++*/) {
-      for ($nextattr = $curattr + 1, $s = sizeof($attributes); $nextattr < $s; $nextattr++) {
+    for ($curattr = count($attributes) - 1 ; $curattr >= 0; $curattr-- /* $curattr = 0; $curattr < count($attributes); $curattr++*/) {
+      for ($nextattr = $curattr + 1, $s = count($attributes); $nextattr < $s; $nextattr++) {
         if ($attributes[$nextattr]['otype'] != PRODUCTS_OPTIONS_TYPE_READONLY) {
 
           break 1;
@@ -932,7 +932,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
 
       $out.='var i' . $attr['oid'] . ' = function (frm) {' . "\n";
       $out.='    "use strict";' . "\n";
-      if ($curattr < sizeof($attributes) - 1) {
+      if ($curattr < count($attributes) - 1) {
         if (PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK != 'False') {
           $out.='    var displayshown = false;' . "\n";// . ( PRODINFO_ATTRIBUTE_POPUP_OUT_OF_STOCK == 'False' ? "true" : "false") . ";\n"; //Allow control of the alert to provide it one time only.
         }
@@ -944,13 +944,13 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
 
             
 
-        for ($i = $curattr + 1, $s = sizeof($attributes); $i < $s; $i++) {
+        for ($i = $curattr + 1, $s = count($attributes); $i < $s; $i++) {
           if ($attributes[$i]['otype'] == PRODUCTS_OPTIONS_TYPE_READONLY) {
             // Do not reset the form that is applicable to readonly attributes.
             // 
             // This is however a great point to perform other determinations
             //   to support downstream processing as $nextattr is known.
-            //     Either it is equal to the sizeof($attributes) or some value
+            //     Either it is equal to the count($attributes) or some value
             //     less than it.  If it is equal then the most recent currattr
             //     that was not a readonly attribute was the last to 
             //     be selectable. If it is less than it, then there is yet a
@@ -1019,25 +1019,25 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
         $out.='                        if (stk2';
         $out.=$outArrayList[$nextattr - 1];
         $out.='[opt] !== undefined && frm["id[' . $attributes[$nextattr]['oid'] . ']"] !== undefined) {' . "\n";
-        $out.='  // attributes: ' . sizeof($attributes) . ' : curattr: ' . $curattr . ' : nextattr: ' . $nextattr . "\n";
+        $out.='  // attributes: ' . count($attributes) . ' : curattr: ' . $curattr . ' : nextattr: ' . $nextattr . "\n";
         //  Add the product to the next selectable list item as it is in stock.
         $out.='                            frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length] = new Option(htmlEnDeCode.htmlDecode(txt' . $attributes[$nextattr]['oid'] . '[opt])';
 
         // Need to determine that if we were at the next selectable list, would the stock need to be
         //  shown or not... 
-        for ($nextattr2 = $nextattr + 1, $s = sizeof($attributes); $nextattr2 < $s; $nextattr2++) {
+        for ($nextattr2 = $nextattr + 1, $s = count($attributes); $nextattr2 < $s; $nextattr2++) {
           if ($attributes[$nextattr2]['otype'] != PRODUCTS_OPTIONS_TYPE_READONLY) {
             break 1;
           }
         }
         unset($s);
         
-        if ($nextattr2 == sizeof($attributes)) {
+        if ($nextattr2 == count($attributes)) {
           if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true') {
             $out.=' + "' . PWA_STOCK_QTY . '" + stk2';
             $out.=$outArrayList[$nextattr - 1];
             $out.='[opt]';
-            for ($k = $nextattr + 1, $s = sizeof($attributes); $k < $s; $k++) {
+            for ($k = $nextattr + 1, $s = count($attributes); $k < $s; $k++) {
               if (PRODINFO_ATTRIBUTE_DYNAMIC_STOCK_READ_ONLY == 'true') {
                 $out.=$outArrayAdd[$k];
               }
@@ -1063,7 +1063,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
             $out.='txt' . $attributes[$nextattr]['oid'] . '[opt] + "' . PWA_OUT_OF_STOCK . '"';
           }
           $out.='), opt.substring(1));' . "\n";
-          if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == sizeof($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
+          if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == count($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
             $out.='                            frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].disabled = true;' . "\n";
           }
           $out.='                        }' . "\n";  // EOF else and if typeof stk2 $outArray [opt] && frm['id[]'] not defined.
@@ -1088,7 +1088,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
             $out.='txt' . $attributes[$nextattr]['oid'] . '[opt] + "' . PWA_OUT_OF_STOCK . '"';
           }
           $out.='), opt.substring(1));' . "\n";
-          if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == sizeof($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
+          if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == count($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
             $out.='                        frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].disabled = true;' . "\n";
           }
           if ($this->out_of_stock_msgline == 'True') {
@@ -1148,7 +1148,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
 
     // js to initialize dropdowns to defaults if product id contains attributes (i.e. clicked through to product page from cart)
     // Take action on the first currently set value.
-    for ($p = 0, $r = sizeof($attributes); $p < $r; $p++) {
+    for ($p = 0, $r = count($attributes); $p < $r; $p++) {
         if ($attributes[$p]['default'] != '') {
             // Execute code on the current/first selection
             $out.='i' . $attributes[$p]['oid'] . '(document.cart_quantity);' . "\n";
@@ -1159,7 +1159,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
     unset($r);
     // Process the known selections from top to bottom for each processable (having a default) option.
     // This directly supports returning to the product from the shopping cart page and populating the selections made/entered.
-    for ($o = $p, $s = sizeof($attributes); $o < $s; $o++) {
+    for ($o = $p, $s = count($attributes); $o < $s; $o++) {
       if ($attributes[$o]['default'] != '') {
         // Set the next attribute's selection
         $out.='document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
@@ -1169,7 +1169,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
     }
     unset($s);
     
-/*    if (($o == sizeof($attributes) - 1) && ($attributes[$o]['default'] != '')) {
+/*    if (($o == count($attributes) - 1) && ($attributes[$o]['default'] != '')) {
       $out.='document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
     }*/
 
@@ -1240,7 +1240,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
   
 */
   function _draw_js_stock_array($combinations) {
-    if (!((isset($combinations)) && (is_array($combinations)) && (sizeof($combinations) > 0))) {
+    if (!(is_array($combinations) && !empty($combinations))) {
       return '{}';
     }
     $out = '';
@@ -1260,20 +1260,20 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
       $out.='1';
     }
 
-    for ($combindex = 1, $s = sizeof($combinations); $combindex < $s; $combindex++) {
+    for ($combindex = 1, $s = count($combinations); $combindex < $s; $combindex++) {
       $comb = $combinations[$combindex]['comb'];
-      for ($i = 0; $i < sizeof($opts) - 1; $i++) {
+      for ($i = 0; $i < count($opts) - 1; $i++) {
         if ($comb[$opts[$i]] != $combinations[$combindex - 1]['comb'][$opts[$i]]) {
           break;
         }
       }
-      $out.=str_repeat('}', sizeof($opts) - 1 - $i) . ', ';
-      if ($i < sizeof($opts) - 1) {
-        for ($j = $i; $j < sizeof($opts) - 1; $j++) {
+      $out.=str_repeat('}', count($opts) - 1 - $i) . ', ';
+      if ($i < count($opts) - 1) {
+        for ($j = $i; $j < count($opts) - 1; $j++) {
           $out.= '"_' . zen_output_string_protected($comb[$opts[$j]]) . '"' . ': {';
         }
       }
-      $out.='"_' . zen_output_string_protected($comb[$opts[sizeof($opts) - 1]]) . '"' . ': ';
+      $out.='"_' . zen_output_string_protected($comb[$opts[count($opts) - 1]]) . '"' . ': ';
       if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true') {
         $idvals = array();
         foreach ($comb as $ids => $idvalsadd) {
@@ -1289,7 +1289,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
       }
     }
     unset($s);
-    $out.=str_repeat('}', sizeof($opts));
+    $out.=str_repeat('}', count($opts));
 
     return $out;
   }
@@ -1321,7 +1321,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
     } */
 
 /*    function _draw_js_stock_array($combinations) {
-      if (!((isset($combinations)) && (is_array($combinations)) && (sizeof($combinations) >= 0))) {
+      if (!((isset($combinations)) && (is_array($combinations)) && (count($combinations) >= 0))) {
         return '{}';
       }
       $out='';
@@ -1331,19 +1331,19 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
       }
       $out.='1';
       
-      for ($combindex=1; $combindex<sizeof($combinations); $combindex++) {
+      for ($combindex=1; $combindex<count($combinations); $combindex++) {
         $comb=$combinations[$combindex]['comb'];
-        for ($i=0; $i<sizeof($opts)-1; $i++) {
+        for ($i=0; $i<count($opts)-1; $i++) {
           if ($comb[$opts[$i]]!=$combinations[$combindex-1]['comb'][$opts[$i]]) break;
         }
-        $out.=str_repeat('}',sizeof($opts)-1-$i).',';
-        if ($i<sizeof($opts)-1) {
-          for ($j=$i; $j<sizeof($opts)-1; $j++)
+        $out.=str_repeat('}',count($opts)-1-$i).',';
+        if ($i<count($opts)-1) {
+          for ($j=$i; $j<count($opts)-1; $j++)
             $out.=$comb[$opts[$j]].':{';
         }
-        $out.=$comb[$opts[sizeof($opts)-1]].':1';
+        $out.=$comb[$opts[count($opts)-1]].':1';
       }
-      $out.=str_repeat('}',sizeof($opts));
+      $out.=str_repeat('}',count($opts));
       
       return $out;
     }*/

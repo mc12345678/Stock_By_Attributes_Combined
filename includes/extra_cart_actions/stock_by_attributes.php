@@ -58,7 +58,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   $sba_add_prods_cart_quantity = array(); // Quantity of the product already in the cart at this time.
   $sba_add_prods_quantity = array(); // Quantity summary of product in the cart to identify total at each product.
   
-  for ($i=0, $n=sizeof($_POST['products_id']); $i<$n; $i++) {
+  for ($i=0, $n=count($_POST['products_id']); $i<$n; $i++) {
     $productIsSBA[$i] = isset($_SESSION['pwas_class2']) 
                          && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
                          && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
@@ -110,7 +110,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   
   
 
-  for ($i=0, $n=sizeof($_POST['products_id']); $i<$n; $i++) {
+  for ($i=0, $n=count($_POST['products_id']); $i<$n; $i++) {
 /*    if (!zen_product_is_sba($_POST['products_id'][$i])) {
       // If the product is not SBA tracked then allow the cart's actions to
       // handle the remaining items and not be bothered by this code. :)
@@ -536,7 +536,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 
 //        $_SESSION['in_loop_grid_id'] = $grid_id;
 //        unset($_SESSION['in_loop_grid_id']);
-        if (sizeof($grid_id) < 1 || sizeof($prod_qty) < 1 || sizeof($grid_prod_id) < 1) {
+        if (count($grid_id) < 1 || count($prod_qty) < 1 || count($grid_prod_id) < 1) {
           $grid_prod_id[0] = null;
           $prod_qty[0] = 0;
           $grid_add_number = 0;
@@ -579,22 +579,22 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
          ) 
        : true) {
 
-    if (sizeof($grid_id) < 1) {
+    if (count($grid_id) < 1) {
       // no grid item, so make the first data record be null.
       $grid_id[0] = null;
 //      $grid_add_number = 1;
     }
-    if (sizeof($grid_id) == 1 && is_null($grid_id[0]) && (!isset($_GET['number_of_uploads']) || (isset($_GET['number_of_uploads']) && $_GET['number_of_uploads'] == 0))) {
+    if (count($grid_id) == 1 && is_null($grid_id[0]) && (!isset($_GET['number_of_uploads']) || (isset($_GET['number_of_uploads']) && $_GET['number_of_uploads'] == 0))) {
       $grid_add_number = 0;
     }
 //        $grid_add_number = 1;
 
-    if (sizeof($prod_qty) < 1) {
+    if (count($prod_qty) < 1) {
       $prod_qty[0] = 0;
       $grid_add_number = 0;
     }
 
-    if (sizeof($grid_prod_id) < 1) {
+    if (count($grid_prod_id) < 1) {
       $grid_prod_id[0] = null;
       $grid_add_number = 0;
     }

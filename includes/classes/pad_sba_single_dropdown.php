@@ -74,7 +74,7 @@
       $out='';
       
       $attributes = $this->_build_attributes_array(true, false);
-      if (sizeof($attributes)>0) {
+      if (!empty($attributes)) {
         $combinations = array();
         $selected_combination = 0;
         $this->_build_attributes_combinations($attributes, $this->show_out_of_stock == 'True', $this->mark_out_of_stock, $combinations, $selected_combination);
@@ -144,12 +144,12 @@
         $out.="        }\n";
         $out.="      }\n";
         $out.="    }\n";
-        $out.="    var id=Array(" . sizeof($attributes) . ");\n";
+        $out.="    var id=Array(" . count($attributes) . ");\n";
         $out.="    for (i=0; i<attrs.length; i++) {\n";
         $out.="      id[i]=attrs[i].split('-')[1];\n";
         $out.="    }\n";
         $out.='    ';
-        for ($i=0; $i<sizeof($attributes); $i++) {
+        for ($i=0; $i<count($attributes); $i++) {
           $out.='if (stk';
           for ($j=0; $j<=$i; $j++) {
             $out.="[id[".$j."]]";

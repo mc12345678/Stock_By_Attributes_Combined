@@ -77,12 +77,12 @@
       $out='';
       
       $attributes = $this->_build_attributes_array(true, false);
-      if (sizeof($attributes)<=1) {
+      if (count($attributes)<=1) {
         return parent::_draw_stocked_attributes();
       }
 
       // Check stock
-      $s=sizeof($attributes[0]['ovals']);
+      $s=count($attributes[0]['ovals']);
       for ($a=0; $a<$s; $a++) {
         $attribute_stock_query = "select quantity from " .  TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :products_id: AND quantity > 0";
 
@@ -100,7 +100,7 @@
       $out.='<tr><td align="right" class="main"><b>'.$attributes[0]['oname'].":</b></td><td class=\"main\">".zen_draw_pull_down_menu('id['.$attributes[0]['oid'].']',array_merge(array(array('id'=>0, 'text'=>'First select '.$attributes[0]['oname'])), $attributes[0]['ovals']),$attributes[0]['default'], "onchange=\"i".$attributes[0]['oid']."(this.form);\"")."</td></tr>\n";
 
       // Draw second to next to last option dropdowns - no values, with onchange
-      for($o=1; $o<sizeof($attributes)-1; $o++) {
+      for($o=1; $o<count($attributes)-1; $o++) {
         $out.='<tr><td align="right" class="main"><b>'.$attributes[$o]['oname'].":</b></td><td class=\"main\">".zen_draw_pull_down_menu('id['.$attributes[$o]['oid'].']',array(array('id'=>0, 'text'=>'Next select '.$attributes[$o]['oname'])), '', "onchange=\"i".$attributes[$o]['oid']."(this.form);\"")."</td></tr>\n";
       }        
 
@@ -144,7 +144,7 @@
 
       // js arrays of possible option values/text for dropdowns
       // do all but the first attribute (its dropdown never changes)
-      for ($curattr=1; $curattr<sizeof($attributes); $curattr++) {
+      for ($curattr=1; $curattr<count($attributes); $curattr++) {
         $attr = $attributes[$curattr];
         $out.='var txt' . $attr['oid'] . ' = {';
         foreach ($attr['ovals'] as $oval) {
@@ -156,11 +156,11 @@
 
       // js functions to set next dropdown options when a dropdown selection is made
       // do all but last attribute (nothing needs to happen when it changes)
-      for ($curattr=0; $curattr<sizeof($attributes)-1; $curattr++) {
+      for ($curattr=0; $curattr<count($attributes)-1; $curattr++) {
         $attr=$attributes[$curattr];
         $out.='var i' . $attr['oid'] . ' = function (frm) {' . "\n";
-        $i=key($attributes);
-        for ($i=$curattr+1; $i<sizeof($attributes); $i++) {
+        //$i=key($attributes);
+        for ($i=$curattr+1; $i<count($attributes); $i++) {
           $out.='            frm["id[' . $attributes[$i]['oid'] . ']"].length = 1;' . "\n";
         }
         $out.="    for (opt in stk";
@@ -175,14 +175,14 @@
 
       // js to initialize dropdowns to defaults if product id contains attributes (i.e. clicked through to product page from cart)
         $out.='  i' . $attributes[0]['oid'] . '(document.cart_quantity);' . "\n";
-      for($o=1; $o<sizeof($attributes)-1; $o++) {
+      for($o=1; $o<count($attributes)-1; $o++) {
         if ($attributes[$o]['default']!='') {
           $out.='  document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
           $out.='  i' . $attributes[$o]['oid'] . '(document.cart_quantity);' . "\n";
         }
         else break;
       }
-      if (($o == sizeof($attributes)-1) && ($attributes[$o]['default']!='')) {
+      if (($o == count($attributes)-1) && ($attributes[$o]['default']!='')) {
         $out.='  document.cart_quantity["id[' . $attributes[$o]['oid'] . ']"].value=' . $attributes[$o]['default'] . ';' . "\n";
       }
       

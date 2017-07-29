@@ -57,7 +57,7 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
       $selected_attributes_id_mapping = eo_get_orders_products_options_id_mappings($oID, $orders_products_id);
       $attrs = eo_get_product_attributes_options($order[$index]['id']);
       $optionID = array_keys($attrs);
-      for($j=0; $j<sizeof($attrs); $j++)
+      for($j=0; $j<count($attrs); $j++)
       {
           $optionInfo = $attrs[$optionID[$j]];
           $orders_products_attributes_id = $selected_attributes_id_mapping[$optionID[$j]];
@@ -82,7 +82,7 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
                   break;
               case PRODUCTS_OPTIONS_TYPE_CHECKBOX:
                   foreach($optionInfo['options'] as $attributeId => $attributeValue) {
-                      for($k=0, $s = sizeof($orders_products_attributes_id);$k<$s;$k++) {
+                      for($k=0, $s = count($orders_products_attributes_id);$k<$s;$k++) {
                           if(eo_is_selected_product_attribute_id($orders_products_attributes_id[$k], $attributeId)) {
                               $order[$index]['attrs'][$optionID[$j]]['value'][$attributeId] = zen_html_quotes($attributeId);
                               $order[$index]['attrs'][$optionID[$j]]['type'] = (int)$optionInfo['type'];
@@ -143,7 +143,7 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
                 $rowID = -1;
                 $orders_products_id_mapping = eo_get_orders_products_id_mappings((int)$oID);
 
-                for($i=0; $i<sizeof($orders_products_id_mapping); $i++) {
+                for($i=0; $i<count($orders_products_id_mapping); $i++) {
                     if($orders_products_id == $orders_products_id_mapping[$i]) {
                         $rowID = $i;
                         break;
@@ -170,7 +170,7 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
                         $product_id = $old_product['id'];
   
                         // Handle attributes
-                        if(is_array($product_options) && count($product_options > 0))
+                        if(is_array($product_options) && !empty($product_options))
                         {
                           $retval = array();
                           $retval['attributes'] = array();
@@ -324,7 +324,7 @@ step (string) => 3
       $product_id = (int)$_POST['add_product_products_id'];
     
     // Handle attributes
-      if(is_array($product_options) && count($product_options > 0))
+      if(is_array($product_options) && !empty($product_options))
       {
         $retval = array();
         $retval['attributes'] = array();

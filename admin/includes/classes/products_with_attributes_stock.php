@@ -877,7 +877,7 @@ function nullDataEntry($fieldtoNULL){
         return $customid->fields['products_model'];
       }
       
-      if(is_array($attributes) && sizeof($attributes) > 0){
+      if(is_array($attributes) && !empty($attributes)){
         // check if attribute stock values have been set for the product
         // if there are will we continue, otherwise we'll use product level data
         $attribute_stock = $db->Execute("select stock_id 
@@ -1044,7 +1044,7 @@ function nullDataEntry($fieldtoNULL){
             // Only handles a depth of one for the array, it does not handle an array of arrays of arrays or a third level of arrays.  Not currently
             //  as of ZC 1.5.5 considered a core feature of ZC, although some plugins might work that deep or deeper.
             if (is_array($attributes_copy_from_ids_data[$attributes_copy_from_ids_data_query->fields['options_id']]) 
-                && sizeof($attributes_copy_from_ids_data[$attributes_copy_from_ids_data_query->fields['options_id']])) {
+                && !empty($attributes_copy_from_ids_data[$attributes_copy_from_ids_data_query->fields['options_id']])) {
                   // Array of arrays already exists and has at least one element associated with it.
               $attributes_copy_from_ids_data[$attributes_copy_from_ids_data_query->fields['options_id']][] = $attributes_copy_from_ids_data_query->fields['options_values_id'];
             } else {
