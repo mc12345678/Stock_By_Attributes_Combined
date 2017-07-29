@@ -718,7 +718,9 @@ class order extends base {
           $stock_values = $db->Execute("select * from " . TABLE_PRODUCTS . " where products_id = '" . zen_get_prid($this->products[$i]['id']) . "'");
         }
 
+// Start Stock By Attributes SBA 1 of 4
         $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN', array('i'=>$i, 'stock_values'=>$stock_values));
+// End Stock By Attributes SBA 1 of 4
 
         if ($stock_values->RecordCount() > 0) {
           // mc12345678 do not decrement quantities if products_attributes_filename exists for the products in the order;
@@ -861,10 +863,12 @@ class order extends base {
 
           zen_db_perform(TABLE_ORDERS_PRODUCTS_ATTRIBUTES, $sql_data_array);
 
+// Start Stock By Attributes SBA 2 of 4
           $order_products_attributes_id = $db->Insert_ID();
 
           //mc12345678 probably want to obtain the same merged data as above related to the orders_products_attributes_id.
           $this->notify('NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM', array_merge(array('orders_products_attributes_id' => $order_products_attributes_id), $sql_data_array));
+// End Stock By Attributes SBA 2 of 4
 
           if ((DOWNLOAD_ENABLED == 'true') && isset($attributes_values->fields['products_attributes_filename']) && zen_not_null($attributes_values->fields['products_attributes_filename'])) {
             $sql_data_array = array('orders_id' => $zf_insert_id,
@@ -913,14 +917,18 @@ class order extends base {
       $this->notify('NOTIFY_ORDER_PROCESSING_ONE_TIME_CHARGES_BEGIN');
 
       // build output for email notification
+// Start Stock By Attributes SBA 3 of 4
       $this->products_ordered .=  $this->products[$i]['qty'] . ' x ' . $this->products[$i]['name'] . ($this->products[$i]['customid'] != '' ? ' (' . $this->products[$i]['customid'] . ') ' : ($this->products[$i]['model'] != '' ? ' (' . $this->products[$i]['model'] . ') ' : '')) . ' = ' .
+// End Stock By Attributes SBA 3 of 4
       $currencies->display_price($this->products[$i]['final_price'], $this->products[$i]['tax'], $this->products[$i]['qty']) .
       ($this->products[$i]['onetime_charges'] !=0 ? "\n" . TEXT_ONETIME_CHARGES_EMAIL . $currencies->display_price($this->products[$i]['onetime_charges'], $this->products[$i]['tax'], 1) : '') .
       $this->products_ordered_attributes . "\n";
       $this->products_ordered_html .=
       '<tr>' . "\n" .
       '<td class="product-details" align="right" valign="top" width="30">' . $this->products[$i]['qty'] . '&nbsp;x</td>' . "\n" .
+// Start Stock By Attributes SBA 4 of 4
       '<td class="product-details" valign="top">' . nl2br($this->products[$i]['name']) .  ($this->products[$i]['customid'] != '' ? ' (' . nl2br($this->products[$i]['customid']) . ') ' : ($this->products[$i]['model'] != '' ? ' (' . nl2br($this->products[$i]['model']) . ') ' : '')) . "\n" .
+// End Stock By Attributes SBA 4 of 4
       '<nobr>' .
       '<small><em> '. nl2br($this->products_ordered_attributes) .'</em></small>' .
       '</nobr>' .

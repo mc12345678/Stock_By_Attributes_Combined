@@ -555,13 +555,13 @@ function couponpopupWindow(url) {
           </tr>
 <?php
 
-  // START "Stock by Attributes"
+  // START "Stock by Attributes" 1 of 3
   //include language file
     include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
   //new object from class
     //require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
     //$stock = new products_with_attributes_stock;
-  // END "Stock by Attributes"
+  // END "Stock by Attributes" 1 of 3
   
     for ($i=0, $n=sizeof($order->products); $i<$n; $i++) {
       if (DISPLAY_PRICE_WITH_TAX_ADMIN == 'true')
@@ -576,24 +576,20 @@ function couponpopupWindow(url) {
            '            <td class="dataTableContent" valign="top">' . $order->products[$i]['name'];
 
       if (isset($order->products[$i]['attributes']) && (sizeof($order->products[$i]['attributes']) > 0)) {
-        $attributes = array(); // mc12345678 Moved to within if statement otherwise doesn't apply elsewhere.
         for ($j = 0, $k = sizeof($order->products[$i]['attributes']); $j < $k; $j++) {
-      // kuroi: SbA //this bit of code does not seem to be used on this page, need to see if it is dead code or used elseware!
-          $option_name_array = explode(":", $order->products[$i]['attributes'][$j]['option']);
-          $option_Name = $option_name_array[0];
-      // end: sbA
-      
           echo '<br /><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
-      //"Stock by Attributes" add custom ID to display
+      //"Stock by Attributes" add custom ID to display 2 of 3
           echo  ($order->products[$i]['customid']['type'] == 'multi' && zen_not_null($order->products[$i]['attributes'][$j]['customid']) ? ' (' . $order->products[$i]['attributes'][$j]['customid'] . ') ' : '');
-      // END "Stock by Attributes"
+      // END "Stock by Attributes" 2 of 3
           if ($order->products[$i]['attributes'][$j]['price'] != '0') echo ' (' . $order->products[$i]['attributes'][$j]['prefix'] . $currencies->format($order->products[$i]['attributes'][$j]['price'] * $order->products[$i]['qty'], true, $order->info['currency'], $order->info['currency_value']) . ')';
           if ($order->products[$i]['attributes'][$j]['product_attribute_is_free'] == '1' and $order->products[$i]['product_is_free'] == '1') echo TEXT_INFO_ATTRIBUTE_FREE;
           echo '</i></small></nobr>';
         }
       }
 
+      //"Stock by Attributes" add custom ID to display 3 of 3
       echo ($order->products[$i]['customid']['type'] == 'single' && zen_not_null($order->products[$i]['customid']['value']) ? ' (' . $order->products[$i]['customid']['value'] . ') ' : '');
+      // END "Stock by Attributes" 3 of 3
 
       echo '            </td>' . "\n" .
            '            <td class="dataTableContent" valign="top">' . $order->products[$i]['model'] . '</td>' . "\n" .

@@ -156,13 +156,13 @@ function couponpopupWindow(url) {
       </tr>
 <?php
 
-  // START "Stock by Attributes"
+  // START "Stock by Attributes" 1 of 2
   //include language file
   include(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php');
   //new object from class
   //require_once(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
   //$stock = new products_with_attributes_stock;
-  // END "Stock by Attributes"
+  // END "Stock by Attributes" 1 of 2
 
     $decimals = $currencies->get_decimal_places($order->info['currency']);
     for ($i = 0, $n = sizeof($order->products); $i < $n; $i++) {
@@ -179,7 +179,7 @@ function couponpopupWindow(url) {
 
       if (isset($order->products[$i]['attributes']) && (($k = sizeof($order->products[$i]['attributes'])) > 0)) {
         for ($j = 0; $j < $k; $j++) {
-          //"Stock by Attributes" add custom ID to display
+          //"Stock by Attributes" add custom ID to display 2 of 2
           $customid = null;
           //test if this is to be displayed
           if( STOCK_SBA_DISPLAY_CUSTOMID == 'true'){
@@ -197,7 +197,7 @@ function couponpopupWindow(url) {
           echo '<br><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
           //"Stock by Attributes" add custom ID to display
           echo ( STOCK_SBA_DISPLAY_CUSTOMID == 'true' ? ( $customid != '' ? ' (' . $customid . ') ' : '') : '' );
-          // END "Stock by Attributes"
+          // END "Stock by Attributes" 2 of 2
           if ($order->products[$i]['attributes'][$j]['price'] != '0') echo ' (' . $order->products[$i]['attributes'][$j]['prefix'] . $currencies->format($order->products[$i]['attributes'][$j]['price'] * $order->products[$i]['qty'], true, $order->info['currency'], $order->info['currency_value']) . ')';
           if ($order->products[$i]['attributes'][$j]['product_attribute_is_free'] == '1' and $order->products[$i]['product_is_free'] == '1') echo TEXT_INFO_ATTRIBUTE_FREE;
           echo '</i></small></nobr>';

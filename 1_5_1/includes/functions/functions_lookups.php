@@ -164,7 +164,7 @@
  * @param array of int, attribute(s) associated with a product who's stock we want
  * @param boolean dupTest used to force testing of multiple attributes
 */
-/* Begin Stock by Attributes additions */
+/* Begin Stock by Attributes additions 1 of 2 */
   function zen_get_products_stock($products_id, $attributes = null, $dupTest = null) {
     global $db;
     $products_id = zen_get_prid($products_id);
@@ -193,9 +193,8 @@
     return;
   }
 /*
- *End Amend for Stock by Attributes add-on
+ *End Amend for Stock by Attributes add-on 1 of 2
 */
-
 
 /**
  * Check if the required stock is available.
@@ -208,9 +207,9 @@
  * @TODO naughty html in a function
 */
 
+// START "Stock by Attributes" 2 of 2
   function zen_check_stock($products_id, $products_quantity, $attributes = null, $from = 'products') {
 
-// START "Stock by Attributes"
     if ($from == 'order' && is_array($attributes)) {
       $tmp_attrib = array();
       foreach ($attributes as $attrib) {
@@ -219,7 +218,7 @@
       $attributes = $tmp_attrib;
     }
     $stock_left = zen_get_products_stock($products_id, $attributes) - $products_quantity;
-// END "Stock by Attributes"
+// END "Stock by Attributes" 2 of 2
     $out_of_stock = '';
 
     if ($stock_left < 0) {

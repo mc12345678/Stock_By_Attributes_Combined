@@ -1363,7 +1363,7 @@ while (!$chk_sale_categories_all->EOF) {
   function zen_remove_product($product_id, $ptc = 'true') {
     global $db, $zco_notifier;
     $zco_notifier->notify('NOTIFIER_ADMIN_ZEN_REMOVE_PRODUCT', array('product_id'=>$product_id, 'ptc'=>$ptc), $product_id, $ptc);    
-    
+    //END Stock By Attributes SBA  1 of 3
     $product_image = $db->Execute("select products_image
                                    from " . TABLE_PRODUCTS . "
                                    where products_id = '" . (int)$product_id . "'");
@@ -1454,10 +1454,10 @@ while (!$chk_sale_categories_all->EOF) {
   }
 
   function zen_remove_order($order_id, $restock = false) {
-    /* START STOCK BY ATTRIBUTES */
+    /* START STOCK BY ATTRIBUTES 2 of 3 */
     global $db, $zco_notifier;
     $zco_notifier->notify('NOTIFIER_ADMIN_ZEN_REMOVE_ORDER', array('order_id'=>$order_id, 'restock'=>$restock), $order_id, $restock);
-   /* END STOCK BY ATTRIBUTES */
+   /* END STOCK BY ATTRIBUTES 2 of 3 */
     
     if ($restock == 'on') {
       $order = $db->Execute("select products_id, products_quantity
@@ -2252,7 +2252,7 @@ function zen_copy_products_attributes($products_id_from, $products_id_to) {
     global $db, $zco_notifier;
     $zco_notifier->notify('NOTIFIER_ADMIN_ZEN_DELETE_PRODUCTS_ATTRIBUTES', array('delete_product_id'=>$delete_product_id), $delete_product_id);
 
-    // first delete associated downloads
+    // first delete associated downloads 3 of 3
     $products_delete_from = $db->Execute("select pa.products_id, pad.products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD . " pad  where pa.products_id='" . (int)$delete_product_id . "' and pad.products_attributes_id= pa.products_attributes_id");
     while (!$products_delete_from->EOF) {
       $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD . " where products_attributes_id = '" . $products_delete_from->fields['products_attributes_id'] . "'");

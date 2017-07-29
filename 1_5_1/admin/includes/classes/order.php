@@ -156,7 +156,7 @@
                                         'product_is_free' => $orders_products->fields['product_is_free']);
 
         $subindex = 0;
-        // START "Stock by Attributes" added to array products_options_values_id and 'value_id' => $attributes->fields['products_options_values_id'],
+        // START "Stock by Attributes" added to array products_options_values_id and 'value_id' => $attributes->fields['products_options_values_id'], 1 of 3
         $attributes = $db->Execute("select products_options, products_options_values, options_values_price,
                                            price_prefix, products_options_values_id,
                                            product_attribute_is_free
@@ -167,11 +167,11 @@
           while (!$attributes->EOF) {
             $this->products[$index]['attributes'][$subindex] = array('option' => $attributes->fields['products_options'],
                                                                      'value' => $attributes->fields['products_options_values'],
-                                                                     'value_id' => $attributes->fields['products_options_values_id'],
+                                                                     'value_id' => $attributes->fields['products_options_values_id'], // Stock By Attributes SBA  2 of 3
                                                                      'prefix' => $attributes->fields['price_prefix'],
                                                                      'price' => $attributes->fields['options_values_price'],
                                                                      'product_attribute_is_free' =>$attributes->fields['product_attribute_is_free']);
-            // END "Stock by Attributes"
+            // END "Stock by Attributes" 2 of 3
             $subindex++;
             $attributes->MoveNext();
           }
@@ -179,8 +179,8 @@
         $index++;
         $orders_products->MoveNext();
       }
-      // START "Stock by Attributes"
+      // START "Stock by Attributes" 3 of 3
       $this->notify('ORDER_QUERY_ADMIN_COMPLETE', array('orders_id' => $order_id));
-      // END "Stock by Attributes"
+      // END "Stock by Attributes" 3 of 3
     }
   }

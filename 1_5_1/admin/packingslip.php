@@ -157,7 +157,9 @@
   // END "Stock by Attributes"
 
     for ($i=0, $n=sizeof($order->products); $i<$n; $i++) {
+  // START "Stock by Attributes" 1 of 4
       $zco_notifier->notify('NOTIFY_PACKINGSLIP_INLOOP', array('i'=>$i, 'prod_img'=>$prod_img), $prod_img);
+  // END "Stock by Attributes" 1 of 4
 
       echo '      <tr class="dataTableRow">' . "\n" .
            '        <td class="dataTableContent" valign="top" align="right">' . (zen_not_null($prod_img) ? '<img src="' . DIR_WS_CATALOG . DIR_WS_IMAGES . $prod_img .'" align="left" width="' . IMAGE_ON_INVOICE_IMAGE_WIDTH . '" height="' . IMAGE_ON_INVOICE_IMAGE_HEIGHT . '" />' : '') . $order->products[$i]['qty'] . '&nbsp;x</td>' . "\n" .
@@ -165,7 +167,9 @@
 
       if (isset($order->products[$i]['attributes']) && (sizeof($order->products[$i]['attributes']) > 0)) {
         for ($j=0, $k=sizeof($order->products[$i]['attributes']); $j<$k; $j++) {
+  // START "Stock by Attributes" 2 of 4
           $zco_notifier->notify('NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP', array('i'=>$i, 'j'=>$j, 'prod_img'=>$prod_img), $prod_img);
+  // END "Stock by Attributes" 2 of 4
 
           //"Stock by Attributes" add custom ID to display
           /*	$customid = null;
@@ -184,14 +188,14 @@
           }*/
           // END "Stock by Attributes"
           echo '<br><nobr><small>&nbsp;<i> - ' . $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
-          //"Stock by Attributes" add custom ID to display
+          //"Stock by Attributes" add custom ID to display 3 of 4
           echo ($order->products[$i]['customid']['type'] == 'multi' && zen_not_null($order->products[$i]['attributes'][$j]['customid']['value']) ? ' (' . $order->products[$i]['attributes'][$j]['customid']['value'] . ') ' : '');
-          // END "Stock by Attributes"
+          // END "Stock by Attributes" 3 of 4
           echo '</i></small></nobr>';
         }
-        //"Stock by Attributes" add custom ID to display
+        //"Stock by Attributes" add custom ID to display 4 of 4
         echo ( $order->products[$i]['customid']['type'] == 'single' && zen_not_null($order->products[$i]['customid']['value']) ? '<br />(' . $order->products[$i]['customid']['value'] . ') ' : '');
-        // END "Stock by Attributes"
+        // END "Stock by Attributes" 4 of 4
       }
 
       echo '        </td>' . "\n" .

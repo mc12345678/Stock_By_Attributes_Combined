@@ -208,7 +208,7 @@
         $remove_option_values = $db->Execute("select products_options_id, products_options_values_id from " . TABLE_PRODUCTS_OPTIONS_VALUES_TO_PRODUCTS_OPTIONS . " where products_options_id='" . (int)$option_id . "'");
 
         while (!$remove_option_values->EOF) {
-          //SBA Start mc12345678
+          //SBA Start mc12345678 1 of 2
           $remove_attributes_query = $db->Execute("select products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " where options_id = " . (int)$option_id . " and options_values_id = " . (int)$remove_option_values->fields['products_options_values_id']);
           while (!$remove_attributes_query->EOF) {
             $remove_attributes_list[] = $remove_attributes_query->fields['products_attributes_id'];
@@ -219,7 +219,7 @@
             $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                           where stock_id in (" . implode(',', $stock_ids) . ")");
           }
-          //SBA End mc12345678
+          //SBA End mc12345678 1 of 2
           $db->Execute("delete from " . TABLE_PRODUCTS_OPTIONS_VALUES . " where products_options_values_id='" . (int)$remove_option_values->fields['products_options_values_id'] . "' and products_options_values_id !=0");
           $remove_option_values->MoveNext();
         }
@@ -303,13 +303,13 @@
 // change to delete
 // should add download delete
                 $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . (int)$all_update_products->fields['products_id'] . "' and options_id='" . (int)$_POST['options_id'] . "'");
-                //SBA Start mc12345678
+                //SBA Start mc12345678 2 of 2
                 $stock_ids = zen_get_sba_ids_from_attribute($check_all_options_values->fields['products_attributes_id']);
                 if (sizeof($stock_ids) > 0 /*&& zen_not_null($stock_ids)*/) {
                   $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                                 where stock_id in (" . implode(',', $stock_ids) . ")");
                 }
-                //SBA End mc12345678
+                //SBA End mc12345678 2 of 2
               } else {
                 // skip this option_name does not exist
               }
