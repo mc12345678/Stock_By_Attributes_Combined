@@ -57,6 +57,7 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN';
     $attachNotifier[] = 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END';
+    $attachNotifier[] = 'NOTIFY_ORDER_DURING_CREATE_ADDED_PRODUCT_LINE_ITEM';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTION';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE';
@@ -747,9 +748,11 @@ class products_with_attributes_stock extends base {
     function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $i) {
     //Need to modify the email that is going out regarding low-stock.
     //paramsArray is $i at time of development.
-      if ($this->_orderIsSBA) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
+      if ($this->_orderIsSBA && STOCK_LIMITED == 'true') { // Only take SBA action on SBA tracked product mc12345678 12-18-2015 as of 07-17-2017 prevent generating information related to low-stock email when stock is not limited by ZC.
         $this->orderProcessingI = $i;
-        if (/*$callingClass->email_low_stock == '' && */$callingClass->doStockDecrement && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
+        /* Added test for $callingClass->doStockDecrement to support backwards compatibility with ZC 1.5.1 and email generation. 2017-07-12
+        */
+        if ((isset($callingClass->doStockDecrement) ? $callingClass->doStockDecrement : true)  && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
           // kuroi: trigger and details for attribute low stock email
           $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid'] . ', name ' . $this->_productI['name'] . ', ';
           foreach($this->_productI['attributes'] as $attributes){
@@ -760,6 +763,15 @@ class products_with_attributes_stock extends base {
         }
       }
     }
+  
+  /**
+   * This function was added to support ZC 1.5.1 in the event that the store is setup to to not limit stock (STOCK_LIMITED != 'true'.
+   *   It serves no purpose for ZC 1.5.3 and above as an additional notifier exists in those versions to support gathering
+   *   the data necessary.
+   **/
+  function updateNotifyOrderDuringCreateAddedProductLineItem(&$orderClass, $notifier, $paramsArray) {
+    return;
+  }
 
   /*
    * Function that is activated when NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM is encountered as a notifier.
@@ -1116,6 +1128,7 @@ class products_with_attributes_stock extends base {
     //NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT //Line 716
   //  function updateNotifyOrderProcessingStockDecrementInit(&$callingClass, $notifier, $paramsArray, & $productI, & $i) {
       $i = $paramsArray['i'];
+      $this->orderProcessingI = $i;
       $productI = $callingClass->products[$i];
       $this->_stock_values = $paramsArray['stock_values'];
       $stock_values = $this->_stock_values;
@@ -1128,7 +1141,33 @@ class products_with_attributes_stock extends base {
      */
     // Line 776
     if ($notifier == 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_END') {
-      $this->updateNotifyOrderProcessingStockDecrementEnd($callingClass, $notifier, $paramsArray);
+      if (!isset($paramsArray) && isset($this->_i)) {
+        $paramsArray = $this->_i;
+      }
+      if (isset($paramsArray)) {
+        $this->updateNotifyOrderProcessingStockDecrementEnd($callingClass, $notifier, $paramsArray);
+      }
+    }
+    
+    if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_PRODUCT_LINE_ITEM') {
+      if (STOCK_LIMITED != 'true') {
+        if ($this->_orderIsSBA) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
+          for ($i=0, $n=count($this->products); $i<$n; $i++) {
+            if ($callingClass->products[$i]['id'] == $paramsArray['products_prid']) {
+              break;
+            }
+          }
+          $paramsArray = array();
+          $productI = $callingClass->products[$i];
+          $this->orderProcessingI = $i;
+          // There are some values that are set within the below function that would be omitted in ZC 1.5.1 if 
+          //   NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN was not triggered.
+          $this->updateNotifyOrderProcessingStockDecrementInit($callingClass, $notifier, $paramsArray, $productI, $i);
+//        $this->updateNotifyOrderProcessingStockDecrementEnd($callingClass, $notifier, $i); 
+        // (If stock isn't being limited, then there is no reason to make notification which is what is performed by the 
+        //   above function). The value collected though is needed even in ZC 1.5.1 to support downstream operation.
+        }
+      }
     }
     
     if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM') {
