@@ -644,7 +644,8 @@ class products_with_attributes_stock extends base {
         $productI['customid']['value'] = $customid;
         $this->_productI['customid']['value'] = $customid;
 //      $productI['model'] = (zen_not_null($customid) ? $customid : $productI['model']);
-        $this->_productI['model'] = $productI['model'];
+        $productI['model'] = (defined('STOCK_SBA_CUSTOM_FOR_MODEL') && STOCK_SBA_CUSTOM_FOR_MODEL !== 'false' ? $customid : $productI['model']);
+        $this->_productI['model'] = (defined('STOCK_SBA_CUSTOM_FOR_MODEL') && STOCK_SBA_CUSTOM_FOR_MODEL !== 'false' ? $customid : $productI['model']);
       }
 
     // @TODO: work with not decreasing overall stock for items that are generally Tracked by SBA, but have non-stock selections that would not affect the quantities tracked by SBA or in some cases ZC.  
