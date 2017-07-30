@@ -787,7 +787,7 @@ function insertSBAconfiguration(){
   $result = $result->fields['sort_order'] + 1;
 
       $sql .=" ('SBA Display CustomID in Attribute Dropdowns', 'ATTRIBUTES_SBA_DISPLAY_CUSTOMID', '2',
-      'Display the CustomID in the Attribute Dropdown list(s) for the customer to see while selecting an option.<br /><br /> 0 - Hide the Custom ID<br /> 1 - Display the Custom ID depending on the setting for display throughout<br ?> 2 - Always display the Custom ID (default)<br />',
+      'Display the CustomID in the Attribute Dropdown list(s) for the customer to see while selecting an option.<br /><br /> 0 - Hide the Custom ID<br /> 1 - Display the Custom ID depending on the setting for display throughout<br /> 2 - Always display the Custom ID (default)<br />',
       13,".$result.",now(),null,'zen_cfg_select_drop_down(array(array(\'id\'=>\'0\', \'text\'=>\'Off\'), array(\'id\'=>\'1\', \'text''=>\'On Pending SBA Stock\'), array(\'id\'=>\'2\', \'text''=>\'Always On\'), ),');";
 
     /* save for next version when pagination is implemented
@@ -2217,29 +2217,33 @@ function instructionsSelectionOptions(){
 
   $output = "<p>Available options in the selection box are:<br />
          <ul>
-        <li>Help</li>
+        <li>Help
           <ul>
           <li>Displays the main page, helps to explain the Script functions.</li>
           <li>No changes are made unless one of the other options are selected.</li>
           <li>Includes, a brief description of \"How To Use\".</li>
-            </ul>
+          </ul>
+        </li>
 
-        <li>Installation</li>
+        <li>Installation
           <ul>
-          <li>Full/Upgrade DB Install</li>
+          <li>Full/Upgrade DB Install
             <ul>
             <li>Full, makes all script changes to the database (DB) (i.e., adds new SBA table, adds entries into the Admin page, and new entries into the Configuration file).</li>
             <li>Upgrade, updates Configuration file and the SBA table as needed. If run again, it will \"Clean\" table entries and reapply the settings, it will not affect current data in the \"products_with_attributes_stock\" table.</li>
             </ul>
-            </ul>
+          </li>
+          </ul>
+        </li>
 
-        <li>Removal</li>
+        <li>Removal
           <ul>
             <li>Remove All from DB - Removes above changes from the database (DB).</li>
             <li>Remove Configuration Settings - Removes the configuration settings from the database but leaves the SBA data table intact.  This supports removing all options added to the program in preparation of performing an install/upgrade to push the configuration settings back to the database.</li>
-            </ul>
+          </ul>
+        </li>
 
-        <li>Optional SQL Scripts</li>
+        <li>Optional SQL Scripts
           <ul>
             <li>Default SQL - Only add the product attributes that are NOT read-only AND are NOT the new SBA selections.</li>
             <li>Add all Product Attributes - Add all the products attributes.</li>
@@ -2247,28 +2251,33 @@ function instructionsSelectionOptions(){
             <li>Add product attributes that are NOT read-only - Only add the product attributes that are NOT read-only.</li>
           <li>Update Unique Combo field - Used to fill the new Unique Combo field in the PAS table, this number is the Product ID and the Attrubute ID.</li>
           <li>Remove ALL entries from the PAS Table - WARNING: This will COMPLETLY EMPTY the Product with Attribute Stock Table!</li>
-            </ul>
+          </ul>
+        </li>
 
-        <li>Tests</li>
+        <li>Tests
           <ul>
            <li>File Check - Check that NEW Files are in proper places.</li>
           </ul>
+        </li>
 
-        <li>Export / Import</li>
+        <li>Export / Import
         <ul>
-          <li>Export Table Data</li>
+          <li>Export Table Data
             <ul>
             <li>Exports the products_with_attributes_stock table as a CSV file.</li>
             <li>Use with the \"Import Table Data\" option.</li>
             </ul>
-           <li>Import Table Data</li>
+          </li>
+           <li>Import Table Data
             <ul>
             <li>Imports the \"Quantity\" and \"Custom ID\" fields from a CSV file.</li>
             <li>Update quantity (quantity field) in products_with_attributes_stock table.</li>
             <li>Update customid (customid field) in products_with_attributes_stock table.</li>
             <li>customid must be unique, may be alphanumeric. NO duplicates permitted.</li>
             </ul>
-            </ul>
+           </li>
+        </ul>
+        </li>
         </ul>
         <hr /></p>";
 
@@ -2444,12 +2453,15 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
       <optgroup label="Installation">
        <option value="installAll">Full/Upgrade DB Install</option>
        <option value="installNonStock">Non-Stock DB Table Install</option>
+       </optgroup>
 
       <optgroup label="Remove Settings">
       <option value="removeSettings">Remove Configuration Settings</option>
+      </optgroup>
 
       <optgroup label="Removal">
        <option value="removeAll">Remove All from DB</option>
+       </optgroup>
 
       <optgroup label="Optional SQL Scripts">
        <option value="runOptionalSQL1" title="Only add the product attributes that are NOT display-only AND are NOT the new SBA selections">Default SQL</option>
@@ -2460,13 +2472,16 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
       <option value="runOptionalSQL6" title="Ensure availability and operation of PRODUCTS_OPTIONS_TYPE_SELECT, UPLOAD_PREFIX, and TEXT_PREFIX or if dropdowns do not appear">Restore visibility of Dropdowns</option>
       <option value="updatePASfieldPAC" title="Update Unique Combo field">Update Unique Combo field</option>
       <option value="truncatePAStable" title="WARNING: This will COMPLETLY EMPTY the Product with Attribute Stock Table!">Remove ALL entries from the PAS Table</option>
+      </optgroup>
 
       <optgroup label="Tests">
        <option value="checkFiles">File Check</option>
+       </optgroup>
 
       <optgroup label="Export / Import" title="Update SBA table from CSV file">
       <option value="exportTable">Export Table Data</option>
       <option value="importTable">Import Table Data</option>
+      </optgroup>
      </select>
 
      <input type="submit" value="Run Script" id="getSBAinstallPage" name="getSBAinstallPage"/>
