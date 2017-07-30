@@ -1295,24 +1295,33 @@ Of the attributes provided, determine the number of those attributes that are
   /**
   *  Uses a single attribute to identify all of the SBA variants 
   *    that contain that one attribute.
+  * This has been incorporated into the sba class using zen_get_sba_attribute_info and returning the 'ids'.
   *
   **/
-  function zen_get_sba_ids_from_attribute($products_attributes_id = array(), $products_id = NULL, $stock_attribute_unique = false){
+  /*function zen_get_sba_ids_from_attribute($products_attributes_id = array(), $products_id = NULL, $stock_attribute_unique = false){
     global $db;
     
     if (!is_array($products_attributes_id)){
       $products_attributes_id = array($products_attributes_id);
     }
+    $products_id_int = array();
+    if (is_array($products_id)) {
+        foreach ($products_id as $product_id) {
+            $products_id_int[] = (int)$product_id;
+        }
+    } else {
+        $products_id_int[] = (int)$products_id;
+    }
     $products_stock_attributes = $db->Execute("select stock_id, stock_attributes from " . 
-                                              TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . (zen_not_null($products_id) ? " where products_id in (" . implode(',', (int)$products_id) . ")" : "" ));
+                                              TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . (zen_not_null($products_id) ? " where products_id in (" . implode(',', $products_id_int) . ")" : "" ));
     $stock_id_list = array();
-    /* The below "search" is one reason that the original tables for SBA should be better refined
+    *//* The below "search" is one reason that the original tables for SBA should be better refined
      * and not use comma separated items in a field...
-     */
+     *//*
     while (!$products_stock_attributes->EOF) {
       $stock_attrib_list = array();
       $stock_attrib_list = explode(',', $products_stock_attributes->fields['stock_attributes']);
-
+*/
 /*
 *     Proposed code to possibly increase speed/optimize operation.
 *     Vision is that duration of the below "search" will be dependent on the
@@ -1353,7 +1362,7 @@ Of the attributes provided, determine the number of those attributes that are
       }
       
       */
-
+/*
       foreach($stock_attrib_list as $stock_attrib){
         if (in_array($stock_attrib, $products_attributes_id)) {
           $stock_id_list[] = $products_stock_attributes->fields['stock_id'];
@@ -1369,6 +1378,7 @@ Of the attributes provided, determine the number of those attributes that are
     //  $stock_id_list = array_keys($stock_id_list);
     return $stock_id_list;
   }
+*/ // commented out code that is no longer being used from within this program.
 
 /*  function zen_sba_dd_allowed($products_options_names, $data_type = 'attributes') {*/
 //  if (!is_array($products_options_names)) $products_options_names = array($products_options_names);
