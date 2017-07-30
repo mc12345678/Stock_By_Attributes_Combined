@@ -372,7 +372,7 @@ class products_with_attributes_stock extends base {
           if ($show_attributes_qty_prices_icon == 'true') {
             $options_name[] = ATTRIBUTES_QTY_PRICE_SYMBOL.$products_options_names_fields['products_options_name'];
           } else {
-            $options_name[] = '<label class="attribsSelect" for="' . 'attrib-' . $products_options_names_fields['products_options_id'] . '">' . $products_options_names_fields ['products_options_name'] . '</label>';
+            $options_name[] = '<label class="attribsSelect" for="' . 'attrib-' . $products_options_names_fields["products_options_id"] . '">' . $products_options_names_fields ["products_options_name"] . '</label>';
           }
         
         // START "Stock by Attributes" SBA

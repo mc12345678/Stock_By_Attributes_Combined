@@ -743,7 +743,7 @@ function selectItemID($Table, $Field, $current = null, $providedQuery = null, $n
   $class = zen_db_input($class);
   
   $Output = "<SELECT class='".$class."' id='".$id."' name='".$name."' $onChange >";//create selection list
-    $Output .= "<option value='' $style>Please Select a Search Item Below...</option>";//adds blank entry as first item in list
+    $Output .= '<option value="" ' . $style . '>Please Select a Search Item Below...</option>';//adds blank entry as first item in list
 
   /* Fields that may be of use in returned set
   ["products_id"]
@@ -772,10 +772,10 @@ function selectItemID($Table, $Field, $current = null, $providedQuery = null, $n
         $Item .= '&nbsp;&nbsp;Name:&nbsp;&nbsp;' . $result->fields["products_name"];
             
     if ( ($Item == $current AND $current != NULL) || ($rowID == $current AND $current != NULL) ){
-        $Output .= "<option selected='selected' $style value='".$rowID."'>$Item</option>";
+        $Output .= '<option selected="selected" $style value="' . $rowID . '">' . $Item . '</option>';
       }
       else{
-        $Output .= "<option $style value='".$rowID."'>$Item</option>";
+        $Output .= '<option ' . $style . ' value="' . $rowID . '">' . $Item . '</option>';
       }
 
     $result->MoveNext();
