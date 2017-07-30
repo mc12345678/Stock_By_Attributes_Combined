@@ -972,7 +972,7 @@ function nullDataEntry($fieldtoNULL){
         //return result for display
         return $customid->fields['products_model'];
       }
-      return;//nothing to return, should never reach this return
+      return null;//nothing to return, should never reach this return
     }
   }//end of function
   

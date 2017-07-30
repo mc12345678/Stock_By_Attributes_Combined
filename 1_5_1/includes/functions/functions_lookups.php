@@ -190,7 +190,7 @@
 
     }
 
-    return;
+    return null;
   }
 /*
  *End Amend for Stock by Attributes add-on 1 of 2

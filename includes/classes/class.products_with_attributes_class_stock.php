@@ -327,7 +327,7 @@ function cartProductCount($products_id){
         //return result for display
         //return $customid->fields['products_model'];
       }
-      return;//nothing to return, should never reach this return
+      return null;//nothing to return, should never reach this return
     }
   }//end of function
 
@@ -512,6 +512,7 @@ function cartProductCount($products_id){
         return false;
       }
     }
+    return null;
   }
 
   /*
@@ -682,7 +683,7 @@ Of the attributes provided, determine the number of those attributes that are
       
     }
 
-    return;
+    return null;
     
   }
   
@@ -1451,7 +1452,7 @@ Of the attributes provided, determine the number of those attributes that are
     $retry--;
     }
 
-    return;
+    return null;
   }
 
   /*
@@ -1482,6 +1483,8 @@ Of the attributes provided, determine the number of those attributes that are
         return $attribute_info;
       }
     }
+
+    return null;
   }  
   
   /**

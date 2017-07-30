@@ -111,6 +111,8 @@ THIS ALSO DOESN'T WORK BECAUSE OF THE COMPARISON(S) BEING PERFORMED... BECAUSE T
         
         return $out;
       } // end if size attributes
+
+      return null;
     } // end function
 
 /*

@@ -183,7 +183,7 @@
           : zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'));
     }
 
-    return;
+    return null;
   }
 /*
  *End Amend for Stock by Attributes add-on
