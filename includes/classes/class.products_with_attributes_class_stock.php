@@ -782,12 +782,13 @@ Of the attributes provided, determine the number of those attributes that are
     
     if ($products_options_names->EOF) {
       // @TODO: Log error rather than set session value, unless session value is to be used elsewhere for messaging.
-      $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
+      // $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
+      trigger_error('SBA product can not have any attributes', E_USER_WARNING);
       //There's an issue because this shouldn't be possible
     } else {
-      if (isset($_SESSION['sba_extra_functions_error'])) {
+      //if (isset($_SESSION['sba_extra_functions_error'])) {
 //        unset($_SESSION['sba_extra_functions_error']);
-      }
+      //}
     }
 
     if (defined('TEXT_PREFIX')) {
@@ -1130,13 +1131,14 @@ Of the attributes provided, determine the number of those attributes that are
     $products_options_names = $db->Execute($sql, false, false, 0, true);
     
     if ($products_options_names->EOF) {
-      // @TODO: Log error rather than set a session value unless the session value performs a specific function.
-      $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
+      // Log error rather than set a session value.
+      // $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
+      trigger_error('SBA product can not have any attributes', E_USER_WARNING);
       //There's an issue because this shouldn't be possible
     } else {
-      if (isset($_SESSION['sba_extra_functions_error'])) {
-        unset($_SESSION['sba_extra_functions_error']);
-      }
+//      if (isset($_SESSION['sba_extra_functions_error'])) {
+//        unset($_SESSION['sba_extra_functions_error']);
+//      }
     }
 
     if (defined('TEXT_PREFIX')) {

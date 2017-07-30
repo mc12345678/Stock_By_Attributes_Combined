@@ -656,7 +656,7 @@ Of the attributes provided, determine the number of those attributes that are
     $products_options_names = $db->Execute($sql);
     
     if ($products_options_names->EOF) {
-      $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
+      // $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
       //There's an issue because this shouldn't be possible
     } else {
       if (isset($_SESSION['sba_extra_functions_error'])) {

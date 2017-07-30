@@ -1743,7 +1743,7 @@ function installOptionalSQL5(){
         } else {
           //Apparently removed all of the data associated with this record and the record should be deleted as there is nothing remaining to track.
           $sql = "DELETE FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE stock_id = :stock_id:";
-          $_SESSION['delete'.$attribute_stock->fields['stock_id']] = 'yes';
+          // $_SESSION['delete'.$attribute_stock->fields['stock_id']] = 'yes';
           $sql = $db->bindVars($sql, ':stock_id:', $attribute_stock->fields['stock_id'], 'integer');
 
           $db->Execute($sql);

@@ -89,11 +89,11 @@ function return_attribute_combinations($arrMain, $intVars, $currentLoop = array(
                                   order by orders_products_id";
 //    global $db;
     $orders_products = $db->Execute($orders_products_query, false, false, 0, true);
-    $_SESSION['orders_products_query'] = $orders_products_query . ' hello';
-    $_SESSION['db_set'] = $orders_products;
+    // $_SESSION['orders_products_query'] = $orders_products_query . ' hello';
+    // $_SESSION['db_set'] = $orders_products;
     //unset($orders_products_query);
 
-    $_SESSION['orders_products'] = $db->Execute('SELECT * FROM ' . TABLE_PRODUCTS . ';', false, false, 0, true);
+    // $_SESSION['orders_products'] = $db->Execute('SELECT * FROM ' . TABLE_PRODUCTS . ';', false, false, 0, true);
     
     $order = array();
     while (!$orders_products->EOF) {
@@ -101,7 +101,7 @@ function return_attribute_combinations($arrMain, $intVars, $currentLoop = array(
       $index++;
       $orders_products->MoveNext();
     }
-    $_SESSION['order_data'] = $order;
+    // $_SESSION['order_data'] = $order;
     unset($orders_products);
     unset($index);
     
