@@ -644,8 +644,29 @@ class products_with_attributes_stock extends base {
         $productI['customid']['value'] = $customid;
         $this->_productI['customid']['value'] = $customid;
 //      $productI['model'] = (zen_not_null($customid) ? $customid : $productI['model']);
-        $productI['model'] = (defined('STOCK_SBA_CUSTOM_FOR_MODEL') && STOCK_SBA_CUSTOM_FOR_MODEL !== 'false' ? $customid : $productI['model']);
-        $this->_productI['model'] = (defined('STOCK_SBA_CUSTOM_FOR_MODEL') && STOCK_SBA_CUSTOM_FOR_MODEL !== 'false' ? $customid : $productI['model']);
+        // Options: products_model remains as is: false
+        //          products_model is replaced by existing customid: 1
+        //          products_model is always replaced by customid regardless of existence of customid: 2
+        //          products_model is always used unless empty then customid: 3
+        switch (true) {
+          case !defined('STOCK_SBA_CUSTOM_FOR_MODEL'):
+            $model = $productI['model'];
+            break;
+          case STOCK_SBA_CUSTOM_FOR_MODEL == '1':
+            $model = (zen_not_null($customid) && strlen(trim($customid)) > 0) ? $customid : $productI['model'];
+            break;
+          case STOCK_SBA_CUSTOM_FOR_MODEL == '2':
+            $model = $customid;
+            break;
+          case STOCK_SBA_CUSTOM_FOR_MODEL == '3':
+            $model = (zen_not_null($productI['model']) && strlen(trim($productI['model'])) > 0) ? $productI['model'] : $customid;
+            break;
+          default:
+            $model = $productI['model'];
+        }
+
+        $productI['model'] = $model; //(defined('STOCK_SBA_CUSTOM_FOR_MODEL') && STOCK_SBA_CUSTOM_FOR_MODEL !== 'false' && zen_not_null($customid) && strlen(trim($customid)) > 0 ? $customid : $productI['model']);
+        $this->_productI['model'] = $model; //(defined('STOCK_SBA_CUSTOM_FOR_MODEL') && STOCK_SBA_CUSTOM_FOR_MODEL !== 'false' && zen_not_null($customid) && strlen(trim($customid)) > 0 ? $customid : $productI['model']);
       }
 
     // @TODO: work with not decreasing overall stock for items that are generally Tracked by SBA, but have non-stock selections that would not affect the quantities tracked by SBA or in some cases ZC.  
