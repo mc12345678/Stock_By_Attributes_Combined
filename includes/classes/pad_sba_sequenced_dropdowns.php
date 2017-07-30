@@ -1400,19 +1400,6 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
         charToEntity,
         entityToChar;
 
-    function resetCharacterEntities() {
-        charToEntity = {};
-        entityToChar = {};
-        // add the default set
-        addCharacterEntities({
-            "&amp;"     :   "&",
-            "&gt;"      :   ">",
-            "&lt;"      :   "<",
-            "&quot;"    :   "\"",
-            "&#39;"     :   "\'"
-        });
-    }
-
     function addCharacterEntities(newEntities) {
         var charKeys = [],
             entityKeys = [],
@@ -1426,6 +1413,19 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
         }
         charToEntityRegex = new RegExp("(" + charKeys.join("|") + ")", "g");
         entityToCharRegex = new RegExp("(" + entityKeys.join("|") + "|&#[0-9]{1,5};" + ")", "g");
+    }
+
+    function resetCharacterEntities() {
+        charToEntity = {};
+        entityToChar = {};
+        // add the default set
+        addCharacterEntities({
+            "&amp;"     :   "&",
+            "&gt;"      :   ">",
+            "&lt;"      :   "<",
+            "&quot;"    :   "\"",
+            "&#39;"     :   "\'"
+        });
     }
 
     function htmlEncode(value) {
@@ -1447,11 +1447,12 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
     resetCharacterEntities();
 
     return {
-        htmlEncode: htmlEncode,
-        htmlDecode: htmlDecode
+        htmlEncode : htmlEncode,
+        htmlDecode : htmlDecode
     };
 })();
-//]] --></script>';
+//]] --></script>
+';
 
        $out.="\n";
        return $out;
