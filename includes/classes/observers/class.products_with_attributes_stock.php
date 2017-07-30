@@ -263,9 +263,9 @@ class products_with_attributes_stock extends base {
     $this->_products_options_fields = $products_options_fields;
 
     if ($this->_products_options_names_current == 1) {
-      global $currencies;
+      // global $currencies;
 
-      $show_attribute_stock_left = true;
+      //$show_attribute_stock_left = true;
     }
   }
 
