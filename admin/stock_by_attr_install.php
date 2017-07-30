@@ -342,6 +342,13 @@ function removeSBAconfiguration(){
   }
   array_push($resultMmessage, '&bull; Deleted SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO  ' . $msg);
 
+  $sql = "DELETE IGNORE FROM `".TABLE_CONFIGURATION."` WHERE `configuration_key` = 'STOCK_SBA_CUSTOM_FOR_MODEL'";
+  $db->Execute($sql);
+  if($db->error){
+    $msg = ' Error Message: ' . $db->error;
+  }
+  array_push($resultMmessage, '&bull; Deleted STOCK_SBA_CUSTOM_FOR_MODEL' . $msg);
+
   //DELETE FROM `products_options_types`
   array_push($resultMmessage, '<br /><b>Clean-Up</b>, Removing from products_options_types: ');
 
@@ -776,8 +783,11 @@ function insertSBAconfiguration(){
       9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\', \'2\'),'),
 
       ('SBA Display Non-DD Out-of-Stock Attributes', 'SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO', '1',
-    'Allow display of attributes that are out-of-stock and are not managed by Dynamic Dropdowns.<br /><br /> Default: 1 (Show out-of-stock attributes)<br />0 - Hide out-of-stock attributes<br />1 - Show out-of-stock attributes',
-      9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\'),'),";
+    'Allow display of attributes when using the SBA Select List (Dropdown) Basic Option Name type that are out-of-stock and are not managed by Dynamic Dropdowns.<br /><br /> Default: 1 (Show out-of-stock attributes)<br />0 - Hide out-of-stock attributes<br />1 - Show out-of-stock attributes',
+      9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\'),'),
+      ('SBA CustomID replaces products_model', 'STOCK_SBA_CUSTOM_FOR_MODEL', '1',
+    'In review and display of order history related information, how should the products_model of the product be treated related to the SBA customi?<br /><br /> Default: false (Only show the product\'s assigned products_model)<br />1 - Substitute the product\'s products_model with the customid when the customid is not empty or blank<br />2 - Always substitute the product\'s products_model with the customid<br />3 - Substitute the product\'s products_model with the customid when the products_model is blank or empty',
+      9,".$result.",now(),null,'zen_cfg_select_option(array(\'false\', \'1\', \'2\', \'3\'),'),";
 
   $sql2 ="SELECT c.sort_order
       FROM ".TABLE_CONFIGURATION." c
