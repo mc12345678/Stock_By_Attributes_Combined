@@ -506,7 +506,7 @@ function cartProductCount($products_id){
         $attributes_new->MoveNext();
       }
       
-      if (!empty(stock_attributes_list)) {
+      if (!empty($stock_attributes_list)) {
         return $stock_attributes_list;
       } else {
         return false;
