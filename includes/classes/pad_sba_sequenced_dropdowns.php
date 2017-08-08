@@ -282,7 +282,7 @@ select  ( pwas.quantity) as quantity, ( pwasans.attribute_type) as pwasans_quant
         $attribute_stock = $db->Execute($attribute_stock_query);
 //echo 'Attrib stock_' . $a . ' is: ' . $attribute_stock->RecordCount();
   $out_of_stock = true;
-  $backorder = true;
+  $backorder = false;
 
 
   while (!$attribute_stock->EOF) {
