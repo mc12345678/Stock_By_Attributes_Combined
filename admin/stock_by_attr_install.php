@@ -786,7 +786,7 @@ function insertSBAconfiguration(){
     'Allow display of attributes when using the SBA Select List (Dropdown) Basic Option Name type that are out-of-stock and are not managed by Dynamic Dropdowns.<br /><br /> Default: 1 (Show out-of-stock attributes)<br />0 - Hide out-of-stock attributes<br />1 - Show out-of-stock attributes',
       9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\'),'),
       ('SBA CustomID replaces products_model', 'STOCK_SBA_CUSTOM_FOR_MODEL', '1',
-    'In review and display of order history related information, how should the products_model of the product be treated related to the SBA customi?<br /><br /> Default: false (Only show the product\'s assigned products_model)<br />1 - Substitute the product\'s products_model with the customid when the customid is not empty or blank<br />2 - Always substitute the product\'s products_model with the customid<br />3 - Substitute the product\'s products_model with the customid when the products_model is blank or empty',
+    'In review and display of order history related information, how should the products_model of the product be treated related to the SBA customid?<br /><br /> Default: false (Only show the product\'s assigned products_model)<br />1 - Substitute the product\'s products_model with the customid when the customid is not empty or blank<br />2 - Always substitute the product\'s products_model with the customid<br />3 - Substitute the product\'s products_model with the customid when the products_model is blank or empty',
       9,".$result.",now(),null,'zen_cfg_select_option(array(\'false\', \'1\', \'2\', \'3\'),'),";
 
   $sql2 ="SELECT c.sort_order
@@ -908,7 +908,21 @@ function addSBANonStockTable() {
     if($db->error){
       $msg = ' Error Message: ' . $db->error;
       $failed = true;
+    } else {
+      $sql_insert = "INSERT IGNORE INTO " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK_ATTRIBUTES_NON_STOCK . " (attribute_type, attribute_type_source_id, attribute_type_id, language_id) VALUES (:attribute_type:, :attribute_type_source_id:, :attribute_type_id:, :language_id:)";
+      $sql_insert = $db->bindVars($sql_insert, ':attribute_type:', 'ignoredkeepempty', 'string');
+      $sql_insert = $db->bindVars($sql_insert, ':attribute_type_source_id:', 0, 'integer');
+      $sql_insert = $db->bindVars($sql_insert, ':attribute_type_id:', 0, 'integer');
+      $sql_insert = $db->bindVars($sql_insert, ':language_id:', 1, 'integer');
+      
+      $result = $db->Execute($sql_insert);
+
+      if($db->error){
+        $msg = ' Error Message: ' . $db->error;
+        $failed = true;
+      }
     }
+
     array_push($resultMmessage, '<br /><b>Added New Table</b> products_with_attributes_stock_attributes_non_stock. ' . $msg);
   }
 }
