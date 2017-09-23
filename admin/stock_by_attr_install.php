@@ -618,12 +618,12 @@ function insertSBAadminPages(){
 
   //get current max sort number used, then add 1 to it.
   //this will place the new entry 'productsWithAttributesStock' at the bottom of the list
-  $sql = "SELECT ap.sort_order
+  $sql = "SELECT ap.sort_order + 1 as next_sort_order
       FROM ".TABLE_ADMIN_PAGES." ap
        WHERE ap.menu_key = 'catalog'
       order by ap.sort_order desc limit 1";
   $result = $db->Execute($sql);
-  $result = $result->fields['sort_order'] + 1;
+  $result = $result->fields['next_sort_order'];
 
   $sql = "INSERT INTO `".TABLE_ADMIN_PAGES."` (page_key, language_key, main_page, page_params, menu_key, display_on_menu, sort_order)
       VALUES
@@ -738,12 +738,12 @@ function insertSBAconfiguration(){
 
   //get current max sort number used, then add 1 to it.
   //this will place the new entries at the bottom of the list
-  $sql ="SELECT c.sort_order
+  $sql ="SELECT c.sort_order + 1 as next_sort_order
       FROM ".TABLE_CONFIGURATION." c
       WHERE c.configuration_group_id = 9
       order by c.sort_order desc limit 1";
   $result = $db->Execute($sql);
-  $result = $result->fields['sort_order'] + 1;
+  $result = $result->fields['next_sort_order'];
 
   $sql = "INSERT INTO `".TABLE_CONFIGURATION."` (configuration_title, configuration_key, configuration_value,
          configuration_description, configuration_group_id, sort_order,
@@ -789,12 +789,12 @@ function insertSBAconfiguration(){
     'In review and display of order history related information, how should the products_model of the product be treated related to the SBA customid?<br /><br /> Default: false (Only show the product\'s assigned products_model)<br />1 - Substitute the product\'s products_model with the customid when the customid is not empty or blank<br />2 - Always substitute the product\'s products_model with the customid<br />3 - Substitute the product\'s products_model with the customid when the products_model is blank or empty',
       9,".$result.",now(),null,'zen_cfg_select_option(array(\'false\', \'1\', \'2\', \'3\'),'),";
 
-  $sql2 ="SELECT c.sort_order
+  $sql2 ="SELECT c.sort_order + 1 as next_sort_order
       FROM ".TABLE_CONFIGURATION." c
       WHERE c.configuration_group_id = 13
       order by c.sort_order desc limit 1";
   $result = $db->Execute($sql2);
-  $result = $result->fields['sort_order'] + 1;
+  $result = $result->fields['next_sort_order'];
 
       $sql .=" ('SBA Display CustomID in Attribute Dropdowns', 'ATTRIBUTES_SBA_DISPLAY_CUSTOMID', '2',
       'Display the CustomID in the Attribute Dropdown list(s) for the customer to see while selecting an option.<br /><br /> 0 - Hide the Custom ID<br /> 1 - Display the Custom ID depending on the setting for display throughout<br /> 2 - Always display the Custom ID (default)<br />',
@@ -843,13 +843,13 @@ function insertDynDropdownsConfiguration(){
   $configuration_id = $result->fields['configuration_group_id'];
 
 
-  $sql ="SELECT c.sort_order
+  $sql ="SELECT c.sort_order + 1 as next_sort_order
       FROM ".TABLE_CONFIGURATION." c
       WHERE c.configuration_group_id = :configuration_id:
       order by c.sort_order desc limit 1";
   $sql = $db->bindVars($sql, ':configuration_id:', $configuration_id, 'integer');
   $result = $db->Execute($sql);
-  $result = $result->fields['sort_order'] + 1;
+  $result = $result->fields['next_sort_order'];
 
   $sql = "INSERT INTO `".TABLE_CONFIGURATION."` (configuration_title, configuration_key, configuration_value,
          configuration_description, configuration_group_id, sort_order,
