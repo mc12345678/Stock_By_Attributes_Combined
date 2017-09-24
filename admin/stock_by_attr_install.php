@@ -2005,7 +2005,7 @@ function importSBAtableData(){
   /* Only update the QTY and Custom ID fields
    * checks input file data prior to loading to database, only numeric is allowed for QTY
    */
-  IF($ReportFile){
+  if ($ReportFile){
     $i = -1;//Count; adjust for skipping first line in file
     foreach ($ReportFile as $line_num => $line) {
       //skip line 0 as it is the header row
@@ -2101,7 +2101,7 @@ function removeSBAfiles(){
         <h3>Files to be removed:</h3>
           <ul>
           <li>admin/stock_by_attr_install.php</li>
-            <li>admin/products_with_attributes_stock.php</li>
+          <li>admin/products_with_attributes_stock.php</li>
           <li>admin/products_with_attributes_stock_ajax.php</li>
           <li>admin/products_with_attributes_stock_ajax.js</li>
           <li>admin/includes/products_with_attributes_stock_ajax.css</li>
@@ -2287,8 +2287,8 @@ function instructionsSelectionOptions(){
             <li>Add all Product Attributes - Add all the products attributes.</li>
             <li>Add read-only product attributes - Add only the read-only product attributes.</li>
             <li>Add product attributes that are NOT read-only - Only add the product attributes that are NOT read-only.</li>
-          <li>Update Unique Combo field - Used to fill the new Unique Combo field in the PAS table, this number is the Product ID and the Attrubute ID.</li>
-          <li>Remove ALL entries from the PAS Table - WARNING: This will COMPLETLY EMPTY the Product with Attribute Stock Table!</li>
+            <li>Update Unique Combo field - Used to fill the new Unique Combo field in the PAS table, this number is the Product ID and the Attrubute ID.</li>
+            <li>Remove ALL entries from the PAS Table - WARNING: This will COMPLETLY EMPTY the Product with Attribute Stock Table!</li>
           </ul>
         </li>
 
@@ -2489,36 +2489,36 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
       <option value="">Help</option>
 
       <optgroup label="Installation">
-       <option value="installAll">Full/Upgrade DB Install</option>
-       <option value="installNonStock">Non-Stock DB Table Install</option>
-       </optgroup>
+        <option value="installAll">Full/Upgrade DB Install</option>
+        <option value="installNonStock">Non-Stock DB Table Install</option>
+      </optgroup>
 
       <optgroup label="Remove Settings">
-      <option value="removeSettings">Remove Configuration Settings</option>
+        <option value="removeSettings">Remove Configuration Settings</option>
       </optgroup>
 
       <optgroup label="Removal">
-       <option value="removeAll">Remove All from DB</option>
-       </optgroup>
+        <option value="removeAll">Remove All from DB</option>
+      </optgroup>
 
       <optgroup label="Optional SQL Scripts">
-       <option value="runOptionalSQL1" title="Only add the product attributes that are NOT display-only AND are NOT the new SBA selections">Default SQL</option>
-      <option value="runOptionalSQL2" title="Add all the products attributes">Add all Product Attributes</option>
-      <option value="runOptionalSQL3" title="Add only the display-only product attributes">Add display-only product attributes</option>
-      <option value="runOptionalSQL4" title="Only add the product attributes that are NOT display-only">Add product attributes that are NOT display-only</option>
-      <option value="runOptionalSQL5" title="Remove the product attributes that are ONLY read-only">Remove product attributes that are ONLY read-only</option>
-      <option value="runOptionalSQL6" title="Ensure availability and operation of PRODUCTS_OPTIONS_TYPE_SELECT, UPLOAD_PREFIX, and TEXT_PREFIX or if dropdowns do not appear">Restore visibility of Dropdowns</option>
-      <option value="updatePASfieldPAC" title="Update Unique Combo field">Update Unique Combo field</option>
-      <option value="truncatePAStable" title="WARNING: This will COMPLETLY EMPTY the Product with Attribute Stock Table!">Remove ALL entries from the PAS Table</option>
+        <option value="runOptionalSQL1" title="Only add the product attributes that are NOT display-only AND are NOT the new SBA selections">Default SQL</option>
+        <option value="runOptionalSQL2" title="Add all the products attributes">Add all Product Attributes</option>
+        <option value="runOptionalSQL3" title="Add only the display-only product attributes">Add display-only product attributes</option>
+        <option value="runOptionalSQL4" title="Only add the product attributes that are NOT display-only">Add product attributes that are NOT display-only</option>
+        <option value="runOptionalSQL5" title="Remove the product attributes that are ONLY read-only">Remove product attributes that are ONLY read-only</option>
+        <option value="runOptionalSQL6" title="Ensure availability and operation of PRODUCTS_OPTIONS_TYPE_SELECT, UPLOAD_PREFIX, and TEXT_PREFIX or if dropdowns do not appear">Restore visibility of Dropdowns</option>
+        <option value="updatePASfieldPAC" title="Update Unique Combo field">Update Unique Combo field</option>
+        <option value="truncatePAStable" title="WARNING: This will COMPLETLY EMPTY the Product with Attribute Stock Table!">Remove ALL entries from the PAS Table</option>
       </optgroup>
 
       <optgroup label="Tests">
-       <option value="checkFiles">File Check</option>
-       </optgroup>
+        <option value="checkFiles">File Check</option>
+      </optgroup>
 
       <optgroup label="Export / Import" title="Update SBA table from CSV file">
-      <option value="exportTable">Export Table Data</option>
-      <option value="importTable">Import Table Data</option>
+        <option value="exportTable">Export Table Data</option>
+        <option value="importTable">Import Table Data</option>
       </optgroup>
      </select>
 
