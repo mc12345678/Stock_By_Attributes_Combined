@@ -29,11 +29,6 @@
       if (!defined('SBA_ZC_DEFAULT')) {
         define('SBA_ZC_DEFAULT','false'); // sets to use the ZC method of HTML tags around attributes.
       }
-//      $inSBA_query = "select products_id from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = :products_id:";
-//      $inSBA_query = $db->bindVars($inSBA_query, ':products_id:', $_GET['products_id'], 'integer');
-
-//      $inSBA = $db->Execute($inSBA_query); // Determine that product is tracked by SBA
-//      $prodInSBA = (!$inSBA->EOF && $inSBA->RecordCount() > 0 ? true : false);
       $prodInSBA = (isset($_SESSION['pwas_class2'])
             && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
             && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
