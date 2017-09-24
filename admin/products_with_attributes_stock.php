@@ -596,6 +596,22 @@ switch ($action) {
 }
 } // EOF zen_not_null($_GET['action'])
 
+  if (isset($_GET['search_order_by'])) {
+    $search_order_by = $_GET['search_order_by'];
+  } else {
+    $search_order_by = 'products_model';
+  }
+
+  // Add a level of sanitization to the process.
+  // If field is to be pulled from a table other than TABLE_PRODUCTS, then will need to 
+  //   check that table as well with the "default" being selected in the last/inner chosing.
+  if (!$sniffer->field_exists(TABLE_PRODUCTS, $search_order_by)) {
+    if (!$sniffer->field_exists(TABLE_PRODUCTS_DESCRIPTION, $search_order_by)) {
+      $search_order_by = 'products_model';
+    }
+  }
+
+
   //global $template_dir; // Why does this variable need to be made global? Isn't it already in the global space?
 ?>
 <!doctype html>
@@ -635,6 +651,14 @@ require(DIR_WS_INCLUDES . 'header.php');
     <!-- header_eof //-->
     <script type="text/javascript" src="<?php echo ($page_type == 'NONSSL' ? HTTP_CATALOG_SERVER . DIR_WS_CATALOG : ( ENABLE_SSL_ADMIN == 'true' || $page_type == 'SSL' || strtolower(substr(HTTP_SERVER, 0, 6)) === 'https:' ? HTTPS_CATALOG_SERVER . DIR_WS_HTTPS_CATALOG : HTTP_CATALOG_SERVER . DIR_WS_CATALOG ) ) . DIR_WS_TEMPLATES . $template_dir; ?>/jscript/jquery.form.js"></script>
     <script type="text/javascript" src="products_with_attributes_stock_ajax.js"></script>
+    <script language="javascript"><!--
+function go_search() {
+  if (document.search_order_by.selected.options[document.search_order_by.selected.selectedIndex].value != "none") {
+    location = "<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'page=' . ($_GET['page'] ? $_GET['page'] : 1)); ?>&search_order_by="+document.search_order_by.selected.options[document.search_order_by.selected.selectedIndex].value;
+  }
+}
+//--></script>
+
     <div style="padding: 20px;">
 
       <!-- body_text_eof //-->
@@ -646,7 +670,7 @@ require(DIR_WS_INCLUDES . 'header.php');
       case 'add':
         if (isset($products_id)) {
 
-          echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=confirm', 'post', '', true) . "\n";
+          echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=confirm' . '&search_order_by=' . $search_order_by, 'post', '', true) . "\n";
           echo $hidden_form;
           ?><p><strong><?php echo $product_name; ?></strong></p>
 <?php 
@@ -751,7 +775,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
           echo $msg . '<p><strong>' . PWA_QUANTITY . '</strong>' . zen_draw_input_field('quantity') . '</p>' . "\n";
         } else {
 
-          echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=add', 'post', '', true) . "\n";
+          echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=add' . '&search_order_by=' . $search_order_by, 'post', '', true) . "\n";
           echo zen_draw_pull_down_menu('products_id', $products_array_list) . "\n";
         }
         ?>
@@ -761,7 +785,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
           break;
 
         case 'edit':
-          echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=confirm', 'post', '', true) . "\n";
+          echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=confirm' . '&search_order_by=' . $search_order_by, 'post', '', true) . "\n";
           echo '<h3>' . zen_get_products_name($products_id) . '</h3>';
 
           foreach ($attributes_list as $attributes) {
@@ -779,7 +803,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
         case 'delete_all':
           if (!isset($_POST['confirm'])) {
 
-            echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=delete_all', 'post', '', true) . "\n";
+            echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=delete_all' . '&search_order_by=' . $search_order_by, 'post', '', true) . "\n";
             echo PWA_DELETE_VARIANTS_CONFIRMATION;
             foreach ($_GET as $key => $value) {
               echo zen_draw_hidden_field($key, $value);
@@ -794,7 +818,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
           case 'delete':
           if (!isset($_POST['confirm'])) {
 
-            echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=delete', 'post', '', true) . "\n";
+            echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=delete' . '&search_order_by=' . $search_order_by, 'post', '', true) . "\n";
             echo PWA_DELETE_VARIANT_CONFIRMATION;
             foreach ($_GET as $key => $value) {
               echo zen_draw_hidden_field($key, $value);
@@ -814,7 +838,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     }
 
     echo '<p><strong>Quantity</strong>' . $quantity . '</p>';
-    echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=execute', 'post', '', true) . "\n";
+    echo zen_draw_form('sba_post_form', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=execute' . '&search_order_by=' . $search_order_by, 'post', '', true) . "\n";
     echo $hidden_form;
     ?>
     <p><?php echo zen_draw_input_field('PWA_SUBMIT', PWA_SUBMIT, '', true, 'submit', true); ?></p>
@@ -877,23 +901,34 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
                   left join ' . TABLE_PRODUCTS_DESCRIPTION . ' pd on (pa.products_id = pd.products_id)
                   left join ' . TABLE_PRODUCTS . ' p on (pa.products_id = p.products_id)
                 WHERE pd.language_id = ' . $language_id . '
-                order by products_model'; //order by may be changed to: products_id, products_model, products_name
+                order by :search_order_by:'; //order by may be changed to: products_id, products_model, products_name
+      $searchList = $db->bindVars($searchList, ':search_order_by:', $search_order_by, 'noquotestring');
 
-      echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'get', '', true) . "Product Selection List:";
+      echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'get', '', true) . "Product Selection List:";
       echo $searchList = $stock->selectItemID(TABLE_PRODUCTS_ATTRIBUTES, 'pa.products_id', $seachPID, $searchList, 'seachPID', 'seachPID', 'selectSBAlist');
       echo zen_draw_input_field('pwas-search-button', 'Search', '', true, 'submit', true); ?>
-      </form><?php
+      </form>
+      <td valign="top" align="left">
+        <form name="search_order_by" action="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'SSL'); ?>">
+          <select name="selected" onChange="go_search()">
+            <option value="products_model"<?php if ($search_order_by == 'products_model') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_MODEL; ?></option>
+            <option value="products_id"<?php if ($search_order_by == 'products_id') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_ID; ?></option>
+            <option value="products_name"<?php if ($search_order_by == 'products_name') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_NAME; ?></option>
+          </select>
+        </form>
+      </td>
+<?php
     }
 
     ?><div id="hugo1" style="background-color: green; padding: 2px 10px;"></div>
-    <?php echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'get', 'id="pwas-search2"', true); ?>Search:  <?php 
+    <?php echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'get', 'id="pwas-search2"', true); ?>Search:  <?php 
     echo zen_draw_input_field('search', $seachBox, 'id="pwas-filter"', true, 'text', true);
     echo zen_draw_input_field('pwas-search-button', 'Search', 'id="pwas-search-button"', true, 'submit', true);
     ?></form><span style="margin-right:10px;">&nbsp;</span>
-    <a href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', $request_type); ?>">Reset</a><span style="margin-right:10px;">&nbsp;</span><a title="Sets sort value for all attributes to match value in the Option Values Manager" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=auto_sort', $request_type); ?>">Sort</a>
+    <a href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, $request_type); ?>">Reset</a><span style="margin-right:10px;">&nbsp;</span><a title="Sets sort value for all attributes to match value in the Option Values Manager" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=auto_sort' . '&search_order_by=' . $search_order_by, $request_type); ?>">Sort</a>
     <span style="margin-right:20px;color:red;">&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $SBAsearchbox; ?></span><?php /* set an option in configuration table */ ?>
     <span id="loading" style="display: none;"><img src="./images/loading.gif" alt="" /> Loading...</span><hr />
-    <a class="forward" style="float:right;" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync_all", $request_type); ?>"><strong>Sync All Quantities</strong></a><br class="clearBoth" /><hr />
+    <a class="forward" style="float:right;" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync_all" . '&search_order_by=' . $search_order_by, $request_type); ?>"><strong>Sync All Quantities</strong></a><br class="clearBoth" /><hr />
     <div id="pwa-table"><?php 
     echo $stock->displayFilteredRows(STOCK_SET_SBA_SEARCHBOX, null, $seachPID);
     ?></div><?php
