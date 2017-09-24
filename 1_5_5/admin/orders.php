@@ -651,8 +651,9 @@ function couponpopupWindow(url) {
           echo '</i></small></nobr>';
         }
       }
-
+      //"Stock by Attributes" add custom ID to display
       echo ($order->products[$i]['customid']['type'] == 'single' && zen_not_null($order->products[$i]['customid']['value']) ? ' (' . $order->products[$i]['customid']['value'] . ') ' : '');
+      // END "Stock by Attributes"
 
       echo '            </td>' . "\n" .
            '            <td class="dataTableContent" valign="top">' . $order->products[$i]['model'] . '</td>' . "\n" .
