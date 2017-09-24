@@ -659,7 +659,7 @@ $sql = "select count(*) as total
 
                 // attributes images table
                 $options_attributes_image[] = trim($tmp_attributes_image) . "\n";
-                
+
                 $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT', $products_options_names->fields, $options_name, $options_menu, $options_comment, $options_comment_position, $options_html_id, $options_attributes_image);
                 //Next Item
                 $products_options_names->MoveNext();
