@@ -236,7 +236,7 @@ function cartProductCount($products_id){
     } 
     else {
       
-      if(is_array($attributes) and !empty($attributes)){
+      if(!empty($attributes) && is_array($attributes)){
         // check if attribute stock values have been set for the product
         // if there are will we continue, otherwise we'll use product level data
         /*$attribute_stock = $db->Execute("select stock_id 
@@ -349,7 +349,7 @@ function cartProductCount($products_id){
     $stock_attributes = '';
     $multi = (count($attribute_list) > 1 ? true : false);
     
-    if (is_array($attribute_list) && !empty($attribute_list)) {
+    if (!empty($attribute_list) && is_array($attribute_list)) {
       if ($from == 'order') {
         foreach ($attribute_list as $attrib_data) {
           if (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.  This is probably the best place to do the review because all aspects of the attribute are available.
@@ -401,7 +401,7 @@ function cartProductCount($products_id){
     }
 
    // Need to evaluate if product information provided is SBA tracked in case the page is posted with incorrect attributes as a separate check.
-    if (is_array($attribute_list) && !empty($attribute_list)) {
+    if (!empty($attribute_list) && is_array($attribute_list)) {
       // Should check against the product designation, what option names should be expected.
       // Then compare the provided option names against the expected list.
       // For those option names that were not provided evaluate if their omission
@@ -815,7 +815,7 @@ Of the attributes provided, determine the number of those attributes that are
       $file_value = '0';
     }
 
-    if (is_array($attribute_list) && !empty($attribute_list)) {
+    if (!empty($attribute_list) && is_array($attribute_list)) {
       $compArray = $attribute_list;
     }
 
@@ -938,7 +938,7 @@ Of the attributes provided, determine the number of those attributes that are
     if (!empty($compArray)) {
 //      $attribute_list = $compArray; // + $attribute_list /*+ $compArray*/;
       if ($how == 'add'/* && $how != 'addNoText'*/) {
-        if (is_array($attribute_list) && !empty($attribute_list)) {
+        if (!empty($attribute_list) && is_array($attribute_list)) {
           $attribute_list = $attribute_list + $compArray;
         } else {
           $attribute_list = $compArray;
@@ -946,7 +946,7 @@ Of the attributes provided, determine the number of those attributes that are
       } elseif ($how == 'update') {
         $attribute_list = $compArray;
       } else {
-        if (is_array($attribute_list) && !empty($attribute_list)) {
+        if (!empty($attribute_list) && is_array($attribute_list)) {
           $attribute_list = $compArray + $attribute_list;
         } else {
           $attribute_list = $compArray;
@@ -1165,7 +1165,7 @@ Of the attributes provided, determine the number of those attributes that are
       $file_value = '0';
     }
 
-    if (is_array($attribute_list) && !empty($attribute_list)) {
+    if (!empty($attribute_list) && is_array($attribute_list)) {
       $compArray = $attribute_list;
     }
 
@@ -1470,7 +1470,7 @@ Of the attributes provided, determine the number of those attributes that are
     
     $attribute_info = array();
 
-    if (is_array($attribute_list) && !empty($attribute_list)) {
+    if (!empty($attribute_list) && is_array($attribute_list)) {
       $attribute_info['stock_attribute'] = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
       $query = 'select stock_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . 
                 ' where `stock_attributes` = "' . $attribute_info['stock_attribute'] . '" and products_id = ' . (int)$products_id;
