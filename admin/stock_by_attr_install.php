@@ -983,7 +983,7 @@ function addSBAtable(){
   }
   else{
     //Alter / upgrade existing database table
-    alterSBAtabeSort();//Call function to Alter table products_with_attributes_stock sort field
+    alterSBAtableSort();//Call function to Alter table products_with_attributes_stock sort field
     alterSBAtableCustomid();//Call function to Alter table products_with_attributes_stock to add customid
     alterSBAtableUniqueIndex();//Call function to Alter table products_with_attributes_stock UNIQUE INDEX
     alterSBAtableTitle();//call function to add new table field title
@@ -1040,7 +1040,7 @@ function addSBAtable(){
   }
   else{
     //Alter / upgrade existing database table THIS NEEDS TO BE DEVELOPED
-//    alterSBAtabeSort();//Call function to Alter table products_with_attributes_stock sort field
+//    alterSBAtableSort();//Call function to Alter table products_with_attributes_stock sort field
 //    alterSBAtableCustomid();//Call function to Alter table products_with_attributes_stock to add customid
 //    alterSBAtableUniqueIndex();//Call function to Alter table products_with_attributes_stock UNIQUE INDEX
   }
@@ -1342,7 +1342,7 @@ function alterProductOptions(){
 
 //Test that the table is already present, and that it does not already have "sort INT NOT NULL"
 //Upgrade existing table with "sort INT NOT NULL"
-function alterSBAtabeSort(){
+function alterSBAtableSort(){
   global $db, $resultMmessage, $failed;
 
   $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
