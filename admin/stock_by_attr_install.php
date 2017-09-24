@@ -1050,11 +1050,11 @@ function addSBAtable(){
 //Test that the table is already present, and that it does not already have the parentid field
 //Upgrade existing table with parentid field
 function alterSBAtableParentid(){
-  global $db, $resultMmessage, $failed;
+  global $db, $resultMmessage, $failed, $sniffer;
 
   if( checkSBAtable(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK) ) {
 
-    $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+/*    $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_SCHEMA = '" . DB_DATABASE . "'
               AND TABLE_NAME = '". TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "'
               AND COLUMN_NAME = 'parentid';";
@@ -1066,9 +1066,11 @@ function alterSBAtableParentid(){
         $num_rows = 1;
       }
       $result->MoveNext();
-    }
+    }*/
 
-    if(empty($num_rows)){
+    $field_exists = $sniffer->field_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'parentid');
+
+    if(!$field_exists){
       //ADD COLUMN `parentid`
       $db->Execute("ALTER TABLE `" . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "`
                   ADD COLUMN `parentid` int(11) NOT NULL DEFAULT '0' AFTER `title`;");
@@ -1090,11 +1092,11 @@ function alterSBAtableParentid(){
 //Test that the table is already present, and that it does not already have the title field
 //Upgrade existing table with title field
 function alterSBAtableTitle(){
-  global $db, $resultMmessage, $failed;
+  global $db, $resultMmessage, $failed, $sniffer;
 
   if( checkSBAtable(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK) ) {
 
-    $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+/*    $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_SCHEMA = '" . DB_DATABASE . "'
               AND TABLE_NAME = '". TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "'
               AND COLUMN_NAME = 'title';";
@@ -1106,9 +1108,11 @@ function alterSBAtableTitle(){
         $num_rows = 1;
       }
       $result->MoveNext();
-    }
+    }*/
 
-    if(empty($num_rows)){
+    $field_exists = $sniffer->field_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'title');
+
+    if(!$field_exists){
       //ADD COLUMN `title`
       $db->Execute("ALTER TABLE `" . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "`
                   ADD COLUMN `title` varchar(100) DEFAULT NULL AFTER `customid`;");
@@ -1130,11 +1134,11 @@ function alterSBAtableTitle(){
 //Test that the table is already present, and that it does not already have the product_attribute_combo field
 //Upgrade existing table with product_attribute_combo field
 function alterSBAtableUniqueCombo(){
-  global $db, $resultMmessage, $failed;
+  global $db, $resultMmessage, $failed, $sniffer;
 
   if( checkSBAtable(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK) ) {
 
-    $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+/*    $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_SCHEMA = '" . DB_DATABASE . "'
               AND TABLE_NAME = '". TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "'
               AND COLUMN_NAME = 'product_attribute_combo';";
@@ -1146,9 +1150,11 @@ function alterSBAtableUniqueCombo(){
         $num_rows = 1;
       }
       $result->MoveNext();
-    }
+    }*/
 
-    if(empty($num_rows)){
+    $field_exists = $sniffer->field_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'product_attribute_combo');
+
+    if(!$field_exists){
       //ADD COLUMN `product_attribute_combo`
       $db->Execute("ALTER TABLE `" . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "`
                   ADD COLUMN `product_attribute_combo` varchar(255) DEFAULT NULL AFTER `products_id`;");
@@ -1181,11 +1187,11 @@ function alterSBAtableUniqueCombo(){
 //Test that the table is already present, and that it does not already have the customid field
 //Upgrade existing table with customid field
 function alterSBAtableCustomid(){
-  global $db, $resultMmessage, $failed;
+  global $db, $resultMmessage, $failed, $sniffer;
 
   if( checkSBAtable(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK) ) {
 
-    $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+/*    $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_SCHEMA = '" . DB_DATABASE . "'
               AND TABLE_NAME = '". TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "'
               AND COLUMN_NAME = 'customid';";
@@ -1198,9 +1204,11 @@ function alterSBAtableCustomid(){
         break; // mc12345678 does not appear to be a need to continue looping if entered this if.
       }
       $result->MoveNext();
-    }
+    }*/
 
-    if(empty($num_rows)){
+    $field_exists = $sniffer->field_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'customid');
+
+    if(!$field_exists){
       //ADD COLUMN `customid`
       $db->Execute("ALTER TABLE `" . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "`
                   ADD COLUMN `customid` VARCHAR(255) NULL DEFAULT NULL AFTER `sort`;");
@@ -1233,9 +1241,9 @@ function alterSBAtableCustomid(){
 //Test that the table is already present, and that it does not already have the UNIQUE INDEX
 //Upgrade existing table with UNIQUE INDEX
 function alterSBAtableUniqueIndex(){
-  global $db, $resultMmessage, $failed;
+  global $db, $resultMmessage, $failed, $sniffer;
 
-  $sql = "SELECT * FROM information_schema.statistics
+/*  $sql = "SELECT * FROM information_schema.statistics
       WHERE table_schema = '".DB_DATABASE."'
       AND table_name = '". TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "'
       AND column_name = 'products_id'";
@@ -1248,9 +1256,11 @@ function alterSBAtableUniqueIndex(){
       break; // mc12345678 does not appear to be a need to continue looping if entered this if.
     }
     $result->MoveNext();
-  }
+  }*/
 
-  if(empty($num_rows)){
+  $field_exists = $sniffer->field_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'products_id');
+
+  if(!$field_exists){
     //test for records that are not unique before adding UNIQUE INDEX
     $sql = "SELECT pas.stock_id, COUNT(pas.stock_id) AS stockCount
         FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pas
@@ -1289,9 +1299,9 @@ function alterProductOptions(){
 /*  ALTER TABLE products_options
   ADD products_options_track_stock tinyint(4) default '1' not null
   AFTER products_options_name;*/
-  global $db, $resultMmessage, $failed;
+  global $db, $resultMmessage, $failed, $sniffer;
 
-  $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+/*  $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
           WHERE TABLE_SCHEMA = '".DB_DATABASE."'
             AND TABLE_NAME = '". TABLE_PRODUCTS_OPTIONS . "'
             AND COLUMN_NAME = 'products_options_track_stock';";
@@ -1304,9 +1314,11 @@ function alterProductOptions(){
        break;
      }
      $result->MoveNext();
-   }
+   }*/
 
-  if(empty($num_rows)){
+  $field_exists = $sniffer->field_exists(TABLE_PRODUCTS_OPTIONS, 'products_options_track_stock');
+
+  if(!field_exists){
     $sql = "ALTER TABLE " . TABLE_PRODUCTS_OPTIONS." ADD products_options_track_stock tinyint(4) DEFAULT '1' NOT NULL AFTER `products_options_name`";
     $db->Execute($sql);
     if($db->error){
@@ -1343,9 +1355,9 @@ function alterProductOptions(){
 //Test that the table is already present, and that it does not already have "sort INT NOT NULL"
 //Upgrade existing table with "sort INT NOT NULL"
 function alterSBAtableSort(){
-  global $db, $resultMmessage, $failed;
+  global $db, $resultMmessage, $failed, $sniffer;
 
-  $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+/*  $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
           WHERE TABLE_SCHEMA = '".DB_DATABASE."'
             AND TABLE_NAME = '". TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "'
             AND COLUMN_NAME = 'sort';";
@@ -1358,9 +1370,11 @@ function alterSBAtableSort(){
        break;
      }
      $result->MoveNext();
-   }
+   }*/
 
-  if(empty($num_rows)){
+  $field_exists = $sniffer->field_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'sort');
+
+  if(!$field_exists){
     $sql = "ALTER TABLE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." ADD sort INT(11) NOT NULL DEFAULT 0 AFTER `quantity`";
     $db->Execute($sql);
     if($db->error){
@@ -2149,7 +2163,7 @@ function instructionsSBA(){
   global $ZCversion;
 
   $output = "<p><h2>How To Use</h2>
-        <form method='get' action='" . zen_href_link('stock_by_attr_install', '', 'NONSSL')."' >
+        " . zen_draw_form('how_to_use', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP, '', 'get') . "
         <ul>
           <li>To support the newly added non-stock table entry, follow the following guidance:
           <li>A single product's value can be considered non-stock by entering the products_id as the source_id, the options_values_id as the type_id and the type as PV.</li>
@@ -2467,7 +2481,7 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
        <a title="Shortcut to the Stock By Attributtes Catalog" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'NONSSL') . '">SBA Catalog Link</a>
       <br class="clearBoth" /><hr />
 
-    <form method="get" action="' . zen_href_link('stock_by_attr_install', '', 'NONSSL') . '" id="SBAinstall" name="SBAinstall">
+    ' . zen_draw_form("SBAinstall", FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP, "id=\"SBAinstall\"", "get") . '
 
      Select:
 
