@@ -914,7 +914,7 @@ function addSBANonStockTable() {
       $sql_insert = $db->bindVars($sql_insert, ':attribute_type_source_id:', 0, 'integer');
       $sql_insert = $db->bindVars($sql_insert, ':attribute_type_id:', 0, 'integer');
       $sql_insert = $db->bindVars($sql_insert, ':language_id:', 1, 'integer');
-      
+
       $result = $db->Execute($sql_insert);
 
       if($db->error){
