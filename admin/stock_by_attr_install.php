@@ -1318,7 +1318,7 @@ function alterProductOptions(){
 
   $field_exists = $sniffer->field_exists(TABLE_PRODUCTS_OPTIONS, 'products_options_track_stock');
 
-  if(!field_exists){
+  if(!$field_exists){
     $sql = "ALTER TABLE " . TABLE_PRODUCTS_OPTIONS." ADD products_options_track_stock tinyint(4) DEFAULT '1' NOT NULL AFTER `products_options_name`";
     $db->Execute($sql);
     if($db->error){
@@ -1332,7 +1332,7 @@ function alterProductOptions(){
         FROM INFORMATION_SCHEMA.COLUMNS
         WHERE TABLE_SCHEMA = '".DB_DATABASE."'
           AND TABLE_NAME = '".TABLE_PRODUCTS_OPTIONS."'
-          AND COLUMN_NAME = 'products_optinos_track_stock'";
+          AND COLUMN_NAME = 'products_options_track_stock'";
     $result = $db->Execute($sql);
     $result = $result->fields['column_default'];
 
