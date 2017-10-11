@@ -170,7 +170,7 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
                         $product_id = $old_product['id'];
   
                         // Handle attributes
-                        if(is_array($product_options) && !empty($product_options))
+                        if(!empty($product_options) && is_array($product_options))
                         {
                           $retval = array();
                           $retval['attributes'] = array();
@@ -322,9 +322,12 @@ step (string) => 3
 
       $product_options = $_POST['id'];
       $product_id = (int)$_POST['add_product_products_id'];
+    }
+
+    if (isset($_POST['step']) && $_POST['step'] >= 4 && $_SESSION['pwas_class2']->zen_product_is_sba($product_id)) {
     
     // Handle attributes
-      if(is_array($product_options) && !empty($product_options))
+      if(!empty($product_options) && is_array($product_options))
       {
         $retval = array();
         $retval['attributes'] = array();
