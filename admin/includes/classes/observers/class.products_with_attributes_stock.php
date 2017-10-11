@@ -571,7 +571,8 @@ class products_with_attributes_stock_admin extends base {
   `stock_attribute` VARCHAR(255) NULL DEFAULT NULL, 
   `products_prid` TINYTEXT NOT NULL, */
             //$new_attrs = array();
-            $new_attrs = $_productI['attributes'];
+//            $new_attrs = $_productI['attributes'];
+            $new_attrs = $product['attributes'];
             $order_product_attribute_id = array();
             foreach ($new_attrs as $key=>$attr) {
                 unset($new_attrs[$key]['value']);
