@@ -305,7 +305,7 @@ class products_with_attributes_stock_admin extends base {
       while (!$remove_attributes_query->EOF) {
         $stock_ids = zen_get_sba_ids_from_attribute($remove_attributes_query->fields['products_attributes_id']);
         
-        if (is_array($stock_ids) && !empty($stock_ids)) {
+        if (!empty($stock_ids) && is_array($stock_ids)) {
           $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                         where stock_id in (" . implode(',', $stock_ids) . ")");
         }
@@ -329,7 +329,7 @@ class products_with_attributes_stock_admin extends base {
     $stock_ids = zen_get_sba_ids_from_attribute($remove_ids);
     unset($remove_ids);
 
-    if (is_array($stock_ids) && !empty($stock_ids)) {
+    if (!empty($stock_ids) && is_array($stock_ids)) {
       $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                     where stock_id in (" . implode(',', $stock_ids) . ")");
     }
@@ -360,7 +360,7 @@ class products_with_attributes_stock_admin extends base {
       // If the product has attributes, then need to see what was logged into the orders_products_attributes_stock table.  
       //    If nothing then is a product that has attributes, but was not tracked by SBA. 
       //    If something, then retrieve the desired data (customid)
-      if (!empty($product) && is_array($product) && array_key_exists('attributes', $product) && !empty($product['attributes'])) {
+      if (!empty($product) && is_array($product) && array_key_exists('attributes', $product) && !empty($product['attributes']) && is_array($product['attributes'])) {
         $orders_products_sba_customid = $db->Execute("select 
                            opas.orders_products_attributes_stock_id, opas.orders_products_attributes_id, 
                            opas.stock_id, opas.stock_attribute, opas.customid, opas.products_prid, 
@@ -462,7 +462,7 @@ class products_with_attributes_stock_admin extends base {
       // START "Stock by Attributes"
             $attributeList = null;
             $customid = null;
-            if(!empty($product['attributes'])){
+            if(!empty($product['attributes']) && is_array($product['attributes'])){
                 foreach($product['attributes'] as $attributes){
                     $attributeList[] = $attributes['value_id'];
                 }
@@ -489,7 +489,7 @@ class products_with_attributes_stock_admin extends base {
             $_attribute_stock_left = $attribute_stock_left;
 
             // mc12345678 If the has attibutes then perform the following work.
-            if(!empty($product['attributes'])){
+            if(!empty($product['attributes']) && is_array($product['attributes'])){
                 // Need to identify which records in the PWAS table need to be updated to remove stock from
                 // them.  Ie. provide a list of attributes and get a list of stock_ids from pwas.
                 // Then process that list of stock_ids to decrement based on their impact on stock.  This
