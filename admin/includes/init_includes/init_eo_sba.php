@@ -168,6 +168,9 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
                         $product_options = $product_update['attr'];
                         unset($product_update['attr']);
                         $product_id = $old_product['id'];
+                      
+                        // Do not process this product further in this routine because the product is not tracked by SBA.
+                        if (!$_SESSION['pwas_class2']->zen_product_is_sba($product_id)) continue;
   
                         // Handle attributes
                         if(!empty($product_options) && is_array($product_options))
