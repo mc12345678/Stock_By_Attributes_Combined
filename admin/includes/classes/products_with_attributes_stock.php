@@ -310,6 +310,27 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
               </tr>';
         
         while(!$products->EOF){ 
+
+          // SUB
+          $query = 'select * from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' where products_id="'.(int)$products->fields['products_id'].'"
+                    order by sort ASC;';
+
+          $attribute_products = $db->Execute($query);
+
+          $query = 'SELECT SUM(quantity) as total_quantity FROM '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' where products_id='.(int)$products->fields['products_id'];
+
+          $attribute_quantity = $db->Execute($query);
+
+          $synchronized = null;
+
+          if ($_SESSION['pwas_class2']->zen_product_is_sba($products->fields['products_id'])) {
+            if ($products->fields['products_quantity'] > $attribute_quantity->fields['total_quantity']) {
+              $synchronized = '<br/> Prod Qty > Attrib Qty ';
+            } else if ($products->fields['products_quantity'] != $attribute_quantity->fields['total_quantity']) {
+              $synchronized = '<br/> Prod Qty < Attrib Qty ';
+            }
+          }
+
           $html .= '<tr>'."\n";
           $html .= '<td colspan="7">'."\n";
           $html .= '<div class="productGroup">'."\n";
@@ -323,17 +344,17 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
             //product.php? page=1 & product_type=1 & cPath=13 & pID=1042 & action=new_product
             //$html .= '<td class="tdProdModel">'.$products->fields['products_model'] .' </td>';
             $html .= '<td class="tdProdModel">'.$products->fields['products_model'] . '<br /><a href="'.zen_href_link(FILENAME_PRODUCT, "page=1&amp;product_type=".$products->fields['products_type']."&amp;cPath=".$products->fields['master_categories_id']."&amp;pID=".$products->fields['products_id']."&amp;action=new_product", 'NONSSL').'">Link</a><br /><br /><a href="'.zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, "products_filter=&amp;products_filter=".$products->fields['products_id']."&amp;current_category_id=".$products->fields['master_categories_id'], 'NONSSL').'">' . BOX_CATALOG_CATEGORIES_ATTRIBUTES_CONTROLLER . '</a></td>';
-            $html .= '<td class="tdProdQty">'.$products->fields['products_quantity'].'</td>';
+            $html .= '<td class="tdProdQty">'.$products->fields['products_quantity'].$synchronized.'</td>';
             $html .= '<td class="tdProdAdd"><a href="'.zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=add&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_ADD_QUANTITY . '</a><br /><br /><a href="'.zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete_all&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">'.PWA_DELETE_VARIANT_ALL.'</a></td>';
             $html .= '<td class="tdProdSync"><a href="'.zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_SYNC_QUANTITY . '</a></td>';
             $html .= '</tr>'."\n";
             $html .= '</table>'."\n";
             
           // SUB            
-          $query = 'select * from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' where products_id="'.$products->fields['products_id'].'"
+/*          $query = 'select * from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' where products_id="'.$products->fields['products_id'].'"
                     order by sort ASC;';
 
-          $attribute_products = $db->Execute($query);
+          $attribute_products = $db->Execute($query);*/
           if($attribute_products->RecordCount() > 0){
 
               $html .= '<table class="stockAttributesTable">';
