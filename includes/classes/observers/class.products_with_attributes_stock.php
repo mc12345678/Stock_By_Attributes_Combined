@@ -230,9 +230,11 @@ class products_with_attributes_stock extends base {
                       $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options_fields['products_quantity'] . ' ';
                     } else {
                       $products_options_fields['products_options_values_name'] = $products_options_fields['products_options_values_name'] . PWA_OUT_OF_STOCK;
-                      $products_options_array[count($products_options_array)-1] = array('id' =>
+                      $products_options_array[$i] = array_merge($products_options_array[$i], array('id' =>
+/*                      $products_options_array[count($products_options_array)-1] = array('id' =>*/
                           $products_options_fields['products_options_values_id'],
-                          'text' => $products_options_fields['products_options_values_name']);
+                          'text' => $products_options_fields['products_options_values_name'])
+                          );
 
                     }
                   }
