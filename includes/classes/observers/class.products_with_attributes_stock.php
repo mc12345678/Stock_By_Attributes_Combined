@@ -139,7 +139,20 @@ class products_with_attributes_stock extends base {
             where pa.products_id = :products_id:
             and       pa.options_id = :options_id:
             and       pov.language_id = :languages_id: " .
-            ((($this->_products_options_names_count <= 1 || ($process_this == true && isset($noread) && $noread->fields['total'] == 1)) && defined('SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO') && SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO == '0' && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS !=1 && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS !=3) && (defined('PRODUCTS_OPTIONS_TYPE_GRID') ? $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_GRID : true) && (defined('PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID') ? $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID : true)) ? " AND (pas.quantity > '0' OR (pas.quantity IS NULL AND pa.attributes_display_only = '1')) ": "" ) .
+            (
+              (
+                (
+                  $this->_products_options_names_count <= 1
+                  || ($process_this == true && isset($noread) && $noread->fields['total'] == 1)
+                )
+                && defined('SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO') && SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO == '0'
+                && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS !=1 && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS !=3)
+                && (defined('PRODUCTS_OPTIONS_TYPE_GRID') ? $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_GRID : true)
+                && (defined('PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID') ? $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID : true)
+              ) 
+               ? " AND (pas.quantity > '0' OR (pas.quantity IS NULL AND pa.attributes_display_only = '1')) "
+               : ""
+            ) .
             /* && $products_options_name->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_READONLY  */
             $order_by;
               
@@ -292,7 +305,19 @@ class products_with_attributes_stock extends base {
   function updateNotifyAttributesModuleOriginalPrice(&$callingClass, $notifier, $paramsArray){
     global /*$db, */$products_options, $products_options_names, $currencies, $new_attributes_price, $product_info, $products_options_display_price, $PWA_STOCK_QTY;
     
-    if ($this->_isSBA && ( $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA || ((PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' && $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1)))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
+    if ($this->_isSBA 
+        && (
+            in_array($products_options_names->fields['products_options_type'], array(PRODUCTS_OPTIONS_TYPE_SELECT_SBA, PRODUCTS_OPTIONS_TYPE_RADIO, PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_FILE, PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_SELECT)) 
+            || (
+                (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' 
+                  && $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA
+                ) 
+                || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' 
+                || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) 
+                || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1)
+               )
+            )
+        ) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
       // START "Stock by Attributes" SBA added original price for display, and some formatting
       $originalpricedisplaytext = null;
       if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !(zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false') == $new_attributes_price || (zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false') == -$new_attributes_price && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
