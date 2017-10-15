@@ -178,7 +178,10 @@ class products_with_attributes_stock extends base {
         //test, only applicable to products with-out the display-only attribute set
         if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
           $products_options_fields['products_options_values_name'] = $products_options_fields['products_options_values_name'] . PWA_OUT_OF_STOCK;
-          $products_options_array[$i-1] = array_merge($products_options_array[$i-1], array('id' =>
+          // $i in includes/modules/YOUR_TEMPLATE/attributes.php is post incremented ($i++) meaning it is sent here with the 
+          //   current value, but upon return will be incremented by 1.  Therefore within this function it should be considered as 
+          //   the value that attributes.php was seeing just before the notifier.
+          $products_options_array[$i] = array_merge($products_options_array[$i], array('id' =>
               $products_options_fields['products_options_values_id'],
               'text' => $products_options_fields['products_options_values_name'])); // 2017-07-13 mc12345678 added array_merge to preserve other modifications that may have been made for this array instead of replacing them in their entirety and possibly losing the other data.
         }
