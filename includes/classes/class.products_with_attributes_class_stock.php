@@ -270,7 +270,7 @@ function cartProductCount($products_id){
                         where products_id = '. (int)$products_id . ';';*/
 
         //Get custom id as products_model
-        if (!empty($stock_attr_array)) {
+        if (!empty($stock_attr_array) && is_array($stock_attr_array)) {
           $customid_query = 'select customid as products_model
                       from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
                       where products_id = :products_id: 
@@ -484,7 +484,7 @@ function cartProductCount($products_id){
 
         $query = $db->bindVars($query, ':first_search:', $first_search, 'passthru');
 
-      if (!empty($specAttributes)) {
+      if (!empty($specAttributes) && is_array($specAttributes)) {
         $specAttrib_query = '';
         foreach ($specAttributes as $optid=>$optvalid) {
           $specAttrib_query .= ' OR (options_id = :optid: AND options_values_id = :optvalid: AND products_id = :products_id:) ';
@@ -506,7 +506,7 @@ function cartProductCount($products_id){
         $attributes_new->MoveNext();
       }
       
-      if (!empty($stock_attributes_list)) {
+      if (!empty($stock_attributes_list) && is_array($stock_attributes_list)) {
         return $stock_attributes_list;
       } else {
         return false;
@@ -935,7 +935,7 @@ Of the attributes provided, determine the number of those attributes that are
 //    $_SESSION['compArray2'.$pro_id] = $compArray;
 //    $_SESSION['attrib_list2'.$pro_id] = $attribute_list;
 
-    if (!empty($compArray)) {
+    if (!empty($compArray) && is_array($compArray)) {
 //      $attribute_list = $compArray; // + $attribute_list /*+ $compArray*/;
       if ($how == 'add'/* && $how != 'addNoText'*/) {
         if (!empty($attribute_list) && is_array($attribute_list)) {
@@ -1235,7 +1235,7 @@ Of the attributes provided, determine the number of those attributes that are
 //              $_SESSION['specAttribs2'] = $specAttributes;
 //              $_SESSION['compArray2'] = $compArray;
 
-    if (!empty($compArray)) {
+    if (!empty($compArray) && is_array($compArray)) {
       $attribute_list = /*$compArray +*/ $attribute_list + $compArray;
     }
 //              $_SESSION['compArray3'] = $attribute_list;
