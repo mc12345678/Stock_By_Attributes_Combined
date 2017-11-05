@@ -935,9 +935,14 @@ class products_with_attributes_stock extends base {
      */
     function updateNotifyHeaderEndShoppingCart(&$callingClass, $notifier, $paramsArray) {
     global $productArray, $flagAnyOutOfStock, $db;
-    
+
+    $flagAnyInsideOutOfStock = false;
+    $flagAnyOutsideOutOfStock = false;
+
     $products = $_SESSION['cart']->get_products();
-    
+
+    if (!defined('STOCK_MARK_ALLOW_MIX_TOTAL_ALL')) define ('STOCK_MARK_ALLOW_MIX_TOTAL_ALL', 'false');
+
     for ($i = 0, $n = count($productArray); $i < $n; $i++) {
       if (is_array($productArray[$i]) && array_key_exists('attributes', $productArray[$i]) && is_array($productArray[$i]['attributes']) && !empty($productArray[$i]['attributes']) && $_SESSION['pwas_class2']->zen_product_is_sba($productArray[$i]['id'])) {
         $productArray[$i]['attributeImage'] = array();
@@ -945,11 +950,23 @@ class products_with_attributes_stock extends base {
         if (STOCK_CHECK == 'true') {
           $SBAqtyAvailable = zen_get_products_stock($productArray[$i]['id'], $products[$i]['attributes']); // Quantity of product available with the selected attribute(s).
           $totalQtyAvailable = zen_get_products_stock($productArray[$i]['id']); // Total quantity of product available if all attribute optioned product were added to the cart.
-          if ($SBAqtyAvailable - $products[$i]['quantity'] < 0 || $totalQtyAvailable - $_SESSION['cart']->in_cart_mixed($productArray[$i]['id']) < 0) {
+
+          // Clear flag stock condition for SBA product to be controlled by SBA below
+          $productArray[$i]['flagStockCheck'] = '';
+
+          /*
+          STOCK_MARK_ALLOW_MIX_TOTAL_ALL = 'true' or 'false' such that true marks all product, false just the one.
+          Two options either mark all variants as out of stock or only the quantity that exceeds the variant quantity when:
+            the stock is allowed to sell beyond the available quantity (STOCK_ALLOW_CHECKOUT === 'true'),
+            the product is set to have Product Qty Min/Unit Mix set to true, AND
+            the variant quantity in the cart exceeds total stock quantity of the product.
+          */
+          if ($SBAqtyAvailable - $products[$i]['quantity'] < 0 || (($totalQtyAvailable - $_SESSION['cart']->in_cart_mixed($productArray[$i]['id']) < 0) && (STOCK_MARK_ALLOW_MIX_TOTAL_ALL === 'false' ? STOCK_ALLOW_CHECKOUT !== 'true' : true))) {
             $productArray[$i]['flagStockCheck'] = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
-            $flagAnyOutOfStock = true;
+            $flagAnyInsideOutOfStock = true;
+//            $flagAnyOutOfStock = true;
           }
-        }
+        } // EOF if (STOCK_CHECK == 'true')
         
         // Ensure that additional stock fields are added at least for SBA product.  If needs to be for all product, then 
         //  This information should be moved outside of the above if statement.  Did not carry over: $products_options_type
@@ -1072,8 +1089,15 @@ class products_with_attributes_stock extends base {
           $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][count($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
         }
         unset($productArray[$i]['attributeImage']); */
+      } else if ($productArray[$i]['flagStockCheck']) {
+            $flagAnyOutsideOutOfStock = true;
       }
+
+    } // EOF for ($i = 0, $n = count($productArray); $i < $n; $i++) {
+    if (!$flagAnyInsideOutOfStock && !$flagAnyOutsideOutOfStock) {
+      $flagAnyOutOfStock = '';
     }
+//    $flagAnyOutOfStock = $flagAnyInsideOutOfStock || $flagAnyOutsideOutOfStock;
   }
   
   // NOTIFY_HEADER_START_CHECKOUT_SHIPPING
