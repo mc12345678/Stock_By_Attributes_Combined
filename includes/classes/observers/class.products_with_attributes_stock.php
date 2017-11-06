@@ -966,6 +966,7 @@ class products_with_attributes_stock extends base {
             $flagAnyInsideOutOfStock = true;
 //            $flagAnyOutOfStock = true;
           }
+          $productArray[$i]['stockAvailable'] = $SBAqtyAvailable;
         } // EOF if (STOCK_CHECK == 'true')
         
         // Ensure that additional stock fields are added at least for SBA product.  If needs to be for all product, then 
@@ -988,8 +989,9 @@ class products_with_attributes_stock extends base {
         }
         $productArray[$i]['customid']['type'] = $custom_type;
         $productArray[$i]['customid']['value'] = (STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $products[$i]['attributes']) : null;
-        $productArray[$i]['stockAvailable'] = null;
-        $productArray[$i]['lowproductstock'] = false;
+//        $productArray[$i]['stockAvailable'] = null;
+        $upper_limit = STOCK_REORDER_LEVEL;
+        $productArray[$i]['lowproductstock'] = ($productArray[$i]['stockAvailable'] < $upper_limit) ? true : false;
         
   // Need to collect all of the option ids that are associated with the
   // product, then sort them by the normal sort order in reverse.
