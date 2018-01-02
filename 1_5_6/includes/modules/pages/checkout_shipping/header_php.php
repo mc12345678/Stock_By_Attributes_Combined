@@ -45,38 +45,28 @@
     for ($i=0, $n=sizeof($products); $i<$n; $i++) {
 
     // START "Stock by Attributes"
-    // Added to allow individual stock of different attributes
-      unset($attributes);
-      if(is_array($products[$i]['attributes'])){
-
-        if (isset($_SESSION['pwas_class2'])
+    // Added to allow individual stock of different attributes as tracked by SBA
+      if(is_array($products[$i]['attributes'])
+        && isset($_SESSION['pwas_class2'])
         && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
         && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
             ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($products[$i]['id']))
             : function_exists('zen_product_is_sba') && zen_product_is_sba($products[$i]['id'])
-        ) {
-          $attributes = $products[$i]['attributes'];
-        } else {
-          $attributes = null; //Force normal operation if the product is not monitored by SBA.
-        }
-      } else {
-        $attributes = null;
-      }
-  
-      if(zen_not_null($attributes)){ // Called if the product is only in the SBA table, not just has attributes.
-        if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
+      ) {
+        if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $products[$i]['attributes'])) {
           zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
           break;
-        } // Currently seems to Ignore possibility of mixed product/ mixed YES otherwise, change below to reference zen_get_products_stock($products[$i]['id'], $attributes)
-      } else {
-        $qtyAvailable = zen_get_products_stock($products[$i]['id']);
-        // compare against product inventory, and against mixed=YES
-        if ($qtyAvailable - $products[$i]['quantity'] < 0 || $qtyAvailable - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
-          zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
-          break;
-        }
+        } // Currently seems to Ignore possibility of mixed product / mixed YES otherwise, change below to reference zen_get_products_stock($products[$i]['id'], $attributes)
+        continue; // Move to next product in cart
       }
   // END "Stock by Attributes"
+
+      $qtyAvailable = zen_get_products_stock($products[$i]['id']);
+      // compare against product inventory, and against mixed=YES
+      if ($qtyAvailable - $products[$i]['quantity'] < 0 || $qtyAvailable - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
+          zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+          break;
+      }
     }
   }
 // if no shipping destination address was selected, use the customers own address as default
