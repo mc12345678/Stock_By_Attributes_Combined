@@ -169,8 +169,8 @@
       //For products without associated attributes, get product level stock quantity
       $stock_query = "select products_quantity
                       from " . TABLE_PRODUCTS . " 
-                      where products_id = :products_id:";
-      $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
+                      where products_id = '" . (int)$products_id . "'";
+
       $stock_values = $db->Execute($stock_query);
 
       return $stock_values->fields['products_quantity'];
