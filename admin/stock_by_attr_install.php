@@ -565,7 +565,11 @@ function insertDynDropdownsConfigurationMenu(){
 
   //get current max sort number used, then add 1 to it.
   //this will place the new entry 'productsWithAttributesStock' at the bottom of the list
-  $sql = "SELECT configuration_group_id, MAX(configuration_group_id) as last_configuration_group_id FROM ".TABLE_CONFIGURATION_GROUP." WHERE configuration_group_title='Dynamic Drop Downs' LIMIT 1";
+  $sql = "SELECT configuration_group_id, MAX(configuration_group_id) AS last_configuration_group_id
+          FROM " . TABLE_CONFIGURATION_GROUP . "
+          WHERE configuration_group_title = 'Dynamic Drop Downs'
+          GROUP BY configuration_group_id
+          LIMIT 1";
   $result = $db->Execute($sql);
   $configuration_id = $result->fields['configuration_group_id'];
   if($configuration_id=='' || $configuration_id == '0') {
