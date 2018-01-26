@@ -189,8 +189,8 @@ function cartProductCount($products_id){
       }
       
       //close tag and display text
-//      $field .= '>' . zen_output_string($values[$i]['text'], array('"' => '&quot;', '\'' => '&#039;', '<' => '&lt;', '>' => '&gt;')) . '</option>' . "\n";
-      $field .= '>' . zen_output_string_protected($values[$i]['text']) . '</option>' . "\n";
+      $field .= '>' . zen_output_string($values[$i]['text'], array('"' => '&quot;', '\'' => '&#039;', '<' => '&lt;', '>' => '&gt;', '& ' => '&amp; ', ' & ' => ' &amp; ')) . '</option>' . "\n";
+//      $field .= '>' . zen_output_string_protected($values[$i]['text']) . '</option>' . "\n";
     }
     
     $field .= '</select>' . "\n";
