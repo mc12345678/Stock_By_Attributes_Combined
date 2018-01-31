@@ -331,6 +331,106 @@ function cartProductCount($products_id){
     }
   }//end of function
 
+  function zen_get_price($products_id, $attributes = null) {
+    global $db;
+    $price_query = null;
+    $products_id = zen_get_prid($products_id);
+    $price = null;
+    $stock_attr_array = array();
+    
+    // check if there are attributes for this product
+    // Use ZC function to identify if a product has attributes or not.
+    if (!zen_has_product_attributes($products_id, false/* 'true' here will return false if all attributes are read-only 'false' will cause an all read-only attribute product to be seen as having attributes with which to process*/)/* $stock_has_attributes->RecordCount() < 1*/) {
+      
+      //if no attributes return products_model
+      // Use ZC function to obtain the products_model.
+      $price = zen_get_products_actual_price($products_id);
+      return $price;
+    } 
+    else {
+      
+      if(!empty($attributes) && is_array($attributes)){
+        // check if attribute stock values have been set for the product
+        // if there are will we continue, otherwise we'll use product level data
+
+        //Why not left join this below query into the above or why even have a separate/second query? Especially seeing that $attributes_stock is never used in the below results...  
+        if ($this->zen_product_is_sba($products_id)) {
+          // search for details for the particular attributes combination
+          $first_search = 'where options_values_id in ("'.implode('","',$attributes).'")';
+          
+          // obtain the sorted list of attribute ids that relate to the provided options_values_id
+          $query = 'select products_attributes_id 
+              from '.TABLE_PRODUCTS_ATTRIBUTES.' 
+                  '.$first_search.' 
+                  and products_id='.$products_id.' 
+                  order by products_attributes_id;';
+          $attributes_new = $db->Execute($query);
+          
+          while(!$attributes_new->EOF){
+            $stock_attr_array[] = $attributes_new->fields['products_attributes_id'];
+            $attributes_new->MoveNext();
+          }
+
+          $stock_attributes = implode(',',$stock_attr_array);
+        }
+        
+        //Get product price
+        //Get custom price as products_price
+        if (!empty($stock_attr_array) && is_array($stock_attr_array)) {
+          $price_query = 'select customid as products_model
+                      from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
+                      where products_id = :products_id: 
+                      and stock_attributes in (:stock_attributes:);'; 
+          $price_query = $db->bindVars($price_query, ':products_id:', $products_id, 'integer');
+          $price_query = $db->bindVars($price_query, ':stock_attributes:', $stock_attributes, 'string');
+          $price = $db->Execute($price_query); //moved to inside this loop as for some reason it has made
+        // a difference in the code where there would be an error with it below...
+          // Attributes are listed separately but there is more than one.
+          if ($price->EOF) {
+            $price_query = 'select customid as products_model
+                        from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
+                        where products_id = :products_id: 
+                        and stock_attributes in ( :stock_attributes:)
+                        ORDER BY stock_id;'; 
+            $price_query = $db->bindVars($price_query, ':products_id:', $products_id, 'integer');
+            $price_query = $db->bindVars($price_query, ':stock_attributes:', $stock_attributes, 'passthru');
+            $price = $db->Execute($price_query, false, false, 0, true); //moved to inside this loop as for some reason it has made
+          
+          }
+        }
+      }
+      
+      if(isset($price) && !$price->EOF){
+      
+        //Test to see if a custom ID exists
+        //if there are custom IDs with the attribute, then return them.
+          $multiplecid = null;
+          while(!$price->EOF){
+            if ($price->fields['products_model']) {
+              $multiplecid .= $customid->fields['products_model'] . ', ';
+            }
+            $price->MoveNext();
+          }
+          $multiplecid = rtrim($multiplecid, ', ');
+          
+          //return result for display
+          return $multiplecid;
+      
+      }
+      else{
+        unset($price);// = null;
+        //This is used as a fall-back when custom ID is set to be displayed but no attribute is available.
+        //Get product model
+        // Use ZC default function to obtain the products_model field.
+        $price = zen_products_lookup($products_id, 'products_model');
+        return $price;
+        //return result for display
+        //return $customid->fields['products_model'];
+      }
+      return null;//nothing to return, should never reach this return
+    }
+  }//end of function
+
   /*
    * Function to return the desired stock_attribute field for use with the SBA table products_with_attributes_stock.
    * 
