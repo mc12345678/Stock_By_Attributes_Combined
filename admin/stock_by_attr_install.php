@@ -969,11 +969,14 @@ function addSBAtable(){
       `sort` int(11) NOT NULL DEFAULT '0',
       `customid` varchar(255) DEFAULT NULL,
       `title` varchar(100) DEFAULT NULL,
-      PRIMARY KEY (`stock_id`),
+      PRIMARY KEY (`stock_id`)
+      );"); 
+    // Remove database assignment of unique keys that can and/or are managed by the code instead of the database.
+    /*,
       UNIQUE KEY `idx_products_id_stock_attributes` (`products_id`,`stock_attributes`),
       UNIQUE KEY `idx_products_id_attributes_id` (`product_attribute_combo`),
       UNIQUE KEY `idx_customid` (`customid`)
-    );");
+    );");*/
 
     if($db->error){
       $msg = ' Error Message: ' . $db->error;
