@@ -567,8 +567,8 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
   $productAttributeCombo = $this->nullDataEntry($productAttributeCombo);//sets proper quoting for input
   $skuTitle = addslashes($skuTitle);
   $skuTitle = $this->nullDataEntry($skuTitle);//sets proper quoting for input
-  $customid = addslashes($customid);
-  $customid = $this->nullDataEntry($customid);//sets proper quoting for input
+  //$customid = addslashes($customid);
+  //$customid = $this->nullDataEntry($customid);//sets proper quoting for input
   $strAttributes = $this->nullDataEntry($strAttributes);//sets proper quoting for input
   $result = null;
   
@@ -584,64 +584,103 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
       UNIQUE KEY `idx_products_id_attributes_id` (`product_attribute_combo`),
       UNIQUE KEY `idx_customid` (`customid`)*/
 
-      $query = "SELECT count(*) FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE (products_id = :products_id: AND stock_attributes = :stock_attributes:) OR product_attribute_combo = :product_attribute_combo: OR customid = :customid:";
+      if (trim($productAttributeCombo) == '' || trim($productAttributeCombo) == "''" || !isset($productAttributeCombo) || $productAttributeCombo === 'null') {
+          $productAttributeCombo = null;
+      }
+      if (!isset($customid) || trim($customid) == '' || trim($customid) == "''" || $customid === 'null') {
+          $customid = null;
+      }
+
+      // query for any duplicate records based on input where the input has a match to a non-empty key.
+      $query = "SELECT count(*) AS total FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE (products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . (isset($customid) ? "OR customid = :customid:" : "");
       $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
       $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'string');
       $query = $db->bindVars($query, ':product_attribute_combo:', $productAttributeCombo, 'string');
-      if (trim($customid) != '' && $customid != null) {
-        $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
-      } else {
+      if (!isset($customid)) {
         $query = $db->bindVars($query, ':customid:', 'null', 'noquotestring');
+      } else {
+        $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
       }
       
       $result = $db->Execute($query);
       
       // No duplication of desired key(s) of table.
-      if ($result->EOF) {
+      if ($result->fields['total'] == 0) {
+          // Because no duplicates, information is considered new and is to be inserted.
           $query = "INSERT INTO " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " (`products_id`, `product_attribute_combo`, `stock_attributes`, `quantity`, `customid`, `title`) 
            values (:products_id:, :product_attribute_combo:, :stock_attributes:, :quantity:, :customid:, :title:)";
           $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
-          $query = $db->bindVars($query, ':product_attribute_combo:', $productAttributeCombo, 'string');
+          if (!isset($productAttributeCombo)) {
+            $query = $db->bindVars($query, ':product_attribute_combo:', 'null', 'noquotestring');
+          } else {
+            $query = $db->bindVars($query, ':product_attribute_combo:', $productAttributeCombo, 'string'); // @TODO Need to also consider ignore NULL style.
+          }
           $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'string');
           $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
-          if (trim($customid) != '' && $customid != null) {
-            $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
-          } else {
+          if (!isset($customid)) {
             $query = $db->bindVars($query, ':customid:', 'null', 'noquotestring');
-          }
-          if (trim($skuTitle) != '' && $skuTitle != null) {
-            $query = $db->bindVars($query, ':title:', $skuTitle, 'string'); // @TODO Need to also consider ignore NULL style.
           } else {
+            $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
+          }
+          if (!isset($skuTitle) || trim($skuTitle) == '' || trim($skuTitle) == "''" || $skuTitle === 'null') {
             $query = $db->bindVars($query, ':title:', 'null', 'noquotestring');
+          } else {
+            $query = $db->bindVars($query, ':title:', $skuTitle, 'string'); // @TODO Need to also consider ignore NULL style.
           }
       
           $result = $db->Execute($query);
           
       } else {
-          // A "unique" key has been provided, now to identify how to proceed with the given data.
+          // A record has been found to match the provided data, now to identify how to proceed with the given data.
           $result = null; // Establish base/known value for comparison/review.
           
           // Determine if insertion would fail because of duplicate customid only.
-          if (trim($customid) != '' && $customid != null) {
-              $query = "SELECT count(*) FROM "  . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE `customid` = :customid:";
+          if (isset($customid)) {
+              $query = "SELECT count(*) as total FROM "  . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE `customid` = :customid:";
               $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
               
               $result = $db->Execute($query);
+              
+              // Found customid in the database; however, need to identify if it belongs to the current data or to some other record.
+              if ($result->fields['total'] > 0) {
+                // Identify if records exist that match everything except the customid.
+                $query = "SELECT count(*) FROM "  . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE ((products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . ") AND `customid` != :customid:";
+                  // If find a record, then the customid was assigned to more than one product
+                $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
+                $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'string');
+                if (!isset($productAttributeCombo)) {
+                  $query = $db->bindVars($query, ':product_attribute_combo:', 'null', 'noquotestring');
+                } else {
+                  $query = $db->bindVars($query, ':product_attribute_combo:', $productAttributeCombo, 'string'); // @TODO Need to also consider ignore NULL style.
+                }
+                $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
+
+                $result = $db->Execute($query);
+                // If a record is found, then the customid is already used elsewhere and should not be updated.
+                // If a record is not found, then the customid is already assigned to this variant and everything else should
+                //   be updated.
+
+                /*if (!$result2->EOF) {
+                    
+                }*/
+
+                //$result->MoveNext();
+              }
           }
 
           // If no $customid clash (non-empty customid) or if the $customid is empty then update.
-          if (isset($result) && $result->EOF || !isset($result)) {
+          if (!isset($result) || $result->fields['total'] == 0) {
               $query = "UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set `quantity` = :quantity:, `customid` = :customid:, `title` = :title: WHERE `products_id` = :products_id: AND `stock_attributes` = :stock_attributes:"
               $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
-              if (trim($customid) != '' && $customid != null) {
-                $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
-              } else {
+              if (!isset($customid)) {
                 $query = $db->bindVars($query, ':customid:', 'null', 'noquotestring');
-              }
-              if (trim($skuTitle) != '' && $skuTitle != null) {
-                $query = $db->bindVars($query, ':title:', $skuTitle, 'string'); // @TODO Need to also consider ignore NULL style.
               } else {
+                $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
+              }
+              if (!isset($skuTitle) || trim($skuTitle) == '' || trim($skuTitle) == "''" || $skuTitle === 'null') {
                 $query = $db->bindVars($query, ':title:', 'null', 'noquotestring');
+              } else {
+                $query = $db->bindVars($query, ':title:', $skuTitle, 'string'); // @TODO Need to also consider ignore NULL style.
               }
               $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
               $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'string');
