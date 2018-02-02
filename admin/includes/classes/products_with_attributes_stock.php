@@ -570,6 +570,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
   $customid = addslashes($customid);
   $customid = $this->nullDataEntry($customid);//sets proper quoting for input
   $strAttributes = $this->nullDataEntry($strAttributes);//sets proper quoting for input
+  $result = null;
   
   //Set quantity to 0 if not valid input
   if( !is_numeric($quantity) ){
@@ -577,13 +578,89 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
   }
   
   if( is_numeric($products_id) && isset($strAttributes) && is_numeric($quantity) ){
-     $query = "insert into ". TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK ." (`products_id`, `product_attribute_combo`, `stock_attributes`, `quantity`, `customid`, `title`) 
+      // Evaluate entry as compared to the desired uniqueness of data in the table.
+      /* PRIMARY KEY (`stock_id`),
+      UNIQUE KEY `idx_products_id_stock_attributes` (`products_id`,`stock_attributes`),
+      UNIQUE KEY `idx_products_id_attributes_id` (`product_attribute_combo`),
+      UNIQUE KEY `idx_customid` (`customid`)*/
+
+      $query = "SELECT count(*) FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE (products_id = :products_id: AND stock_attributes = :stock_attributes:) OR product_attribute_combo = :product_attribute_combo: OR customid = :customid:";
+      $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
+      $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'string');
+      $query = $db->bindVars($query, ':product_attribute_combo:', $productAttributeCombo, 'string');
+      if (trim($customid) != '' && $customid != null) {
+        $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
+      } else {
+        $query = $db->bindVars($query, ':customid:', 'null', 'noquotestring');
+      }
+      
+      $result = $db->Execute($query);
+      
+      // No duplication of desired key(s) of table.
+      if ($result->EOF) {
+          $query = "INSERT INTO " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " (`products_id`, `product_attribute_combo`, `stock_attributes`, `quantity`, `customid`, `title`) 
+           values (:products_id:, :product_attribute_combo:, :stock_attributes:, :quantity:, :customid:, :title:)";
+          $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
+          $query = $db->bindVars($query, ':product_attribute_combo:', $productAttributeCombo, 'string');
+          $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'string');
+          $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
+          if (trim($customid) != '' && $customid != null) {
+            $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
+          } else {
+            $query = $db->bindVars($query, ':customid:', 'null', 'noquotestring');
+          }
+          if (trim($skuTitle) != '' && $skuTitle != null) {
+            $query = $db->bindVars($query, ':title:', $skuTitle, 'string'); // @TODO Need to also consider ignore NULL style.
+          } else {
+            $query = $db->bindVars($query, ':title:', 'null', 'noquotestring');
+          }
+      
+          $result = $db->Execute($query);
+          
+      } else {
+          // A "unique" key has been provided, now to identify how to proceed with the given data.
+          $result = null; // Establish base/known value for comparison/review.
+          
+          // Determine if insertion would fail because of duplicate customid only.
+          if (trim($customid) != '' && $customid != null) {
+              $query = "SELECT count(*) FROM "  . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE `customid` = :customid:";
+              $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
+              
+              $result = $db->Execute($query);
+          }
+
+          // If no $customid clash (non-empty customid) or if the $customid is empty then update.
+          if (isset($result) && $result->EOF || !isset($result)) {
+              $query = "UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set `quantity` = :quantity:, `customid` = :customid:, `title` = :title: WHERE `products_id` = :products_id: AND `stock_attributes` = :stock_attributes:";
+              $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
+              if (trim($customid) != '' && $customid != null) {
+                $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
+              } else {
+                $query = $db->bindVars($query, ':customid:', 'null', 'noquotestring');
+              }
+              if (trim($skuTitle) != '' && $skuTitle != null) {
+                $query = $db->bindVars($query, ':title:', $skuTitle, 'string'); // @TODO Need to also consider ignore NULL style.
+              } else {
+                $query = $db->bindVars($query, ':title:', 'null', 'noquotestring');
+              }
+              $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
+              $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'string');
+
+              $result = $db->Execute($query);
+          } else {
+              // There is a conflict in the customid with the customid being required to be unique.
+          }
+
+      }
+      // Above replaces this query to provide improved support because some databases do not support the long
+      //  key(s) initially implemented.
+/*     $query = "insert into ". TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK ." (`products_id`, `product_attribute_combo`, `stock_attributes`, `quantity`, `customid`, `title`) 
            values ($products_id, $productAttributeCombo, $strAttributes, $quantity, $customid, $skuTitle)
                ON DUPLICATE KEY UPDATE 
                `quantity` = $quantity,
                `customid` =  $customid,
                `title` = $skuTitle";
-     $result = $db->execute($query);
+     $result = $db->execute($query);*/
   }
   
   return $result;
