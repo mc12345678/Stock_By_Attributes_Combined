@@ -573,18 +573,45 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
   $result = null;
   
   //Set quantity to 0 if not valid input
-  if( !is_numeric($quantity) ){
+  if( !isset($quantity) || !is_numeric($quantity) ){
     $quantity = 0;
   }
   
-  if( is_numeric($products_id) && isset($strAttributes) && is_numeric($quantity) ){
+    // General logic for this section/area:
+    /* 
+    Ultimate Goal is to either insert a unique record or update an existing unique record.
+    Uniqueness was previously identified by maintaining a primary key and three unique keys for the database table; however,
+      it has been identified that some database engines do not like operating with the chosen keys (take too much data), 
+      therefore, use of php code to work with the data is the route to go if this level of uniqueness is to be maintained.
+    Currently there are then four keys of concern.  The first is an auto increment number that is assigned when a record
+      is inserted.  This record is primarily for retrieval and reference by other tables as necessary, though deletion of
+      a variant and adding it back again will provide a new number even if the newly contained data is the same as the
+      old data that was deleted.
+    The second "key" is a combination of the products_id field and the stock_attributes field or variant associated with the entry.
+    The third "key" is also a combination of the products_id and the stock_attributes but all of that is actually combined
+      together into the contents of the field rather than being two independent fields within a record.
+    The fourth "key" is a customid that to date has been required to be unique compared other customids stored in the table
+      or alternatively null and therefore all variants can have a null value for a customid.
+      
+    So, the approach considered is to first attempt to see if any of the keys described above (where data has been provided)
+      is in the table.  This means that the primary key is typically not provided for inspection.
+    If none of the key data is found in the table, then the provided information is new and can be added as a new record.
+    If any of the data is found, then the next question is if the provided data uniquely identifies an existing item or if any
+      of the other keys can be found to match 2 or more entries.  (ie. customid matches one item, but
+      products_id/stock_attributes matches a different one and if further maintained the third key matches yet another record.)
+      This is done in such a way that the variant itself is the main goal with the customid being a piece of additional
+      information for the variant.  Otherwise, one might think that given a customid that is found to exist that the 
+      other data about the variant needs to be modified.  That is not the case in this consideration.  The variant identifies
+      the customid not the customid identifying the variant.  
+    */
+  if( isset($products_id) && is_numeric($products_id) && isset($strAttributes) && is_numeric($quantity) ){
       // Evaluate entry as compared to the desired uniqueness of data in the table.
       /* PRIMARY KEY (`stock_id`),
       UNIQUE KEY `idx_products_id_stock_attributes` (`products_id`,`stock_attributes`),
       UNIQUE KEY `idx_products_id_attributes_id` (`product_attribute_combo`),
       UNIQUE KEY `idx_customid` (`customid`)*/
 
-      if (trim($productAttributeCombo) == '' || trim($productAttributeCombo) == "''" || !isset($productAttributeCombo) || $productAttributeCombo === 'null') {
+      if (!isset($productAttributeCombo) || trim($productAttributeCombo) == '' || trim($productAttributeCombo) == "''" || $productAttributeCombo === 'null') {
           $productAttributeCombo = null;
       }
       if (!isset($customid) || trim($customid) == '' || trim($customid) == "''" || $customid === 'null') {
@@ -644,8 +671,9 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
               // Found customid in the database; however, need to identify if it belongs to the current data or to some other record.
               if ($result->fields['total'] > 0) {
                 // Identify if records exist that match everything except the customid.
-                $query = "SELECT count(*) FROM "  . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE ((products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . ") AND `customid` != :customid:";
-                  // If find a record, then the customid was assigned to more than one product
+                $query = "SELECT count(*) as total FROM "  . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE ((products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . ") AND `customid` != :customid:";
+                  // If find a record, then the customid was assigned to some other product or the two parts of the where
+                  //   statement do not uniquely identify a single stock_id.
                 $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
                 $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'string');
                 if (!isset($productAttributeCombo)) {
