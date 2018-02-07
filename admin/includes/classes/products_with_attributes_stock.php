@@ -621,7 +621,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
       }
 
       // query for any duplicate records based on input where the input has a match to a non-empty key.
-      $query = "SELECT count(*) AS total FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE (products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . (isset($customid) ? "OR customid = :customid:" : "");
+      $query = "SELECT count(*) AS total FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE (products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . (isset($customid) /* @TODO if customid is not required to be unique then and with a false */ ? "OR customid = :customid:" : "");
       $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
       $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'string');
       $query = $db->bindVars($query, ':product_attribute_combo:', $productAttributeCombo, 'string');
@@ -631,10 +631,15 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
         $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
       }
       
-      $result = $db->Execute($query);
+      $result_keys = $db->Execute($query);
+      $insert_result = false;
+      $update_result = false;
       
-      // No duplication of desired key(s) of table.
-      if ($result->fields['total'] == 0) {
+      // No duplication of desired key(s) of table. @TODO: May want to move this down after other reviews so that insertion
+      //   code is written one time and use some sort of flag to skip the code that follows the if.
+      if ($result_keys->fields['total'] == 0) {
+          $insert_result = true;
+          
           // Because no duplicates, information is considered new and is to be inserted.
           $query = "INSERT INTO " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " (`products_id`, `product_attribute_combo`, `stock_attributes`, `quantity`, `customid`, `title`) 
            values (:products_id:, :product_attribute_combo:, :stock_attributes:, :quantity:, :customid:, :title:)";
@@ -657,21 +662,21 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
             $query = $db->bindVars($query, ':title:', $skuTitle, 'string'); // @TODO Need to also consider ignore NULL style.
           }
       
-          $result = $db->Execute($query);
+          $result_final = $db->Execute($query);
           
-      } else {
+      } else if($insert_result === false) {
           // A record has been found to match the provided data, now to identify how to proceed with the given data.
-          $result = null; // Establish base/known value for comparison/review.
+          //$result_multiple = null; // Establish base/known value for comparison/review.
           
           // Determine if insertion would fail because of duplicate customid only.
           if (isset($customid)) {
               $query = "SELECT count(*) as total FROM "  . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE `customid` = :customid:";
               $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
               
-              $result = $db->Execute($query);
+              $result_customid = $db->Execute($query);
               
               // Found customid in the database; however, need to identify if it belongs to the current data or to some other record.
-              if ($result->fields['total'] > 0) {
+              if ($result_customid->fields['total'] > 0) {
                 // Identify if records exist that match everything except the customid.
                 $query = "SELECT count(*) as total FROM "  . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE ((products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . ") AND `customid` != :customid:";
                   // If find a record, then the customid was assigned to some other product or the two parts of the where
@@ -685,22 +690,34 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
                 }
                 $query = $db->bindVars($query, ':customid:', $customid, 'string'); // @TODO Need to also consider ignore NULL style.
 
-                $result = $db->Execute($query);
+                $result_customid_unique = $db->Execute($query);
                 // If a record is found, then the customid is already used elsewhere and should not be updated.
                 // If a record is not found, then the customid is already assigned to this variant and everything else should
                 //   be updated.
 
+                if ($result_customid_unique->fields['total'] == 0) {
+                    $update_result = true;
+                }
                 /*if (!$result2->EOF) {
                     
                 }*/
 
                 //$result->MoveNext();
               }
+          } else {
+              // Some level of duplicate exists, not sure if just one record or multiple records.  If one record then
+              //   easy, just update that one record, if there are multiple records then the database already has some
+              //   level of duplicate key that needs to be addressed as it has not been prevented previously.
+              if ($result_keys->fields['total'] == 1) {
+                  $update_result = true;
+              } else {
+                  // Need to handle the duplicate keys issue.
+              }
           }
-
+          
           // If no $customid clash (non-empty customid) or if the $customid is empty then update.
-          if (!isset($result) || $result->fields['total'] == 0) {
-              $query = "UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set `quantity` = :quantity:, `customid` = :customid:, `title` = :title: WHERE `products_id` = :products_id: AND `stock_attributes` = :stock_attributes:";
+          if ($update_result || (isset($result_customid) && $result_customid->fields['total'] == 0) /*!isset($result) || $result->fields['total'] == 0*/) {
+              $query = "UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set `quantity` = :quantity:, `customid` = :customid:, `title` = :title: WHERE `products_id` = :products_id: AND `stock_attributes` = :stock_attributes:"
               $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
               if (!isset($customid)) {
                 $query = $db->bindVars($query, ':customid:', 'null', 'noquotestring');
