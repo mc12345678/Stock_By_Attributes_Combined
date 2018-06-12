@@ -401,7 +401,7 @@ Array(
 
     $options_comment[] = $products_options_names->fields['products_options_comment'];
 
-    $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
+    $options_comment_position[] = (isset($products_options_names->fields['products_options_comment_position']) && $products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
     if ($options_comment[0] != '' and $options_comment_position[0] == '0') {
       $out.='<tr><td class="attributesComments">' . $options_comment[0] . '</td></tr>'; 
       $out2.='<h3 class="attributesComments">' . $options_comment[0] . '</h3>';
@@ -499,7 +499,7 @@ Array(
 
     $options_comment[] = $products_options_names->fields['products_options_comment'];
 
-    $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
+    $options_comment_position[] = (isset($products_options_names->fields['products_options_comment_position']) && $products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
     if ($options_comment[$o] != '' and $options_comment_position[$o] == '0') {
       $out.='<tr><td class="attributesComments">' . $options_comment[$o] . '</td></tr>';
       $out2.='<h3 class="attributesComments">'. $options_comment[$o]. '</h3>';
@@ -640,7 +640,7 @@ Array(
 if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
     $customers_id = $_SESSION['customer_id'];
 	$customer_check = $db->Execute("select * from " . TABLE_CUSTOMERS . " where customers_id = '$customers_id'");
-		if ($customer_check->fields['customers_whole'] != "0") {
+		if (isset($customer_check->fields['customers_whole']) && $customer_check->fields['customers_whole'] != "0") {
 			$i = (int)$_SESSION['customer_whole'];
 			$i--;	
 			$option_price_array = $products_options->fields['options_values_price_w'];
@@ -673,7 +673,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
 
             // None of the remainder of this "function" is used except to add a space at the end of the text.
             /// Start of Changes- display actual prices instead of +/- Actual Price Pull Down v1.2.3a
-            $new_price ? $original_price = $new_price : $original_price = $this->products_original_price; //// check if set special price note $this variable
+            isset($new_price) && $new_price ? $original_price = $new_price : $original_price = $this->products_original_price; //// check if set special price note $this variable
 
             $option_price = $products_options->fields['options_values_price'];
             if ($products_options->fields['price_prefix'] == "-") // in case price lowers, don't add values, subtract.
