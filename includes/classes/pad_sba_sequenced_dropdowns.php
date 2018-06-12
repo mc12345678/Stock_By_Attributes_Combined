@@ -1051,6 +1051,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
         unset($nextattr2);
         
         $out.=', opt.substring(1));' . "\n";
+        $out.='                            frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].innerHTML = frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].text;' . "\n";
         $out.='                        }';
 
         if (PRODINFO_ATTRIBUTE_SHOW_OUT_OF_STOCK == 'True') {
@@ -1065,6 +1066,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
             $out.='txt' . $attributes[$nextattr]['oid'] . '[opt] + "' . PWA_OUT_OF_STOCK . '"';
           }
           $out.='), opt.substring(1));' . "\n";
+          $out.='                            frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].innerHTML = frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].text;';
           if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == count($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
             $out.='                            frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].disabled = true;' . "\n";
           }
@@ -1090,6 +1092,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
             $out.='txt' . $attributes[$nextattr]['oid'] . '[opt] + "' . PWA_OUT_OF_STOCK . '"';
           }
           $out.='), opt.substring(1));' . "\n";
+          $out.='                        frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].innerHTML = frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].text;';
           if ((STOCK_ALLOW_CHECKOUT == 'false' && ($curattr == count($attributes) - 2)) || PRODINFO_ATTRIBUTE_NO_ADD_OUT_OF_STOCK == 'True') {
             $out.='                        frm["id[' . $attributes[$nextattr]['oid'] . ']"].options[frm["id[' . $attributes[$nextattr]['oid'] . ']"].length - 1].disabled = true;' . "\n";
           }
