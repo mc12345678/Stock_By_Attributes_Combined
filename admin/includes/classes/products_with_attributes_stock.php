@@ -1310,6 +1310,232 @@ function nullDataEntry($fieldtoNULL){
       }
       
     }
+
+function convertDropdownsToSBA()
+{
+  global $db, $resultMmessage, $failed;
+
+  if (defined('PRODUCTS_OPTIONS_TYPE_SELECT_SBA')) {
+    $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " SET `products_options_type` = :products_options_type_select_sba:
+            WHERE `products_options_type` = :products_options_type_select:";
+
+    $sql = $db->bindVars($sql, ':products_options_type_select_sba:', PRODUCTS_OPTIONS_TYPE_SELECT_SBA, 'integer');
+    $sql = $db->bindVars($sql, ':products_options_type_select:', PRODUCTS_OPTIONS_TYPE_SELECT, 'integer');
+
+    $db->Execute($sql);
+    if($db->error){
+      $msg = ' Error Message: ' . $db->error;
+      $failed = true;
+    }
+  } else {
+    $msg = ' Error Message: PRODUCTS_OPTIONS_TYPE_SELECT_SBA not defined.';
+    $failed = true;
+  }
+
+  if (isset($resultMmessage)) {
+    array_push($resultMmessage, 'product_attribute_combo field updated ' . $msg);
+  }
+
+}
+
+function convertSBAToSBA()
+{
+  global $db, $resultMmessage, $failed;
+
+  if (defined('PRODUCTS_OPTIONS_TYPE_SELECT_SBA')) {
+
+    $results_track = array(); // Array to track what has been identified.
+
+    // Need to identify which option values are listed in the SBA table and then update them if they are a dropdown select.
+    $sql = 'SELECT stock_attributes FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE stock_attributes != \'\'';
+
+    $results = $db->Execute($sql);
+
+    while (!$results->EOF)
+    {
+      $results_array = explode(',', $results->fields['stock_attributes']);
+
+      // Need one or more checks before using the results_array
+      foreach ($results_array as $key=> $value)
+      {
+        $products_options_id_sql = 'SELECT options_id FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' WHERE products_attributes_id = :products_attributes_id:';
+        $products_options_id_sql = $db->bindVars($products_options_id_sql, ':products_attributes_id:', $value, 'integer');
+
+        if (method_exists($db, 'ExecuteNoCache')) {
+          $products_options_id = $db->ExecuteNoCache($products_options_id_sql);
+        } else {
+          $products_options_id = $db->Execute($products_options_id_sql, false, false, 0, true);
+        }
+
+        $product_type_sql = 'SELECT products_options_type FROM ' . TABLE_PRODUCTS_OPTIONS . ' WHERE products_options_id = :products_options_id:';
+        $product_type_sql = $db->bindVars($product_type_sql, ':products_options_id:', $products_options_id->fields['options_id'], 'integer');
+
+        if (method_exists($db, 'ExecuteNoCache')) {
+          $product_type = $db->ExecuteNoCache($product_type_sql);
+        } else {
+          $product_type = $db->Execute($product_type_sql, false, false, 0, true);
+        }
+
+        // Since converting select type to SBA select, don't do anything to the list unless it is a select.
+        if ($product_type->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT) {
+          continue;
+        }
+
+        if (!isset($results_track[$products_options_id->fields['options_id']])) {
+          $results_track[$products_options_id->fields['options_id']] = $products_options_id->fields['options_id'];
+          // Do update here? or wait till later?
+        }
+      }
+      unset($results_array);
+
+      $results->MoveNext();
+    }
+
+    unset($results);
+
+    sort($results_track); // This will sequence the option_ids so that the "completion" point is better understood.
+
+    foreach ($results_track as $result_key => $result)
+    {
+      $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " po SET po.products_options_type = :products_options_type:
+              WHERE `products_options_id` = :products_options_id:";
+
+      $sql = $db->bindVars($sql, ':products_options_type:', PRODUCTS_OPTIONS_TYPE_SELECT_SBA, 'integer');
+      $sql = $db->bindVars($sql, ':products_options_id:', $result, 'integer');
+
+      $db->Execute($sql);
+
+      if($db->error){
+        $msg = ' Error Message: ' . $db->error;
+        $failed = true;
+
+        break;
+      }
+    }
+    unset($results_track);
+
+  } else {
+    $msg = ' Error Message: PRODUCTS_OPTIONS_TYPE_SELECT_SBA not defined.';
+    $failed = true;
+  }
+
+  if (isset($resultMmessage)) {
+    array_push($resultMmessage, 'product_attribute_combo field updated ' . $msg);
+  }
+}
+
+function convertNonSBAToDropdown()
+{
+  global $db, $resultMmessage, $failed;
+
+  if (defined('PRODUCTS_OPTIONS_TYPE_SELECT_SBA')) {
+
+    $results_track = array(); // Array to track what has been identified.
+
+    // Need to identify which option values are listed in the SBA table and then update them if they are a dropdown select.
+    $sql = 'SELECT stock_attributes FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE stock_attributes != \'\'';
+
+    if (method_exists($db, 'ExecuteNoCache')) {
+      $results = $db->ExecuteNoCache($sql);
+    } else {
+      $results = $db->Execute($sql, false, false, 0, true);
+    }
+
+    while (!$results->EOF)
+    {
+      $results_array = explode(',', $results->fields['stock_attributes']);
+
+      // Need one or more checks before using the results_array
+      foreach ($results_array as $key=> $value)
+      {
+        $products_options_id_sql = 'SELECT options_id FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' WHERE products_attributes_id = :products_attributes_id:';
+        $products_options_id_sql = $db->bindVars($products_options_id_sql, ':products_attributes_id:', $value, 'integer');
+
+        if (method_exists($db, 'ExecuteNoCache')) {
+          $products_options_id = $db->ExecuteNoCache($products_options_id_sql);
+        } else {
+          $products_options_id = $db->Execute($products_options_id_sql, false, false, 0, true);
+        }
+
+        $product_type_sql = 'SELECT products_options_type FROM ' . TABLE_PRODUCTS_OPTIONS . ' WHERE products_options_id = :products_options_id:';
+        $product_type_sql = $db->bindVars($product_type_sql, ':products_options_id:', $products_options_id->fields['options_id'], 'integer');
+
+        if (method_exists($db, 'ExecuteNoCache')) {
+          $product_type = $db->ExecuteNoCache($product_type_sql);
+        } else {
+          $product_type = $db->Execute($product_type_sql, false, false, 0, true);
+        }
+
+        // If the option type isn't the SBA Select item, then no work could need to be done so continue searching.
+        if ($product_type->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) {
+          continue;
+        }
+
+        if (empty($results_track) || !isset($results_track[$products_options_id->fields['options_id']])) {
+          $results_track[$products_options_id->fields['options_id']] = $products_options_id->fields['options_id']; // This value holds all of the SBA product that have an options_id assigned to the SBA Select
+          // Do update here? or wait till later?
+        }
+      }
+      unset($results_array);
+
+      $results->MoveNext();
+    }
+
+    unset($results);
+
+    // Need to pull all of the option_ids that are assigned to the SBA select type to be able to cross them off of the previously discovered list.
+
+    $sql = 'SELECT products_options_id FROM ' . TABLE_PRODUCTS_OPTIONS . ' WHERE products_options_type = :products_options_type:';
+    $sql = $db->bindVars($sql, ':products_options_type:', PRODUCTS_OPTIONS_TYPE_SELECT_SBA, 'integer');
+
+    if (method_exists($db, 'ExecuteNoCache')) {
+      $sba_select_options = $db->ExecuteNoCache($sql);
+    } else {
+      $sba_select_options = $db->Execute($sql, false, false, 0, true);
+    }
+
+    // Remove from the list of SBA identified SBA select options and add to the list those identified but not associated with an SBA product.
+    while (!$sba_select_options->EOF) {
+      if (array_key_exists($sba_select_options->fields['products_options_id'], $results_track)) {
+        unset($results_track[$sba_select_options->fields['products_options_id']]);
+      } else {
+        $results_track[$sba_select_options->fields['products_options_id']] = $sba_select_options->fields['products_options_id'];
+      }
+
+      $sba_select_options->MoveNext();
+    }
+
+    //sort($results_track); // This will sequence the option_ids so that the "completion" point is better understood.
+
+    foreach ($results_track as $result_key => $result)
+    {
+      $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " po SET po.products_options_type = :products_options_type:
+              WHERE `products_options_id` = :products_options_id:";
+
+      $sql = $db->bindVars($sql, ':products_options_type:', PRODUCTS_OPTIONS_TYPE_SELECT, 'integer');
+      $sql = $db->bindVars($sql, ':products_options_id:', $result, 'integer');
+
+      $db->Execute($sql);
+
+      if($db->error){
+        $msg = ' Error Message: ' . $db->error;
+        $failed = true;
+
+        break;
+      }
+    }
+    unset($results_track);
+
+  } else {
+    $msg = ' Error Message: PRODUCTS_OPTIONS_TYPE_SELECT_SBA not defined.';
+    $failed = true;
+  }
+
+  if (isset($resultMmessage)) {
+    array_push($resultMmessage, 'product_attribute_combo field updated ' . $msg);
+  }
+}
+
     
   function zen_product_is_sba($product_id) {
     global $db;
