@@ -130,7 +130,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
       $_POST['cart_quantity'][$i] = 0;
       continue;
     }
-    if ( in_array($_POST['products_id'][$i], (is_array($_POST['cart_delete']) ? $_POST['cart_delete'] : array())) or $_POST['cart_quantity'][$i]==0) {
+    if ( in_array($_POST['products_id'][$i], (isset($_POST['cart_delete']) && is_array($_POST['cart_delete']) ? $_POST['cart_delete'] : array())) or $_POST['cart_quantity'][$i]==0) {
       $_SESSION['cart']->remove($_POST['products_id'][$i]);
     } else {
       if((PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2') /*single dropdown as multiple*/) {
@@ -253,7 +253,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 //        $chk_current_qty = $sba_add_prods_quantity[$pos] - $_POST['cart_quantity'][$i]
       }
 
-      if (STOCK_ALL_CHECKOUT == 'false' && $chk_mixed == false) { // Would say that it would be on this line to add an admin switch for controlling total product quantity versus variant.
+      if (defined('STOCK_ALL_CHECKOUT') && STOCK_ALL_CHECKOUT == 'false' && $chk_mixed == false) { // Would say that it would be on this line to add an admin switch for controlling total product quantity versus variant.
         $chk_current_qty_total = zen_get_products_stock($_POST['products_id'][$i]);
       } else {
         $chk_current_qty_total = false;
@@ -612,10 +612,10 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 /*    if (isset($_SESSION['file_located'])) {
       unset($_SESSION['file_located']);
     }*/
-    if (is_array($fileVar) && array_key_exists('file_located', $fileVar)) {
+    if (isset($fileVar) && is_array($fileVar) && array_key_exists('file_located', $fileVar)) {
       unset($fileVar['file_located']);
       $fileVar = array();
-    } elseif (!is_array($fileVar)) {
+    } elseif (!isset($fileVar) || !is_array($fileVar)) {
       $fileVar = array();
     }
 //    $_SESSION['post2'] = $_POST;

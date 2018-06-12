@@ -59,8 +59,14 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
       $optionID = array_keys($attrs);
       for($j=0; $j<count($attrs); $j++)
       {
-          $optionInfo = $attrs[$optionID[$j]];
-          $orders_products_attributes_id = $selected_attributes_id_mapping[$optionID[$j]];
+          if (empty($selected_attributes_id_mapping)) {
+              continue;
+          }
+          
+          $optionInfo = $attrs[(int)$optionID[$j]];
+          $orders_products_attributes_id = $selected_attributes_id_mapping[(int)$optionID[$j]];
+
+          if (!defined('PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID')) define('PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID', -1);
 
           switch($optionInfo['type']) {
               case PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID:
@@ -71,25 +77,26 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
 
                   $selected_attribute = null;
                   foreach($optionInfo['options'] as $attributeId => $attributeValue) {
-                      if(eo_is_selected_product_attribute_id($orders_products_attributes_id[0], $attributeId))
+                      if(isset($orders_products_attributes_id[0]) && eo_is_selected_product_attribute_id($orders_products_attributes_id[0], $attributeId)) {
                           $selected_attribute = $attributeId;
+                      }
                   }
 
 
-                  $order[$index]['attrs'][$optionID[$j]]['value'] = zen_html_quotes($selected_attribute);
-                  $order[$index]['attrs'][$optionID[$j]]['type'] = (int)$optionInfo['type'];
+                  $order[$index]['attrs'][(int)$optionID[$j]]['value'] = zen_html_quotes($selected_attribute);
+                  $order[$index]['attrs'][(int)$optionID[$j]]['type'] = (int)$optionInfo['type'];
 
                   break;
               case PRODUCTS_OPTIONS_TYPE_CHECKBOX:
                   foreach($optionInfo['options'] as $attributeId => $attributeValue) {
                       for($k=0, $s = count($orders_products_attributes_id);$k<$s;$k++) {
                           if(eo_is_selected_product_attribute_id($orders_products_attributes_id[$k], $attributeId)) {
-                              $order[$index]['attrs'][$optionID[$j]]['value'][$attributeId] = zen_html_quotes($attributeId);
-                              $order[$index]['attrs'][$optionID[$j]]['type'] = (int)$optionInfo['type'];
+                              $order[$index]['attrs'][(int)$optionID[$j]]['value'][$attributeId] = zen_html_quotes($attributeId);
+                              $order[$index]['attrs'][(int)$optionID[$j]]['type'] = (int)$optionInfo['type'];
                           }
                       }
                   }
-                  $order[$index]['attrs'][$optionID[$j]]['type'] = (int)$optionInfo['type'];
+                  $order[$index]['attrs'][(int)$optionID[$j]]['type'] = (int)$optionInfo['type'];
                   unset($k,$s,$attributeId, $attributeValue);
                   break;
               case PRODUCTS_OPTIONS_TYPE_TEXT:
@@ -100,17 +107,17 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
                   }
                   $text = zen_html_quotes($text);
 
-                  $order[$index]['attrs'][$optionID[$j]]['value'] = zen_html_quotes($text);
-                  $order[$index]['attrs'][$optionID[$j]]['type'] = (int)$optionInfo['type'];
+                  $order[$index]['attrs'][(int)$optionID[$j]]['value'] = zen_html_quotes($text);
+                  $order[$index]['attrs'][(int)$optionID[$j]]['type'] = (int)$optionInfo['type'];
                   unset($text);
 
                   break;
               case PRODUCTS_OPTIONS_TYPE_FILE:
                   $value = eo_get_selected_product_attribute_value_by_id($orders_products_attributes_id[0], array_shift(array_keys($optionInfo['options'])));
                   if(zen_not_null($value)) {
-                      $order[$index]['attrs'][$optionID[$j]]['value'] = zen_html_quotes($value);
+                      $order[$index]['attrs'][(int)$optionID[$j]]['value'] = zen_html_quotes($value);
                   }
-                  $order[$index]['attrs'][$optionID[$j]]['type'] = (int)$optionInfo['type'];
+                  $order[$index]['attrs'][(int)$optionID[$j]]['type'] = (int)$optionInfo['type'];
 
                   unset($value);
                   break;
@@ -118,8 +125,8 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
               default:
                   $optionValue = array_shift($optionInfo['options']);
 
-                  $order[$index]['attrs'][$optionID[$j]]['value'] = zen_html_quotes($optionValue);
-                  $order[$index]['attrs'][$optionID[$j]]['type'] = (int)$optionInfo['type'];
+                  $order[$index]['attrs'][(int)$optionID[$j]]['value'] = zen_html_quotes($optionValue);
+                  $order[$index]['attrs'][(int)$optionID[$j]]['type'] = (int)$optionInfo['type'];
 
                   break;
           }
@@ -153,6 +160,9 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
 
                 // Only update if there is an existing item in the order
                 if($rowID >= 0) {
+
+                    if (!isset($order[$rowID]['attrs']) || !array_key_exists('attrs', $order[$rowID])) continue;
+
                     // Grab the old product + attributes
                     $old_product = $order[$rowID];
                     $old_attrs = $order[$rowID]['attrs'];
@@ -162,7 +172,7 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
                   //   when/if the product needs to be stricken from the update list so that 
                   //   the sequence remains the same.
 
-                    if ($product_update['qty'] > 0) {
+                    if ((isset($product_update['attr']) || array_key_exists('attr', $product_update)) && $product_update['qty'] > 0) {
 
                         // Retrieve the information for the new product
                         $product_options = $product_update['attr'];

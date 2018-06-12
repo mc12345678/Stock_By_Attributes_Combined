@@ -237,7 +237,9 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
           $ReturnedProductID = zen_db_input($ReturnedProductID);
           //$w = "( p.products_id = '$ReturnedProductID' ) AND  " ;//sets returned record to display
           $w = " AND ( p.products_id = '$ReturnedProductID' ) " ;//sets returned record to display
-          $SearchRange = "limit 1";//show only selected record
+          if (!isset($_GET['products_filter']) || (isset($_GET['products_filter']) && $_GET['products_filter'] != '' && $_GET['products_filter'] <= 0)) {
+            $SearchRange = "limit 1";//show only selected record
+          }
       } /*elseif ( $ReturnedProductID != null && isset($_GET['search'])) {
           $ReturnedProductID = zen_db_input($ReturnedProductID);
         $NumberRecordsShown = zen_db_input($NumberRecordsShown);
@@ -290,7 +292,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
         $html .= '</tr>';
         $html .= '</table>';
         }
-    $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid='.$ReturnedProductID.'&amp;page='.$_GET['page'], 'post');
+    $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid='.$ReturnedProductID.(!empty($_GET['page']) ? '&amp;page='.$_GET['page'] : ''), 'post');
     $html .= zen_draw_hidden_field('save', '1');
     $html .= zen_draw_hidden_field('pid', $ReturnedProductID);
     $html .= zen_image_submit('button_save.gif', IMAGE_SAVE) . ' Hint: To quickly edit click in the "Quantity in Stock" field.';

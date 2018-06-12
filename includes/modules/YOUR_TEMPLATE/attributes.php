@@ -21,6 +21,7 @@ if (!defined('IS_ADMIN_FLAG')) {
 
 $show_onetime_charges_description = 'false';
 $show_attributes_qty_prices_description = 'false';
+$params = '';
 
 // limit to 1 for performance when processing larger tables
 //gets the number of associated attributes
@@ -142,6 +143,7 @@ $sql = "select count(*) as total
                     } else {
                       // discount is off do not apply
                       $new_attributes_price = $products_options->fields['options_values_price'];
+                      $new_attributes_price = zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false', false, $products_options->fields['attributes_discounted']);
                     }
 
                     // reverse negative values for display
@@ -627,7 +629,7 @@ $sql = "select count(*) as total
                     $selected_attribute = $_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names->fields['products_options_id']];
                   } else {
                     // use customer-selected values
-                    if ($_POST['id'] !='') {
+                    if (isset($_POST['id']) && $_POST['id'] !='') {
                       reset($_POST['id']);
                       foreach ($_POST['id'] as $key => $value) {
                         if ($key == $products_options_names->fields['products_options_id']) {
@@ -649,7 +651,7 @@ $sql = "select count(*) as total
                   $options_html_id[] = 'drp-attrib-' . $products_options_names->fields['products_options_id'];
                   $options_menu[] = zen_draw_pull_down_menu('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '"' . $params) . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
-                  $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
+                  $options_comment_position[] = (isset($products_options_names->fields['products_options_comment_position']) && $products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
                   break;
 
                   default:

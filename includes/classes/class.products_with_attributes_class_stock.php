@@ -189,8 +189,8 @@ function cartProductCount($products_id){
       }
       
       //close tag and display text
-//      $field .= '>' . zen_output_string($values[$i]['text'], array('"' => '&quot;', '\'' => '&#039;', '<' => '&lt;', '>' => '&gt;')) . '</option>' . "\n";
-      $field .= '>' . zen_output_string_protected($values[$i]['text']) . '</option>' . "\n";
+      $field .= '>' . zen_output_string($values[$i]['text'], array('"' => '&quot;', '\'' => '&#039;', '<' => '&lt;', '>' => '&gt;', ' & ' => ' &amp; ', '& ' => '&amp; ')) . '</option>' . "\n";
+//      $field .= '>' . zen_output_string_protected($values[$i]['text']) . '</option>' . "\n";
     }
     
     $field .= '</select>' . "\n";
@@ -389,7 +389,7 @@ function cartProductCount($products_id){
     $specAttributes = array();
     $stock_attributes_list = array();
     $stock_attributes = '';
-    $multi = (count($attribute_list) > 1 ? true : false);
+    $multi = (isset($attribute_list) && is_array($attribute_list) && count($attribute_list) > 1 ? true : false);
 
     $products_id = zen_get_prid($products_id);
 
@@ -463,6 +463,7 @@ function cartProductCount($products_id){
             $temp_attributes[] = (int)$optvalid;
           }
         }
+if ($multi && empty($temp_attributes)) $multi = false;
 
         if ($multi) {
           $first_search = 'where options_values_id in (' . implode(',', $temp_attributes) . ')';  // This helps make a list of items where the options_values_id is compared to each individual attribute ("x","y","z")
@@ -1581,7 +1582,23 @@ Of the attributes provided, determine the number of those attributes that are
     // mc12345678 Below is a list of product types that are currently not supported
     //  by dynamic dropdowns and therefore should not be displayed with dropdowns 
     //  until the option type is properly worked around and supported in the dropdowns.
-    $special = array(PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_FILE, /*PRODUCTS_OPTIONS_TYPE_READONLY,*/ PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_GRID, PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID);
+//    $special = array(PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_FILE, /*PRODUCTS_OPTIONS_TYPE_READONLY,*/ PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_GRID, PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID);
+    if (defined('PRODUCTS_OPTIONS_TYPE_TEXT')) {
+      $special[] = PRODUCTS_OPTIONS_TYPE_TEXT;
+    }
+    if (defined('PRODUCTS_OPTIONS_TYPE_FILE')) {
+      $special[] = PRODUCTS_OPTIONS_TYPE_FILE;
+    }
+    if (defined('PRODUCTS_OPTIONS_TYPE_CHECKBOX')) {
+//    $special[] = /*PRODUCTS_OPTIONS_TYPE_READONLY,*/ 
+      $special[] = PRODUCTS_OPTIONS_TYPE_CHECKBOX;
+    }
+    if (defined('PRODUCTS_OPTIONS_TYPE_GRID')) {
+      $special[] = PRODUCTS_OPTIONS_TYPE_GRID;
+    }
+    if (defined('PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID')) {
+      $special[] = PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID;
+    }
 
     // This is the default "reason" for using this code, and will handle 
     //   the data that is default provided ($products_options_names from: 
