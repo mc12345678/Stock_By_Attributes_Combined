@@ -344,10 +344,11 @@ Array(
 //}
 //        $out_of_stock = (($attribute_stock->fields['quantity'] <= 0) && (STOCK_ALLOW_CHECKOUT === 'false' || STOCK_ALLOW_CHECKOUT !== 'false' && $attribute_stock->fields['pwasans_quantity'] === '0'));  // This looks at all variants indicating 0 or no variant being present.  Need to modify to look at the quantity for each variant... So look at the quantity of each and if that quantity is zero then, that line needs to be modified...
         if ($out_of_stock && ($this->show_out_of_stock == 'True') || $backorder == true && ($this->show_out_of_stock == 'True')) {
+          $prod_opt_vals_name = zen_output_string_protected($attributes[$o]['ovals'][$a]['text']);
           switch ($this->mark_out_of_stock) {
-            case 'Left': $attributes[$o]['ovals'][$a]['text'] = ($backorder ? "Back order: " : TEXT_OUT_OF_STOCK) . ' - ' . zen_output_string_protected($attributes[$o]['ovals'][$a]['text']);
+            case 'Left': $attributes[$o]['ovals'][$a]['text'] = ($backorder ? "Back order: " : TEXT_OUT_OF_STOCK) . ' - ' . $prod_opt_vals_name;
               break;
-            case 'Right': $attributes[$o]['ovals'][$a]['text'] =zen_output_string_protected($attributes[$o]['ovals'][$a]['text']) . ' - ' . ($backorder ? "Back order: " : TEXT_OUT_OF_STOCK);
+            case 'Right': $attributes[$o]['ovals'][$a]['text'] = $prod_opt_vals_name . ' - ' . ($backorder ? "Back order: " : TEXT_OUT_OF_STOCK);
               break;
           } //end switch
           // If this particular record doesn't or can not exist then remove the possibility of it being displayed.
