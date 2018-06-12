@@ -354,8 +354,9 @@ if (zen_not_null($action)) {
                                 '" . (int)zen_db_input($attributes_price_letters_free) . "',
                                 '" . (int)zen_db_input($attributes_required) . "')");
 
+          $products_attributes_id = $db->Insert_ID();
+
           if (DOWNLOAD_ENABLED == 'true') {
-            $products_attributes_id = $db->Insert_ID();
 
             $products_attributes_filename = zen_limit_image_filename($_POST['products_attributes_filename'], TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD, 'products_attributes_filename');
             $products_attributes_filename = zen_db_prepare_input($products_attributes_filename);
@@ -371,6 +372,8 @@ if (zen_not_null($action)) {
                                    '" . zen_db_input($products_attributes_maxcount) . "')");
             }
           }
+
+          $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_ADD_PRODUCT_ATTRIBUTES', $products_attributes_id);
         }
       }
 
@@ -512,6 +515,7 @@ if (zen_not_null($action)) {
                                 products_attributes_maxcount = '" . zen_db_input($products_attributes_maxcount) . "'");
             }
           }
+          $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_UPDATE_PRODUCT_ATTRIBUTE', $attribute_id);
         }
       }
 
@@ -730,7 +734,7 @@ function zen_js_option_values_list($selectedName, $fieldName) {
     <script>
       function go_option() {
           if (document.option_order_by.selected.options[document.option_order_by.selected.selectedIndex].value != "none") {
-              location = "<?php echo zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, 'option_page=' . ($_GET['option_page'] ? $_GET['option_page'] : 1)); ?>&option_order_by=" + document.option_order_by.selected.options[document.option_order_by.selected.selectedIndex].value;
+              location = "<?php echo zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, 'option_page=' . (isset($_GET['option_page']) && $_GET['option_page'] ? $_GET['option_page'] : 1)); ?>&option_order_by=" + document.option_order_by.selected.options[document.option_order_by.selected.selectedIndex].value;
           }
       }
       function popupWindow(url) {
@@ -1644,9 +1648,9 @@ function zen_js_option_values_list($selectedName, $fieldName) {
                     $new_attributes_price = '';
                     if ($attributes_value['attributes_discounted']) {
                       $new_attributes_price = zen_get_attributes_price_final($attributes_value['products_attributes_id'], 1, '', 'false');
-                      $new_attributes_price = zen_get_discount_calc($products_filter, true, $new_attributes_price);
+                      $new_attributes_price2 = zen_get_discount_calc($products_filter, true, $new_attributes_price);
                       if ($new_attributes_price != $attributes_price_final_value) {
-                        $new_attributes_price = '|' . $currencies->display_price($new_attributes_price, zen_get_tax_rate($product_check->fields['products_tax_class_id']), 1);
+                        $new_attributes_price = '|' . $currencies->display_price($new_attributes_price2, zen_get_tax_rate($product_check->fields['products_tax_class_id']), 1);
                       } else {
                         $new_attributes_price = '';
                       }
@@ -1965,7 +1969,7 @@ function zen_js_option_values_list($selectedName, $fieldName) {
                       <div class="row">
                         <div class="col-sm-3 col-lg-2">
                             <?php echo zen_draw_label(TABLE_TEXT_FILENAME, 'products_attributes_filename', 'class="control-label"'); ?>
-                            <?php echo zen_draw_input_field('products_attributes_filename', $products_attributes_filename, zen_set_field_length(TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD, 'products_attributes_filename', 35) . 'class="form-control"'); ?>
+                            <?php echo zen_draw_input_field('products_attributes_filename', isset($products_attributes_filename) ? $products_attributes_filename : '', zen_set_field_length(TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD, 'products_attributes_filename', 35) . 'class="form-control"'); ?>
                         </div>
                         <div class="col-sm-3 col-lg-2">
                             <?php echo zen_draw_label(TABLE_TEXT_MAX_DAYS, 'products_attributes_maxdays', 'class="control-label"'); ?>
