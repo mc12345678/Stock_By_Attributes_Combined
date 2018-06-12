@@ -42,8 +42,11 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME';
     $attachNotifier[] = 'ORDER_QUERY_ADMIN_COMPLETE';
+    $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT_STOCK_DECREMENT'; // Need to code for
     $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT';
+    $attachNotifier[] = 'EDIT_ORDERS_REMOVE_PRODUCT_STOCK_DECREMENT'; // Need to code for
     $attachNotifier[] = 'EDIT_ORDERS_REMOVE_PRODUCT';
+    $attachNotifier[] = 'NOTIFY_EO_GET_PRODUCTS_STOCK'; // Need to code for
 
     $this->attach($this, $attachNotifier); 
   }  
@@ -166,9 +169,16 @@ class products_with_attributes_stock_admin extends base {
     }
     
     if ($products_with_attributes_stock_class->zen_product_is_sba($pInfo->products_id)){
-      $last_content = $contents[count($contents) - 2];
-      $contents[count($contents) - 2] = array('text' => '<br />' . TEXT_COPY_SBA_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_yes', true) . ' ' . TEXT_COPY_SBA_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_no') . ' ' . TEXT_COPY_SBA_ATTRIBUTES_NO);
-      $contents[] = $last_content;
+      //$last_content = $contents[count($contents) - 2];
+      //$contents[count($contents) - 2] = array('text' => '<br />' . TEXT_COPY_SBA_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_yes', true) . ' ' . TEXT_COPY_SBA_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_no') . ' ' . TEXT_COPY_SBA_ATTRIBUTES_NO);
+      $last_content = array();
+      for ($i = 0; $i < 1; $i++) {
+        $last_content[] = array_pop($contents);
+      }
+      $contents[] = array('text' => '<br />' . TEXT_COPY_SBA_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_yes', true) . ' ' . TEXT_COPY_SBA_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_no') . ' ' . TEXT_COPY_SBA_ATTRIBUTES_NO);
+      foreach ($last_content as $key => $value) {
+        $contents[] = $value;
+      }
     }
   }
   
@@ -431,6 +441,9 @@ class products_with_attributes_stock_admin extends base {
     unset($orders_products);
   }
   
+//    $zco_notifier->notify ('EDIT_ORDERS_ADD_PRODUCT_STOCK_DECREMENT', array ( 'order_id' => $order_id, 'product' => $product ), $doStockDecrement);
+
+
 //    $zco_notifier->notify ('EDIT_ORDERS_ADD_PRODUCT', array ( 'order_id' => (int)$order_id, 'orders_products_id' => $order_products_id, 'product' => $product ));
     function updateEditOrdersAddProduct(&$callingClass, $notifier, $paramsArray) {
         global $db, $order, $eo;
@@ -530,7 +543,7 @@ class products_with_attributes_stock_admin extends base {
             }
             $attribute_stock_left = $_attribute_stock_left;
         }
-        $eo->eoLog (PHP_EOL . "admin-observer-pwas:" . PHP_EOL . "stock_left:" . PHP_EOL . var_export($attribute_stock_left,true) . PHP_EOL);
+        $eo->eoLog (PHP_EOL . "admin-observer-pwas:" . PHP_EOL . "stock_left:" . PHP_EOL . (isset($attribute_stock_left) ? var_export($attribute_stock_left,true) : 'no-data') . PHP_EOL);
 
 //    function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $paramsArray) {
         //Need to modify the email that is going out regarding low-stock.
@@ -612,6 +625,10 @@ class products_with_attributes_stock_admin extends base {
         }
         unset($_orderIsSBA);
     }
+
+//      'EDIT_ORDERS_REMOVE_PRODUCT_STOCK_DECREMENT'
+//      $zco_notifier->notify ('EDIT_ORDERS_REMOVE_PRODUCT_STOCK_DECREMENT', array ( 'order_id' => $order_id, 'orders_products_id' => $orders_products_id ), $doStockDecrement);
+//    function updateEditOrdersRemoveProductStockDecrement()
 
 //    $zco_notifier->notify ('EDIT_ORDERS_REMOVE_PRODUCT', array ( 'order_id' => (int)$order_id, 'orders_products_id' => (int)$orders_products_id ));
     function updateEditOrdersRemoveProduct(&$callingClass, $notifier, $paramsArray) {
@@ -702,6 +719,9 @@ class products_with_attributes_stock_admin extends base {
     }
     
 //  notify('NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP', array('i'=>$i, 'j'=>$j, 'productsI'=>$order->products[$i], 'prod_img'=>$prod_img), $order->products[$i], $prod_img);
+
+//    $this->notify('NOTIFY_EO_GET_PRODUCTS_STOCK', $products_id, $stock_quantity, $stock_handled);
+  // function updateNotifyEOGetProductsStock
 
   function update(&$callingClass, $notifier, $paramsArray) {
 
