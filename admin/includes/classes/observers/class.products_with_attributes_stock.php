@@ -42,8 +42,11 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME';
     $attachNotifier[] = 'ORDER_QUERY_ADMIN_COMPLETE';
+    $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT_STOCK_DECREMENT'; // Need to code for
     $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT';
+    $attachNotifier[] = 'EDIT_ORDERS_REMOVE_PRODUCT_STOCK_DECREMENT'; // Need to code for
     $attachNotifier[] = 'EDIT_ORDERS_REMOVE_PRODUCT';
+    $attachNotifier[] = 'NOTIFY_EO_GET_PRODUCTS_STOCK'; // Need to code for
 
     $this->attach($this, $attachNotifier); 
   }  
@@ -443,6 +446,9 @@ class products_with_attributes_stock_admin extends base {
     unset($orders_products);
   }
   
+//    $zco_notifier->notify ('EDIT_ORDERS_ADD_PRODUCT_STOCK_DECREMENT', array ( 'order_id' => $order_id, 'product' => $product ), $doStockDecrement);
+
+
 //    $zco_notifier->notify ('EDIT_ORDERS_ADD_PRODUCT', array ( 'order_id' => (int)$order_id, 'orders_products_id' => $order_products_id, 'product' => $product ));
     function updateEditOrdersAddProduct(&$callingClass, $notifier, $paramsArray) {
         global $db, $order, $eo;
@@ -542,7 +548,7 @@ class products_with_attributes_stock_admin extends base {
             }
             $attribute_stock_left = $_attribute_stock_left;
         }
-        $eo->eoLog (PHP_EOL . "admin-observer-pwas:" . PHP_EOL . "stock_left:" . PHP_EOL . var_export($attribute_stock_left,true) . PHP_EOL);
+        $eo->eoLog (PHP_EOL . "admin-observer-pwas:" . PHP_EOL . "stock_left:" . PHP_EOL . (isset($attribute_stock_left) ? var_export($attribute_stock_left,true) : 'no-data') . PHP_EOL);
 
 //    function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $paramsArray) {
         //Need to modify the email that is going out regarding low-stock.
@@ -624,6 +630,10 @@ class products_with_attributes_stock_admin extends base {
         }
         unset($_orderIsSBA);
     }
+
+//      'EDIT_ORDERS_REMOVE_PRODUCT_STOCK_DECREMENT'
+//      $zco_notifier->notify ('EDIT_ORDERS_REMOVE_PRODUCT_STOCK_DECREMENT', array ( 'order_id' => $order_id, 'orders_products_id' => $orders_products_id ), $doStockDecrement);
+//    function updateEditOrdersRemoveProductStockDecrement()
 
 //    $zco_notifier->notify ('EDIT_ORDERS_REMOVE_PRODUCT', array ( 'order_id' => (int)$order_id, 'orders_products_id' => (int)$orders_products_id ));
     function updateEditOrdersRemoveProduct(&$callingClass, $notifier, $paramsArray) {
@@ -714,6 +724,9 @@ class products_with_attributes_stock_admin extends base {
     }
     
 //  notify('NOTIFY_PACKINGSLIP_IN_ATTRIB_LOOP', array('i'=>$i, 'j'=>$j, 'productsI'=>$order->products[$i], 'prod_img'=>$prod_img), $order->products[$i], $prod_img);
+
+//    $this->notify('NOTIFY_EO_GET_PRODUCTS_STOCK', $products_id, $stock_quantity, $stock_handled);
+  // function updateNotifyEOGetProductsStock
 
   function update(&$callingClass, $notifier, $paramsArray) {
 

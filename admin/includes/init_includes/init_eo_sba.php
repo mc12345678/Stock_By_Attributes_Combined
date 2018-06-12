@@ -22,8 +22,8 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
     if (!isset($_SESSION['language'])) {
       $_SESSION['language'] = 'english';
     }
-    if (file_exists(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . $template_dir_select . 'edit_orders_sba.php')) {
-      require_once(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . $template_dir_select . 'edit_orders_sba.php');
+    if (file_exists(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . $template_dir . 'edit_orders_sba.php')) {
+      require_once(DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . $template_dir . 'edit_orders_sba.php');
     } else {
       require_once(DIR_WS_LANGUAGES . $_SESSION['language'] . '/edit_orders_sba.php');
     }
