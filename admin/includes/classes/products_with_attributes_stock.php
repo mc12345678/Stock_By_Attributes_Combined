@@ -717,7 +717,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
           
           // If no $customid clash (non-empty customid) or if the $customid is empty then update.
           if ($update_result || (isset($result_customid) && $result_customid->fields['total'] == 0) /*!isset($result) || $result->fields['total'] == 0*/) {
-              $query = "UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set `quantity` = :quantity:, `customid` = :customid:, `title` = :title: WHERE `products_id` = :products_id: AND `stock_attributes` = :stock_attributes:"
+              $query = "UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set `quantity` = :quantity:, `customid` = :customid:, `title` = :title: WHERE `products_id` = :products_id: AND `stock_attributes` = :stock_attributes:";
               $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
               if (!isset($customid)) {
                 $query = $db->bindVars($query, ':customid:', 'null', 'noquotestring');
