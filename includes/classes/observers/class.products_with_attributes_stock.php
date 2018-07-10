@@ -50,6 +50,7 @@ class products_with_attributes_stock extends base {
   function __construct() {
     
     $attachNotifier = array();
+    $attachNotifier[] = 'ZEN_GET_PRODUCTS_STOCK';
     $attachNotifier[] = 'NOTIFY_ORDER_AFTER_QUERY';
     $attachNotifier[] = 'NOTIFY_ORDER_CART_ADD_PRODUCT_LIST';
     $attachNotifier[] = 'NOTIFY_ORDER_CART_ADD_ATTRIBUTE_LIST';
@@ -75,6 +76,77 @@ class products_with_attributes_stock extends base {
 
     $this->_products_options_names_current = 0; // Initialize this variable to 0.
   }  
+  
+  /* ZC 1.5.6: ZEN_GET_PRODUCTS_STOCK
+      $GLOBALS['zco_notifier']->notify(
+        'ZEN_GET_PRODUCTS_STOCK',
+        $products_id,
+        $products_quantity,
+        $quantity_handled
+    );
+  
+  */
+  function updateZenGetProductsStock(&$callingClass, $notifier, $products_id, &$products_quantity, &$quantity_handled) {
+
+    // Check if SBA tracked, if not, then no need to process further.
+
+    $backtrace = debug_backtrace();
+    $current_level = -1;
+    $args = array();
+
+//    trigger_error('backtrace: ' . print_r($backtrace, true), E_USER_WARNING);
+    
+    foreach ($backtrace as $level => $data) {
+      if ($data['function'] === 'zen_get_products_stock') {
+        $current_level = $level;
+        $args['zen_get_products_stock'] = $data['args'];
+        $attributes = isset($args[1]) ? $args[1] : null;
+        $dupTest = isset($args[2]) ? $args[2] : null;
+        continue;
+      }
+      if ($data['function'] === 'zen_check_stock' && $current_level != -1 && $level > $current_level) {
+        $current_level = $level;
+        $args['zen_check_stock'] = $data['args'];
+        $attributes = isset($args['zen_check_stock'][2]) ? $args['zen_check_stock'][2] : null;
+        $from = isset($args['zen_check_stock'][3]) ? $args['zen_check_stock'][3] : 'products';
+
+        if ($from == 'order' && isset($attributes) && is_array($attributes)) {
+          $tmp_attrib = array();
+//  trigger_error('attributes: ' . print_r($attributes, true), E_USER_WARNING);
+          foreach ($attributes as $attrib) {
+            $tmp_attrib[$attrib['option_id']] = $attrib['value_id'];
+          }
+          $attributes = $tmp_attrib;
+        }
+        break; // This is expected to be met after the check_stock has been completed, therefore no further processing to do.
+      }
+    }
+    
+    if ($current_level === -1) {
+      return false;
+    }
+    
+    if ($products_id && (!is_array($attributes) && !zen_not_null($attributes))) {
+      //For products without associated attributes, get product level stock quantity
+//  DON'T HANDLE
+      return false;
+    } elseif (is_array($attributes) && count($attributes) > 0) {
+      // below function/call was written in ZC 1.5.1, 1.5.3, and 1.5.4 to support broadly addressing attributes and for
+      //   some reason in ZC 1.5.5, the call was omitted/skipped.
+      $products_quantity =  isset($_SESSION['pwas_class2'])
+          && method_exists($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')
+          && is_callable(array($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info'))
+              ? $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'))
+              : zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'));
+      $quantity_handled = true;
+      return false;
+    }
+
+    $products_quantity = null;
+    $quantity_handled = true;
+    return false;
+  
+  }
   
   /*
    * NOTIFY_ATTRIBUTES_MODULE_START_OPTION

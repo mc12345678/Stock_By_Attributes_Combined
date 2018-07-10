@@ -13,6 +13,8 @@
 
   $action = (isset($_GET['action']) ? $_GET['action'] : '');
 
+  $zco_notifier->notify('NOTIFY_BEGIN_ADMIN_PRODUCTS_DOCUMENT_PRODUCT', $action);
+
   if (zen_not_null($action)) {
     switch ($action) {
       case 'setflag':
@@ -25,13 +27,12 @@
         break;
 
       case 'delete_product_confirm':
-      $delete_linked = 'true';
-      if ($_POST['delete_linked'] == 'delete_linked_no') {
-        $delete_linked = 'false';
-      } else {
         $delete_linked = 'true';
-      }
-      $product_type = zen_get_products_type($_POST['products_id']);
+        if ($_POST['delete_linked'] == 'delete_linked_no') {
+          $delete_linked = 'false';
+        } else {
+          $delete_linked = 'true';
+        }
         if (file_exists(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/delete_product_confirm.php')) {
           require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/delete_product_confirm.php');
          } else {
@@ -130,22 +131,15 @@ if (typeof _editor_url == "string") HTMLArea.replaceAll();
 <!-- body_text //-->
     <td width="100%" valign="top">
 <?php
-  if ($action == 'new_product' or $action == 'new_product_meta_tags') {
-
-    if ($action == 'new_product_meta_tags') {
-      require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/collect_info_metatags.php');
-    } else {
-      require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/collect_info.php');
-    }
-
-  } elseif ($action == 'new_product_preview' or $action == 'new_product_preview_meta_tags') {
-    if ($action == 'new_product_preview_meta_tags') {
-      require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/preview_info_meta_tags.php');
-    } else {
-      require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/preview_info.php');
-    }
-
-  } else {
+if ($action == 'new_product_meta_tags') {
+  require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/collect_info_metatags.php');
+} elseif ($action == 'new_product') {
+  require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/collect_info.php');
+} elseif ($action == 'new_product_preview_meta_tags') {
+  require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/preview_info_meta_tags.php');
+} elseif ($action == 'new_product_preview') {
+  require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/preview_info.php');
+} else {
 
   require(DIR_WS_MODULES . 'category_product_listing.php');
 
@@ -267,6 +261,13 @@ if (typeof _editor_url == "string") HTMLArea.replaceAll();
           $contents[] = array('text' => '<br />' . zen_image(DIR_WS_IMAGES . 'pixel_black.gif','','100%','3'));
         } else {
           $contents[] = array('text' => '<br />' . 'NO DISCOUNTS');
+        }
+
+        // only ask if product has qty discounts
+        if (zen_has_product_discounts($pInfo->products_id) == 'true') {
+          $contents[] = array('text' => '<br />' . TEXT_COPY_DISCOUNTS_ONLY);
+          $contents[] = array('text' => '<br />' . TEXT_COPY_DISCOUNTS . '<br />' . zen_draw_radio_field('copy_discounts', 'copy_discounts_yes', true) . ' ' . TEXT_COPY_DISCOUNTS_YES . '<br />' . zen_draw_radio_field('copy_discounts', 'copy_discounts_no') . ' ' . TEXT_COPY_DISCOUNTS_NO);
+          $contents[] = array('text' => '<br />' . zen_image(DIR_WS_IMAGES . 'pixel_black.gif','','100%','3'));
         }
 
         $contents[] = array('align' => 'center', 'text' => '<br />' . zen_image_submit('button_copy.gif', IMAGE_COPY) . ' <a href="' . zen_href_link(FILENAME_CATEGORIES, 'cPath=' . $cPath . '&pID=' . $pInfo->products_id . (isset($_GET['page']) ? '&page=' . $_GET['page'] : '')) . '">' . zen_image_button('button_cancel.gif', IMAGE_CANCEL) . '</a>');

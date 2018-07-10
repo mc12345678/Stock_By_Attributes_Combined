@@ -99,7 +99,7 @@
 <?php
      } // End display info 
      if (!$prodInSBA /*$inSBA->EOF && $inSBA->RecordCount() < 1*/) {
-    for($i=0;$i<count($options_name);$i++) {
+    for($i=0, $j=count($options_name); $i<$j; $i++) {
 ?>
 <?php
   if ($options_comment[$i] != '' and $options_comment_position[$i] == '0') {
@@ -123,10 +123,10 @@
        ?>
        <?php
        // This displays ALL images regardless of attribute stock levels. Comment-out the "echo" if you want to skip images.
-       for ($j = 0, $m = count($options_name); $j < $m; $j++) {
-if ($options_attributes_image[$j] != '') {
+       for ($k = 0, $m = count($options_name); $k < $m; $k++) {
+if ($options_attributes_image[$k] != '') {
 ?>
-<?php echo $options_attributes_image[$j]; ?>
+<?php echo $options_attributes_image[$k]; ?>
 <?php
 } // End If(attributes images)
        } // End For images_Options_name

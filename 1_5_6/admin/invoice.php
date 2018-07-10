@@ -1,10 +1,10 @@
 <?php
 /**
  * @package admin
- * @copyright Copyright 2003-2011 Zen Cart Development Team
+ * @copyright Copyright 2003-2018 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: invoice.php 19136 2011-07-18 16:56:18Z wilt $
+ * @version $Id: invoice.php  wilt  Modified in v1.5.6 $
  * 
  * Stock by Attributes 1.5.4
 */
@@ -16,7 +16,7 @@
 
   $oID = zen_db_prepare_input($_GET['oID']);
 
-  include(DIR_WS_CLASSES . 'order.php');
+  include DIR_FS_CATALOG . DIR_WS_CLASSES . 'order.php';
   $order = new order($oID);
 
   // prepare order-status pulldown list

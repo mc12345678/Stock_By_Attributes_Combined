@@ -153,42 +153,37 @@
 
 
 /**
- * Return a product's stock count, or the associated attributes stock count.
+ * Return a product's stock-on-hand
  *
  * @param int $products_id The product id of the product whose stock we want
- * @param array of int, attribute(s) associated with a product who's stock we want
- * @param boolean dupTest used to force testing of multiple attributes
 */
-/* Begin Stock by Attributes additions */
-  function zen_get_products_stock($products_id, $attributes = null, $dupTest = null) {
+  function zen_get_products_stock($products_id) {
     global $db;
+    
+    // -----
+    // Give an observer the chance to modify this function's return value.
+    //
     $products_id = zen_get_prid($products_id);
-
-   // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
-    if ($products_id && (!is_array($attributes) && !zen_not_null($attributes))) {
-      //For products without associated attributes, get product level stock quantity
-      $stock_query = "select products_quantity
-                      from " . TABLE_PRODUCTS . " 
-                      where products_id = '" . (int)$products_id . "'";
-
-      $stock_values = $db->Execute($stock_query);
-
-      return $stock_values->fields['products_quantity'];
-    } elseif (is_array($attributes) && sizeof($attributes) > 0) {
-      // below function/call was written in ZC 1.5.1, 1.5.3, and 1.5.4 to support broadly addressing attributes and for
-      //   some reason in ZC 1.5.5, the call was omitted/skipped.
-      return isset($_SESSION['pwas_class2'])
-      && method_exists($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')
-      && is_callable(array($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info'))
-          ? $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'))
-          : zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'));
+    $products_quantity = 0;
+    $quantity_handled = false;
+    $GLOBALS['zco_notifier']->notify(
+        'ZEN_GET_PRODUCTS_STOCK',
+        $products_id,
+        $products_quantity,
+        $quantity_handled
+    );
+    if ($quantity_handled) {
+        return $products_quantity;
     }
+    
+    $stock_query = "select products_quantity
+                    from " . TABLE_PRODUCTS . "
+                    where products_id = " . (int)$products_id . " LIMIT 1";
 
-    return null;
+    $stock_values = $db->Execute($stock_query);
+
+    return $stock_values->fields['products_quantity'];
   }
-/*
- *End Amend for Stock by Attributes add-on
-*/
 
 /**
  * Check if the required stock is available.
@@ -197,19 +192,34 @@
  * @param int $products_id        The product id of the product whose stock is to be checked
  * @param int $products_quantity  Quantity to compare against
 */
-  function zen_check_stock($products_id, $products_quantity, $attributes = null, $from = 'products') {
+  function zen_check_stock($products_id, $products_quantity) { //, $attributes = null, $from = 'products') {
 // START "Stock by Attributes"
-    if ($from == 'order' && is_array($attributes)) {
+/*    if ($from == 'order' && is_array($attributes)) {
       $tmp_attrib = array();
       foreach ($attributes as $attrib) {
         $tmp_attrib[$attrib['option_id']] = $attrib['value_id'];
       }
       $attributes = $tmp_attrib;
+    }*/
+    $stock_left = zen_get_products_stock($products_id) - $products_quantity;
+    
+    // -----
+    // Give an observer the opportunity to change the out-of-stock message.
+    //
+    $the_message = '';
+    if ($stock_left < 0) {
+        $out_of_stock_message = STOCK_MARK_PRODUCT_OUT_OF_STOCK;
+        $GLOBALS['zco_notifier']->notify(
+            'ZEN_CHECK_STOCK_MESSAGE', 
+            array(
+                $products_id, 
+                $products_quantity
+            ), 
+            $out_of_stock_message
+        );
+        $the_message = '<span class="markProductOutOfStock">' . $out_of_stock_message . '</span>';
     }
-    $stock_left = zen_get_products_stock($products_id, $attributes) - $products_quantity;
-// END "Stock by Attributes"
-
-    return ($stock_left < 0) ? '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>' : '';
+    return $the_message;
   }
 
 /*
@@ -498,7 +508,7 @@
     $check_valid = true;
 
 // display only cannot be selected
-    if ($check_attributes->fields['attributes_display_only'] == '1') {
+    if (!$check_attributes->EOF && $check_attributes->fields['attributes_display_only'] == '1') {
       $check_valid = false;
     }
 

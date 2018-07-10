@@ -1,7 +1,7 @@
 <?php
 /**
  * @package admin
- * @copyright Copyright 2003-2016 Zen Cart Development Team
+ * @copyright Copyright 2003-2017 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: Author: DrByte  Fri Feb 26 20:52:53 2016 -0500 Modified in v1.5.5 $
@@ -130,22 +130,15 @@
 <!-- body_text //-->
     <td width="100%" valign="top">
 <?php
-  if ($action == 'new_product' or $action == 'new_product_meta_tags') {
-
-    if ($action == 'new_product_meta_tags') {
-      require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/collect_info_metatags.php');
-    } else {
-      require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/collect_info.php');
-    }
-
-  } elseif ($action == 'new_product_preview' or $action == 'new_product_preview_meta_tags') {
-    if ($action == 'new_product_preview_meta_tags') {
-      require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/preview_info_meta_tags.php');
-    } else {
-      require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/preview_info.php');
-    }
-
-  } else {
+if ($action == 'new_product_meta_tags') {
+  require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/collect_info_metatags.php');
+} elseif ($action == 'new_product') {
+  require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/collect_info.php');
+} elseif ($action == 'new_product_preview_meta_tags') {
+  require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/preview_info_meta_tags.php');
+} elseif ($action == 'new_product_preview') {
+  require(DIR_WS_MODULES . $zc_products->get_handler($product_type) . '/preview_info.php');
+} else {
 
   require(DIR_WS_MODULES . 'category_product_listing.php');
 
