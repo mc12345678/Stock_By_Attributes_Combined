@@ -575,7 +575,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
   $result = null;
   
   //Set quantity to 0 if not valid input
-  if( !isset($quantity) || !is_numeric($quantity) ){
+  if( !(isset($quantity) && is_numeric($quantity)) ){
     $quantity = 0;
   }
   

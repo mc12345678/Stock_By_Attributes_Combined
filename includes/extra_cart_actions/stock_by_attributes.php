@@ -615,7 +615,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
     if (isset($fileVar) && is_array($fileVar) && array_key_exists('file_located', $fileVar)) {
       unset($fileVar['file_located']);
       $fileVar = array();
-    } elseif (!isset($fileVar) || !is_array($fileVar)) {
+    } elseif (!(isset($fileVar) && is_array($fileVar))) {
       $fileVar = array();
     }
 //    $_SESSION['post2'] = $_POST;
