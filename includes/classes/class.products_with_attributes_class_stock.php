@@ -85,7 +85,7 @@ function non_stock_attribute($check_attribute_id/*, $non_stock_id, $non_stock_ty
       $sql = $db->bindVars($sql, ':values:', PWAS_NON_STOCK_ATTRIB_OPTION_VALUE, 'string');
       $sql = $db->bindVars($sql, ':check_attribute_id:', $check_attribute_id, 'integer');
 
-      $non_stock_result = $db->Execute($sql, false, false, 0, true);
+      $non_stock_result = $db->Execute($sql); //, false, false, 0, true);
 
        $total = $non_stock_result->fields['quantity'];
         if (!$total) {
@@ -288,7 +288,7 @@ function cartProductCount($products_id){
                         ORDER BY stock_id;'; 
             $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
             $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes, 'passthru');
-            $customid = $db->Execute($customid_query, false, false, 0, true); //moved to inside this loop as for some reason it has made
+            $customid = $db->Execute($customid_query); //, false, false, 0, true); //moved to inside this loop as for some reason it has made
           
           }
         }
@@ -497,7 +497,7 @@ function cartProductCount($products_id){
       }
       $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
 
-      $attributes_new = $db->Execute($query, false, false, 0, true);
+      $attributes_new = $db->Execute($query);//, false, false, 0, true);
 
       while (!$attributes_new->EOF) {
         if (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.
@@ -650,6 +650,7 @@ Of the attributes provided, determine the number of those attributes that are
 
             if ($stock_values->EOF) {
               $notAccounted = true;
+              break;
             }
 
             //special test to account for qty when all attributes are listed seperetly
@@ -757,6 +758,7 @@ Of the attributes provided, determine the number of those attributes that are
       return $attribute_list;
     } 
     
+    if (!isset($this->_isSBA[(int)$products_id]['sql'])) {
     if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
       $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
     } else {
@@ -779,6 +781,10 @@ Of the attributes provided, determine the number of those attributes that are
     $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
     $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
     $products_options_names = $db->Execute($sql);
+    $this->_isSBA[(int)$products_id]['sql'] = $products_options_names;
+    } else {
+       $products_options_names = $this->_isSBA[(int)$products_id]['sql'];
+    }
     
     if ($products_options_names->EOF) {
       // @TODO: Log error rather than set session value, unless session value is to be used elsewhere for messaging.
@@ -838,7 +844,7 @@ Of the attributes provided, determine the number of those attributes that are
     while (!$products_options_names->EOF) {
 //      $_SESSION['prod_optins_names'] = $products_options_names;
 //                if (!isset($specAttributes[$products_options_names->fields['products_options_id']])) {
-      if (!array_key_exists($products_options_names->fields['products_options_id'], $specAttributes)) {
+      if ((!isset($specAttributes[$products_options_names->fields['products_options_id']]) || !array_key_exists($products_options_names->fields['products_options_id'], $specAttributes))) {
 //                    $_SESSION['key_not_exist']++;
 //                    $_SESSION['key_not_exist_spec_' . $_SESSION['key_not_exist']] = $products_options_names->fields['products_options_id'];
 //                    $_SESSION['key_not_exist_spec_type_' . $_SESSION['key_not_exist']] = $products_options_names->fields['products_options_type'];
@@ -1061,7 +1067,7 @@ Of the attributes provided, determine the number of those attributes that are
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
       // @TODO: identify if function zen_products_lookup($products_id, 'products_quantity') could be used here or if there
       //  would be a cache of information left behind that could cause an issue?
-      $stock_values = $db->Execute($stock_query, false, false, 0, true);
+      $stock_values = $db->Execute($stock_query); //, false, false, 0, true);
       return $stock_values->fields['products_quantity'];
     } elseif (!$this->zen_product_is_sba($products_id)) {
       return NULL;
@@ -1128,7 +1134,7 @@ Of the attributes provided, determine the number of those attributes that are
 
     $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
     $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
-    $products_options_names = $db->Execute($sql, false, false, 0, true);
+    $products_options_names = $db->Execute($sql); //, false, false, 0, true);
     
     if ($products_options_names->EOF) {
       // Log error rather than set a session value.
@@ -1307,7 +1313,7 @@ Of the attributes provided, determine the number of those attributes that are
       $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :stock_attributes:';
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
       $stock_query = $db->bindVars($stock_query, ':stock_attributes:', $stock_attributes, 'passthru');
-      $stock_values = $db->Execute($stock_query, false, false, 0, true);
+      $stock_values = $db->Execute($stock_query); //, false, false, 0, true);
       // return the stock qty for the attribute
       if (!$stock_values->EOF) {
         switch ($datatype) {
@@ -1349,7 +1355,7 @@ Of the attributes provided, determine the number of those attributes that are
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
       $stock_query = $db->bindVars($stock_query, ':TMPstock_attributes:', $stock_attributes, 'string');
       // get the stock value for the combination
-      $stock_values = $db->Execute($stock_query, false, false, 0, true);
+      $stock_values = $db->Execute($stock_query); //, false, false, 0, true);
       switch ($datatype) {
         case 'stock':
           $stockResult = $stock_values->fields['products_quantity'];
@@ -1395,7 +1401,7 @@ Of the attributes provided, determine the number of those attributes that are
           $stock_query = $db->bindVars($stock_query, ':eachAttribute:', $eachAttribute, 'passthru');
 
           // get the stock value for the combination
-          $stock_values = $db->Execute($stock_query, false, false, 0, true);
+          $stock_values = $db->Execute($stock_query); //, false, false, 0, true);
           $stockResult = $stock_values->fields['products_quantity'];
           $stockResultArray[] = $stock_values->fields['stock_id'];
 
@@ -1633,9 +1639,9 @@ Of the attributes provided, determine the number of those attributes that are
     //  the result instead of querying the database again unless there is a need
     //  to "reset" the query result.  An important point of doing this is when 
     //  dealing with the cart directly so that quantities are updated correctly.
-/*    if (array_key_exists((int)$product_id, $this->_isSBA) && $reset == false) {
-      //return $this->_isSBA[(int)$product_id];
-    }*/
+    if (isset($this->_isSBA[(int)$product_id]['status']) && $reset == false) {
+      return $this->_isSBA[(int)$product_id]['status'];
+    }
     
     $inSBA_query = $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK); /*'SELECT * 
                     FROM information_schema.tables
@@ -1649,18 +1655,18 @@ Of the attributes provided, determine the number of those attributes that are
     if ($inSBA_query /*!$SBA_installed->EOF && $SBA_installed->RecordCount() > 0*/) { // Added to simplify query/code, assuming caching won't/can't be an issue.
       $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:;';
       $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
-      $isSBA = $db->Execute($isSBA_query, false, false, 0, true);
+      $isSBA = $db->Execute($isSBA_query);//, false, false, 0, true);
     
       if (!$isSBA->EOF && $isSBA->RecordCount() > 0) {
-//        $this->_isSBA[(int)$product_id] = true;
+        $this->_isSBA[(int)$product_id]['status'] = true;
         return true;
       } else {
-//        $this->_isSBA[(int)$product_id] = false;
+        $this->_isSBA[(int)$product_id]['status'] = false;
         return false;
       }
     }
 
-//    $this->_isSBA[(int)$product_id] = false;
+    $this->_isSBA[(int)$product_id] = false;
     return false;
   }  
 

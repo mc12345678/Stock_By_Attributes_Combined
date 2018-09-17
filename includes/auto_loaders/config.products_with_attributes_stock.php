@@ -33,6 +33,11 @@
   'checkInstantiated' => true,
   'classSession'=>true
   ); 
+ $autoLoadConfig[200][] = array(
+  'autoType' => 'objectMethod',
+  'objectName' => 'pwas_class2',
+  'methodName' => '__construct'
+  );
  $autoLoadConfig[0][] = array(
   'autoType' => 'class',
   'loadFile' => 'observers/class.products_with_attributes_stock.php'

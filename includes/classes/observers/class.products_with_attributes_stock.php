@@ -322,15 +322,16 @@ class products_with_attributes_stock extends base {
         ) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
       // START "Stock by Attributes" SBA added original price for display, and some formatting
       $originalpricedisplaytext = null;
-      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !(zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false') == $new_attributes_price || (zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false') == -$new_attributes_price && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
+      $attributes_price_final = zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false');
+      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($attributes_price_final == $new_attributes_price || ($attributes_price_final == -$new_attributes_price && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
         //Original price struck through
         if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_RADIO || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
           //use this if a PRODUCTS_OPTIONS_TYPE_RADIO or PRODUCTS_OPTIONS_TYPE_CHECKBOX
           //class="normalprice" can be used in a CSS file to control the text properties, not compatable with selection lists
-          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="normalprice">' . $products_options->fields['price_prefix'] . $currencies->display_price(zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false'), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="normalprice">' . $products_options->fields['price_prefix'] . $currencies->display_price($attributes_price_final, zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
         } else {
           //need to remove the <span> tag for selection lists and text boxes
-          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . $products_options->fields['price_prefix'] . $currencies->display_price(abs(zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false')), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . $products_options->fields['price_prefix'] . $currencies->display_price(abs($attributes_price_final), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
         }
       }
 
@@ -943,6 +944,20 @@ class products_with_attributes_stock extends base {
 
     if (!defined('STOCK_MARK_ALLOW_MIX_TOTAL_ALL')) define ('STOCK_MARK_ALLOW_MIX_TOTAL_ALL', 'false');
 
+    if ( PRODUCTS_OPTIONS_SORT_BY_PRICE =='1' ) {
+      $order_by= ' order by LPAD(pa.products_options_sort_order,11,"0")';
+    } else {
+      $order_by= ' order by LPAD(pa.products_options_sort_order,11,"0"), pa.options_values_price';
+    }
+
+    //LPAD - Return the string argument, left-padded with the specified string
+    //example: LPAD(po.products_options_sort_order,11,"0") the field is 11 digits, and is left padded with 0
+    if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
+      $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+    } else {
+      $options_order_by= ' order by popt.products_options_name';
+    }
+
     for ($i = 0, $n = count($productArray); $i < $n; $i++) {
       if (is_array($productArray[$i]) && array_key_exists('attributes', $productArray[$i]) && is_array($productArray[$i]['attributes']) && !empty($productArray[$i]['attributes']) && $_SESSION['pwas_class2']->zen_product_is_sba($productArray[$i]['id'])) {
         $productArray[$i]['attributeImage'] = array();
@@ -1021,30 +1036,27 @@ class products_with_attributes_stock extends base {
 
          */
 
-        //LPAD - Return the string argument, left-padded with the specified string
-        //example: LPAD(po.products_options_sort_order,11,"0") the field is 11 digits, and is left padded with 0
-        if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
-          $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+        if (!isset($this->_isSBA[(int)$productArray[$i]['id']]['sql' . $i])) {
+          //get the option/attribute list
+          $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
+                                popt.products_options_type, popt.products_options_length, popt.products_options_comment,
+                                popt.products_options_size,
+                                popt.products_options_images_per_row,
+                                popt.products_options_images_style,
+                                popt.products_options_rows
+                from        " . TABLE_PRODUCTS_OPTIONS . " popt
+                left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
+                where patrib.products_id= :products_id:
+                and popt.language_id = :languages_id: " .
+              $options_order_by;
+
+          $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
+          $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+          $products_options_names = $db->Execute($sql);
+          $this->_isSBA[(int)$productArray[$i]['id']]['sql' . $i] = $products_options_names;
         } else {
-          $options_order_by= ' order by popt.products_options_name';
+          $products_options_names = $this->_isSBA[(int)$productArray[$i]['id']]['sql'. $i];
         }
-
-        //get the option/attribute list
-        $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
-                              popt.products_options_type, popt.products_options_length, popt.products_options_comment,
-                              popt.products_options_size,
-                              popt.products_options_images_per_row,
-                              popt.products_options_images_style,
-                              popt.products_options_rows
-              from        " . TABLE_PRODUCTS_OPTIONS . " popt
-              left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
-              where patrib.products_id= :products_id:
-              and popt.language_id = :languages_id: " .
-            $options_order_by;
-
-        $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
-        $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
-        $products_options_names = $db->Execute($sql);
 
         while (!$products_options_names->EOF) {
           $sql = "select distinct pa.attributes_image

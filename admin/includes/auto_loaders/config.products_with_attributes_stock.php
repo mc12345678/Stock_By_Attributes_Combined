@@ -45,6 +45,11 @@
   'checkInstantiated' => true,
   'classSession'=>true
   ); 
+ $autoLoadConfig[200][] = array(
+  'autoType' => 'objectMethod',
+  'objectName' => 'pwas_class2',
+  'methodName' => '__construct'
+  );
   $autoLoadConfig[95][] = array(
     'autoType'=>'init_script',
     'loadFile'=>'init_sba_copy_to_confirm_messagestack.php'
