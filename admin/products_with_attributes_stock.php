@@ -337,7 +337,7 @@ switch ($action) {
 
         if ($intVars >= 1) {
           $a = 0;
-          while ($a <= $intVars) {
+          while ($a < $intVars) {
             //adds each attribute (no combinations)
             for ($i = 0, $arrMainSize = count($arrMain[$a]); $i < $arrMainSize; $i++) {
               $arrNew[] = array($arrMain[$a][$i]);
