@@ -126,7 +126,7 @@ class products_with_attributes_stock extends base {
       return false;
     }
     
-    if ($products_id && (!is_array($attributes) && !zen_not_null($attributes))) {
+    if ($products_id && (isset($attributes) && !is_array($attributes) && !zen_not_null($attributes))) {
       //For products without associated attributes, get product level stock quantity
 //  DON'T HANDLE
       return false;
@@ -136,8 +136,8 @@ class products_with_attributes_stock extends base {
       $products_quantity =  isset($_SESSION['pwas_class2'])
           && method_exists($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')
           && is_callable(array($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info'))
-              ? $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'))
-              : zen_get_sba_attribute_info($products_id, $attributes, 'products', ($dupTest == 'true' ? 'dupTest' : 'stock'));
+              ? $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', (isset($dupTest) && $dupTest == 'true' ? 'dupTest' : 'stock'))
+              : zen_get_sba_attribute_info($products_id, $attributes, 'products', (isset($dupTest) && $dupTest == 'true' ? 'dupTest' : 'stock'));
       $quantity_handled = true;
       return false;
     }

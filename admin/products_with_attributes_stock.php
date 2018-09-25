@@ -84,7 +84,7 @@ if (zen_not_null($action)) {
       where ptc.categories_id='" . $current_category_id . "'
       order by pd.products_name";
       $new_product_query = $db->Execute($sql);
-      $products_filter = $new_product_query->fields['products_id'];
+      $products_filter = isset($new_product_query->fields['products_id']) ? $new_product_query->fields['products_id'] : 0;
       $_GET['products_filter'] = $products_filter;
     }
   }
@@ -99,6 +99,8 @@ switch ($action) {
         break;
 
   case 'add':
+    $hidden_form = '';
+
     if (isset($_GET['products_id']) && (int) $_GET['products_id'] > 0) {
       $products_id = (int) $_GET['products_id'];
     }
@@ -171,6 +173,9 @@ switch ($action) {
         $messageStack->add_session("Missing Quantity!", 'failure');
         zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $_POST['products_id'], $request_type));
       }
+
+      $hidden_form = '';
+      $s_mack_noconfirm = '';
 
       $products_id = (int)$_POST['products_id'];
       $product_name = zen_get_products_name($products_id);
@@ -279,7 +284,7 @@ switch ($action) {
       originally by michael mcinally <mcinallym@picassofish.com>
       Allow inserting "ALL" attributes at once
      */
-    if (($_POST['add_edit'] == 'add') || ($_GET['add_edit'] == 'add')) { //s_mack:noconfirm
+    if ((isset($_POST['add_edit']) && ($_POST['add_edit'] == 'add')) || (isset($_GET['add_edit']) && ($_GET['add_edit'] == 'add'))) { //s_mack:noconfirm
       $attributes = ltrim($attributes, ','); //remove extra comma separators
 
       if (preg_match("/\|/", $attributes) && preg_match("/\;/", $attributes)) {

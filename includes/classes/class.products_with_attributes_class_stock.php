@@ -1359,10 +1359,10 @@ Of the attributes provided, determine the number of those attributes that are
       $stock_values = $db->Execute($stock_query); //, false, false, 0, true);
       switch ($datatype) {
         case 'stock':
-          $stockResult = $stock_values->fields['products_quantity'];
+          $stockResult = isset($stock_values->fields['products_quantity']) ? $stock_values->fields['products_quantity'] : 0;
           break;
         case 'dupTest':
-          $stockResult = $stock_values->fields['products_quantity'];
+          $stockResult = isset($stock_values->fields['products_quantity']) ? $stock_values->fields['products_quantity'] : 0;
           if ($stockResult > 0) {
             return 'true';
           }
@@ -1370,7 +1370,7 @@ Of the attributes provided, determine the number of those attributes that are
           break;
         case 'ids':
         default:
-          $stockResult = $stock_values->fields['stock_id'];
+          $stockResult = isset($stock_values->fields['stock_id']) ? $stock_values->fields['stock_id'] : 0;
       }
 
       if (!$stock_values->EOF && $stock_values->RecordCount() == 1) {
@@ -1403,8 +1403,8 @@ Of the attributes provided, determine the number of those attributes that are
 
           // get the stock value for the combination
           $stock_values = $db->Execute($stock_query); //, false, false, 0, true);
-          $stockResult = $stock_values->fields['products_quantity'];
-          $stockResultArray[] = $stock_values->fields['stock_id'];
+          $stockResult = isset($stock_values->fields['products_quantity']) ? $stock_values->fields['products_quantity'] : 0;
+          $stockResultArray[] = isset($stock_values->fields['stock_id']) ? $stock_values->fields['stock_id'] : 0;
 
           if ($stock_values->EOF) {
   //              $_SESSION['not_account']++;

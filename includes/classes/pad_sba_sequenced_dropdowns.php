@@ -452,7 +452,7 @@ Array(
 
       $options_comment[] = $products_options_names->fields['products_options_comment'];
 
-      $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] === '1' ? '1' : '0');
+      $options_comment_position[] = (isset($products_options_names->fields['products_options_comment_position']) && $products_options_names->fields['products_options_comment_position'] === '1' ? '1' : '0');
       if ($options_comment[$o] != '' and $options_comment_position[$o] == '0') {
         $out.='<tr><td class="attributesComments">' . $options_comment[$o] . '</td></tr>'; 
         $out2.='<h3 class="attributesComments">' . $options_comment[$o] . '</h3>';
