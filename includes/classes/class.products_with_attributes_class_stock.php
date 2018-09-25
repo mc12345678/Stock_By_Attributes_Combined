@@ -760,29 +760,29 @@ Of the attributes provided, determine the number of those attributes that are
     } 
     
     if (!isset($this->_isSBA[(int)$products_id]['sql'])) {
-    if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
-      $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
-    } else {
-      $options_order_by= ' order by popt.products_options_name';
-    }
+      if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
+        $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+      } else {
+        $options_order_by= ' order by popt.products_options_name';
+      }
 
-              //get the option/attribute list
-    $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
-                              popt.products_options_type, popt.products_options_length, popt.products_options_comment,
-                              popt.products_options_size,
-                              popt.products_options_images_per_row,
-                              popt.products_options_images_style,
-                              popt.products_options_rows
-              from        " . TABLE_PRODUCTS_OPTIONS . " popt
-              left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
-              where patrib.products_id= :products_id:
-              and popt.language_id = :languages_id: " .
-              $options_order_by;
+                //get the option/attribute list
+      $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
+                                popt.products_options_type, popt.products_options_length, popt.products_options_comment,
+                                popt.products_options_size,
+                                popt.products_options_images_per_row,
+                                popt.products_options_images_style,
+                                popt.products_options_rows
+                from        " . TABLE_PRODUCTS_OPTIONS . " popt
+                left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
+                where patrib.products_id= :products_id:
+                and popt.language_id = :languages_id: " .
+                $options_order_by;
 
-    $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
-    $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
-    $products_options_names = $db->Execute($sql);
-    $this->_isSBA[(int)$products_id]['sql'] = $products_options_names;
+      $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
+      $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+      $products_options_names = $db->Execute($sql);
+      $this->_isSBA[(int)$products_id]['sql'] = $products_options_names;
     } else {
        $products_options_names = $this->_isSBA[(int)$products_id]['sql'];
        if (method_exists($products_options_names, 'rewind')) {
