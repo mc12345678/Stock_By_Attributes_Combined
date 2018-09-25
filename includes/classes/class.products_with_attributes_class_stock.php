@@ -785,6 +785,12 @@ Of the attributes provided, determine the number of those attributes that are
     $this->_isSBA[(int)$products_id]['sql'] = $products_options_names;
     } else {
        $products_options_names = $this->_isSBA[(int)$products_id]['sql'];
+       if (method_exists($products_options_names, 'rewind')) {
+         $products_options_names->Rewind();
+       } else {
+         $products_options_names->Move(0);
+         $products_options_names->MoveNext();
+       }
     }
     
     if ($products_options_names->EOF) {
