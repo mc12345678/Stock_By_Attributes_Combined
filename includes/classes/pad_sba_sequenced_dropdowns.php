@@ -264,7 +264,8 @@ select  ( pwas.quantity) as quantity, ( pwasans.attribute_type) as pwasans_quant
                     and options_values_id = :options_values_id:))
               " . (STOCK_ALLOW_CHECKOUT !== 'false' 
                 ? "" 
-                : "AND pwas.quantity > 0 ");
+                : "AND pwas.quantity > 0 ") . "
+		GROUP BY pwas.quantity";
 
 
 
