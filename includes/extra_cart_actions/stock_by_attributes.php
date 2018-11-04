@@ -148,7 +148,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
          */
       }
 //      $_SESSION['verify_attributes'] = $_POST['id'][$_POST['products_id'][$i]];
-      $attributes = (is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
+      $attributes = (isset($_POST['id'][$_POST['products_id'][$i]]) && is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
 //      $productIsSBA[$i] = zen_product_is_sba(zen_get_prid($_POST['products_id'][$i]));
       if (!$productIsSBA[$i]) {
         if((PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2') /*single dropdown as multiple*/) {
@@ -298,7 +298,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
            * 
            */
         }
-      $attributes = (is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
+      $attributes = (isset($_POST['id'][$_POST['products_id'][$i]]) && is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
 
 // eof: adjust new quantity to be same as current in stock
       if (($add_max == 1 and $cart_qty == 1) && $new_qty != $cart_qty) {
@@ -369,11 +369,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
            * 
            */
         }
-        $attributes = ($_POST['id'][$_POST['products_id'][$i]]) ? $_POST['id'][$_POST['products_id'][$i]] : '';
+        $attributes = (isset($_POST['id'][$_POST['products_id'][$i]]) && is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
         $_SESSION['cart']->add_cart($_POST['products_id'][$i], $new_qty, $attributes, false);
       } else {
         // adjust minimum and units
-        $attributes = ($_POST['id'][$_POST['products_id'][$i]]) ? $_POST['id'][$_POST['products_id'][$i]] : '';
+        $attributes = (isset($_POST['id'][$_POST['products_id'][$i]]) && is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
         $_SESSION['cart']->add_cart($_POST['products_id'][$i], $new_qty, $attributes, false);
       }
       }
