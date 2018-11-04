@@ -130,7 +130,7 @@ if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && !is_null($product['customid']['value
 ?>
 
 <li><?php echo $value['products_options_name'] . TEXT_OPTION_DIVIDER . nl2br($value['products_options_values_name']);
-      if ($product['customid']['type'] == 'multi' && zen_not_null($value['customid'])) { 
+      if (isset($product['customid']['type']) && $product['customid']['type'] == 'multi' && isset($value['customid']) && zen_not_null($value['customid'])) { 
         echo ' - ' . nl2br(zen_output_string_protected($value['customid'])); 
       } ?></li>
 <?php

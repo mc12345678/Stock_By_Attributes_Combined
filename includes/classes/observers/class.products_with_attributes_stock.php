@@ -1030,7 +1030,7 @@ class products_with_attributes_stock extends base {
       $options_order_by= ' order by popt.products_options_name';
     }
 
-    for ($i = 0, $n = count($productArray); $i < $n; $i++) {
+    for ($i = 0, $n = is_array($productArray) ? count($productArray) : 0 ; $i < $n; $i++) {
       if (is_array($productArray[$i]) && array_key_exists('attributes', $productArray[$i]) && is_array($productArray[$i]['attributes']) && !empty($productArray[$i]['attributes']) && $_SESSION['pwas_class2']->zen_product_is_sba($productArray[$i]['id'])) {
         $productArray[$i]['attributeImage'] = array();
 

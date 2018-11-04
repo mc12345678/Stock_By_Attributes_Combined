@@ -383,7 +383,7 @@ switch ($action) {
                 unset($arrMain[$key]);
               }
             }
-            if (count($arrMain[$key])) {
+            if (isset($arrMain[$key]) && is_array($arrMain[$key]) && count($arrMain[$key])) {
               $arrMain[$key] = array_values($arrMain[$key]);
             }
           }
@@ -502,7 +502,7 @@ switch ($action) {
       }
     }
 
-    if ($saveResult == 1) {
+    if (isset($saveResult) && (is_a($saveResult, 'queryFactoryResult') && count($saveResult->result) ||  $saveResult == 1)) {
       //Use the button 'Sync Quantities' when needed, or uncomment the line below if you want it done automatically.
       //$stock->update_parent_products_stock($products_id);//keep this line as option, but I think this should not be done automatically.
       $messageStack->add_session("Product successfully updated", 'success');
