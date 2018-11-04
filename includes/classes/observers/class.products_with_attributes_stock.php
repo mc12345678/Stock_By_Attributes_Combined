@@ -1128,6 +1128,13 @@ class products_with_attributes_stock extends base {
           $this->_isSBA[(int)$productArray[$i]['id']]['sql' . $i] = $products_options_names;
         } else {
           $products_options_names = $this->_isSBA[(int)$productArray[$i]['id']]['sql'. $i];
+
+          if (method_exists($products_options_names, 'rewind')) {
+            $products_options_names->Rewind();
+          } else {
+            $products_options_names->Move(0);
+            $products_options_names->MoveNext();
+          }
         }
 
         while (!$products_options_names->EOF) {
