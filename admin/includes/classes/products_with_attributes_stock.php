@@ -276,7 +276,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
           $search_order_by = 'products_model';
         }
 
-        $query_products =    "select distinct pa.products_id, d.products_name, p.products_quantity, p.products_model, p.products_image, p.products_type, p.master_categories_id FROM ".TABLE_PRODUCTS_ATTRIBUTES." pa, ".TABLE_PRODUCTS_DESCRIPTION." d, ".TABLE_PRODUCTS." p WHERE d.language_id='".$language_id."' and pa.products_id = d.products_id and pa.products_id = p.products_id " . $w . " order by " . $search_order_by . " " /*d.products_name "*/.$SearchRange."";
+        $query_products =    "SELECT DISTINCT pa.products_id, d.products_name, p.products_quantity, p.products_model, p.products_image, p.products_type, p.master_categories_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_DESCRIPTION . " d, " . TABLE_PRODUCTS . " p WHERE d.language_id=" . (int)$language_id . " AND pa.products_id = d.products_id AND pa.products_id = p.products_id " . $w . " ORDER BY " . $search_order_by . " " . $SearchRange;
 
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
           $products_split = new splitPageResults($_GET['page'], STOCK_SET_SBA_NUMRECORDS, $query_products, $products_query_numrows);
