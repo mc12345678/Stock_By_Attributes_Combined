@@ -728,6 +728,7 @@ Of the attributes provided, determine the number of those attributes that are
         if ($attrib_type->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_TEXT || $attrib_type->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_FILE) {
           return true;
         }
+        $attrib_type->MoveNext();
       }
       
       $attrib_ids->MoveNext();
