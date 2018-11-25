@@ -116,6 +116,14 @@ switch ($action) {
         $product_attributes = $stock->get_products_attributes($products_id, $language_id);
 
         $hidden_form .= zen_draw_hidden_field('products_id', $products_id) . "\n";
+
+        if (isset($_GET['action']) && zen_not_null($_GET['action'])) {
+          $hidden_form .= zen_draw_hidden_field('last_action', $_GET['action']) . "\n";
+        }
+
+        if (isset($_GET['search_order_by']) && zen_not_null($_GET['search_order_by'])) {
+          $hidden_form .= zen_draw_hidden_field('search_order_by', $_GET['search_order_by']) . "\n";
+        }
       } else {
         zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action')), $request_type));
       }
@@ -152,6 +160,19 @@ switch ($action) {
 
     if (isset($_GET['attributes']) && $_GET['attributes'] != '') {
       $attributes = $_GET['attributes'];
+      $hidden_form .= zen_draw_hidden_field('attributes_selected', $_GET['attributes']) . "\n";
+    }
+
+    if (isset($_GET['action']) && zen_not_null($_GET['action'])) {
+      $hidden_form .= zen_draw_hidden_field('last_action', $_GET['action']) . "\n";
+    }
+
+    if (isset($_GET['q']) && zen_not_null($_GET['q'])) {
+      $hidden_form .= zen_draw_hidden_field('quan', $_GET['q']) . "\n";
+    }
+
+    if (isset($_GET['search_order_by']) && zen_not_null($_GET['search_order_by'])) {
+      $hidden_form .= zen_draw_hidden_field('search_order_by', $_GET['search_order_by']) . "\n";
     }
 
     if (isset($products_id) && isset($attributes)) {
@@ -171,6 +192,28 @@ switch ($action) {
 
       if (!isset($_POST['quantity']) || !is_numeric($_POST['quantity'])) {
         $messageStack->add_session("Missing Quantity!", 'failure');
+// If doesn't exist then need to go back to add, if does exist then need to go to update.
+
+        if (isset($_POST['search_order_by']) && zen_not_null($_POST['search_order_by'])) {
+          $search_order_by = $_POST['search_order_by'];
+        }
+
+        if (isset($_POST['last_action']) && zen_not_null($_POST['last_action']) && $_POST['last_action'] == 'add') {
+          zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=' . $_POST['last_action']. '&products_id=' . (int)$_POST['products_id'] . (isset($search_order_by) ? '&search_order_by=' . $search_order_by : ''), $request_type));
+        }
+
+        if (isset($_POST['last_action']) && zen_not_null($_POST['last_action']) && $_POST['last_action'] == 'edit') {
+
+          if (isset($_POST['attributes_selected']) && zen_not_null($_POST['attributes_selected'])) {
+            $attributes_text = $_POST['attributes_selected'];
+          } 
+          if (isset($_POST['quan']) && zen_not_null($_POST['quan'])) {
+            $q = $_POST['quan'];
+          }
+          
+          zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=' . $_POST['last_action']. '&products_id=' . (int)$_POST['products_id'] . '&attributes=' . $attributes_text . '&q=' . $q . (isset($search_order_by) ? '&search_order_by=' . $search_order_by : ''), $request_type));
+        }
+
         zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $_POST['products_id'], $request_type));
       }
 
@@ -207,16 +250,16 @@ switch ($action) {
       $hidden_form .= zen_draw_hidden_field('customid', $customid) . "\n";
       $hidden_form .= zen_draw_hidden_field('skuTitle', $skuTitle) . "\n";
       //These are used in the GET thus it must match the same name used in the $_GET[''] calls
-      $s_mack_noconfirm .= "products_id=" . $products_id . "&amp;"; //s_mack:noconfirm
-      $s_mack_noconfirm .= "quantity=" . $quantity . "&amp;"; //s_mack:noconfirm
-      $s_mack_noconfirm .= "customid=" . $customid . "&amp;"; //s_mack:noconfirm
-      $s_mack_noconfirm .= "skuTitle=" . $skuTitle . "&amp;"; //s_mack:noconfirm
+      $s_mack_noconfirm .= "products_id=" . $products_id . "&"; //s_mack:noconfirm
+      $s_mack_noconfirm .= "quantity=" . $quantity . "&"; //s_mack:noconfirm
+      $s_mack_noconfirm .= "customid=" . $customid . "&"; //s_mack:noconfirm
+      $s_mack_noconfirm .= "skuTitle=" . $skuTitle . "&"; //s_mack:noconfirm
 
       //sort($attributes); // Sort will rearrange the values that were passed to this function.
       $stock_attributes = implode(',', $attributes);
 
       $hidden_form .= zen_draw_hidden_field('attributes', $stock_attributes) . "\n";
-      $s_mack_noconfirm .= 'attributes=' . $stock_attributes . '&amp;'; //kuroi: to pass string not array
+      $s_mack_noconfirm .= 'attributes=' . $stock_attributes . '&'; //kuroi: to pass string not array
 
       $query = 'select * 
             from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' 
@@ -229,12 +272,12 @@ switch ($action) {
       if (!$stock_check->EOF) {
         $hidden_form .= zen_draw_hidden_field('add_edit', 'edit');
         $hidden_form .= zen_draw_hidden_field('stock_id', $stock_check->fields['stock_id']);
-        $s_mack_noconfirm .= "stock_id=" . $stock_check->fields['stock_id'] . "&amp;"; //s_mack:noconfirm
-        $s_mack_noconfirm .="add_edit=edit&amp;"; //s_mack:noconfirm
+        $s_mack_noconfirm .= "stock_id=" . $stock_check->fields['stock_id'] . "&"; //s_mack:noconfirm
+        $s_mack_noconfirm .="add_edit=edit&"; //s_mack:noconfirm
         $add_edit = 'edit';
       } else {
         $hidden_form .= zen_draw_hidden_field('add_edit', 'add') . "\n";
-        $s_mack_noconfirm .="add_edit=add&amp;"; //s_mack:noconfirm
+        $s_mack_noconfirm .="add_edit=add&"; //s_mack:noconfirm
       }
     } else {
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action')), $request_type));
@@ -284,6 +327,7 @@ switch ($action) {
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $products_id, $request_type));
     } elseif (!isset($quantity) || !is_numeric($quantity)) {
       $messageStack->add_session("Missing or bad Quantity!", 'failure');
+      zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=add&products_id=' . (int)$products_id, $request_type));
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $products_id, $request_type));
     } elseif (!isset($attributes) || str_replace(',', null, $attributes) == null) {
       $messageStack->add_session("Missing Attribute Selection!", 'failure');
@@ -513,7 +557,14 @@ switch ($action) {
       }
     }
 
-    if (isset($saveResult) && (is_a($saveResult, 'queryFactoryResult') && count($saveResult->result) ||  $saveResult == 1)) {
+    if (isset($saveResult) && (is_a($saveResult, 'queryFactoryResult') && !count($saveResult->result) && method_exists($db, 'affectedRows') && !$db->affectedRows())) {
+      list($matched, $changed, $warnings) = sscanf($saveResult->link->info, "Rows matched: %d Changed: %d Warnings: %d");
+      if ($matched > 0) {
+        $messageStack->add_session("No changes made.", 'success');
+      }
+    }
+
+    if (isset($saveResult) && (is_a($saveResult, 'queryFactoryResult') && (count($saveResult->result) || method_exists($db, 'affectedRows') && ($db->affectedRows() || isset($matched) && $matched > 0)) || $saveResult == true)) {
       //Use the button 'Sync Quantities' when needed, or uncomment the line below if you want it done automatically.
       //$stock->update_parent_products_stock($products_id);//keep this line as option, but I think this should not be done automatically.
       $messageStack->add_session("Product successfully updated", 'success');
