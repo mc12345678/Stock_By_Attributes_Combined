@@ -95,6 +95,8 @@ function checkSBAobsoleteFiles(){
 
     DIR_FS_ADMIN . 'ajax/jquery.js',
 
+//    DIR_FS_ADMIN . DIR_WS_FUNCTIONS . 'extra_functions/reg_ddsba.php',
+
     DIR_FS_CATALOG . 'ajax/jquery.form.js',
     DIR_FS_CATALOG . 'ajax/jquery.js',
     DIR_FS_CATALOG . 'ajax/products_with_attributes_stock_ajax.js'
