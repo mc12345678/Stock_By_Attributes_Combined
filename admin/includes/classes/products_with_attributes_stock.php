@@ -579,7 +579,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
   global $db;
   //$stock = $products_with_attributes_stock_class; // Should replace all instance of $stock with the class variable.
   $productAttributeCombo = $this->nullDataEntry($productAttributeCombo);//sets proper quoting for input
-  $skuTitle = addslashes($skuTitle);
+  $skuTitle = $GLOBALS['db']->prepare_input($skuTitle);
   $skuTitle = $this->nullDataEntry($skuTitle);//sets proper quoting for input
   //$customid = addslashes($customid);
   //$customid = $this->nullDataEntry($customid);//sets proper quoting for input
@@ -852,7 +852,7 @@ function insertTablePAS($products_id = null, $quantity = null, $customid = null)
 
   global $db;
   //$stock = $products_with_attributes_stock_class;
-  $customid = addslashes($customid);
+  $customid = $GLOBALS['db']->prepare_input($customid);
   $customid = $this->nullDataEntry($customid);//sets proper quoting for input
 
 //   INSERT INTO `znc_products_attributes_stock` (`products_id`, `quantity`, `customid`) VALUES (226, 636, 'test37');
@@ -880,14 +880,14 @@ function insertTablePAS($products_id = null, $quantity = null, $customid = null)
 
 //Update Custom ID of Attribute using the StockID as a key
 function updateCustomIDAttrib($stockid = null, $customid = null){
-  global $db;
+  //global $db;
   //$stock = $products_with_attributes_stock_class;
-  $customid = addslashes($customid);
+  $customid = $GLOBALS['db']->prepare_input($customid);
   $customid = $this->nullDataEntry($customid);//sets proper quoting for input
 
   if ($customid && is_numeric($stockid) ){
     $query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set customid = ' . $customid . ' where stock_id = ' . $stockid . ' limit 1';
-    $result = $db->execute($query);
+    $result = $GLOBALS['db']->execute($query);
   }
 
   return $result;
@@ -895,14 +895,14 @@ function updateCustomIDAttrib($stockid = null, $customid = null){
 
 //Update  sku Title of Attribute using the StockID as a key
 function updateTitleAttrib($stockid = null, $skuTitle = null){
-  global $db;
+//  global $db;
   //$stock = $products_with_attributes_stock_class;
-  $skuTitle = addslashes($skuTitle);
+  $skuTitle = $GLOBALS['db']->prepare_input($skuTitle);
   $skuTitle = $this->nullDataEntry($skuTitle);//sets proper quoting for input
 
   if (isset($skuTitle) && $skuTitle && is_numeric($stockid) ){
     $query = 'UPDATE ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' SET title = ' . $skuTitle . ' WHERE stock_id = ' . $stockid . ' LIMIT 1';
-    $result = $db->execute($query);
+    $result = $GLOBALS['db']->execute($query);
   }
 
   return $result;
