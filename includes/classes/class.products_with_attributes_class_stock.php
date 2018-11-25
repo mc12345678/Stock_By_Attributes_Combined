@@ -280,7 +280,7 @@ function cartProductCount($products_id){
           $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
         // a difference in the code where there would be an error with it below...
           // Attributes are listed separately but there is more than one.
-          if ($customid->EOF) {
+          if ($customid->RecordCount() > 0) {
             $customid_query = 'select customid as products_model
                         from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
                         where products_id = :products_id: 
@@ -294,7 +294,7 @@ function cartProductCount($products_id){
         }
       }
       
-      if(isset($customid) && !$customid->EOF){
+      if(isset($customid) && $customid->RecordCount() > 0){
       
         //Test to see if a custom ID exists
         //if there are custom IDs with the attribute, then return them.
@@ -606,7 +606,7 @@ Of the attributes provided, determine the number of those attributes that are
         $stock_query = $db->bindVars($stock_query, ':stock_attributes:', $stock_attributes, 'passthru');
         $stock_values = $db->Execute($stock_query);
         // return the stock qty for the attribute
-        if (!$stock_values->EOF) {
+        if ($stock_values->RecordCount() > 0) {
           return array($stock_values->fields['stock_id']);
         } else {
           return false;
@@ -624,7 +624,7 @@ Of the attributes provided, determine the number of those attributes that are
         $stock_values = $db->Execute($stock_query);
         $stockResult = $stock_values->fields['stock_id'];
 
-        if (!$stock_values->EOF && $stock_values->RecordCount() == 1) {
+        if (/*!$stock_values->EOF && */$stock_values->RecordCount() == 1) {
           //return the stock for "attribute combinations"
           return array($stockResult);
         } else {
@@ -649,7 +649,7 @@ Of the attributes provided, determine the number of those attributes that are
             $stockResult = $stock_values->fields['products_quantity'];
             $stockResultArray[] = $stock_values->fields['stock_id'];
 
-            if ($stock_values->EOF) {
+            if ($stock_values->RecordCount() == 0) {
               $notAccounted = true;
               break;
             }
@@ -657,7 +657,7 @@ Of the attributes provided, determine the number of those attributes that are
             //special test to account for qty when all attributes are listed seperetly
             if (!zen_not_null($returnedStock) && $i == 0) {
               //set initial value
-              if ($stock_values->EOF) {
+              if ($stock_values->RecordCount() == 0) {
                 $returnedStock = 0;
               } else {
                 $returnedStock = $stockResult;
@@ -794,7 +794,7 @@ Of the attributes provided, determine the number of those attributes that are
        }
     }
     
-    if ($products_options_names->EOF) {
+    if ($products_options_names->RecordCount() == 0) {
       // @TODO: Log error rather than set session value, unless session value is to be used elsewhere for messaging.
       // $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
       trigger_error('SBA product can not have any attributes', E_USER_WARNING);
@@ -1144,7 +1144,7 @@ Of the attributes provided, determine the number of those attributes that are
     $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
     $products_options_names = $db->Execute($sql); //, false, false, 0, true);
     
-    if ($products_options_names->EOF) {
+    if ($products_options_names->RecordCount() == 0) {
       // Log error rather than set a session value.
       // $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
       trigger_error('SBA product can not have any attributes', E_USER_WARNING);
@@ -1322,8 +1322,8 @@ Of the attributes provided, determine the number of those attributes that are
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
       $stock_query = $db->bindVars($stock_query, ':stock_attributes:', $stock_attributes, 'passthru');
       $stock_values = $db->Execute($stock_query); //, false, false, 0, true);
-      // return the stock qty for the attribute
-      if (!$stock_values->EOF) {
+      // return the stock qty for the attribute that was found.
+      if ($stock_values->RecordCount()) {
         switch ($datatype) {
           case 'stock':
             return $stock_values->fields['products_quantity'];
@@ -1413,7 +1413,7 @@ Of the attributes provided, determine the number of those attributes that are
           $stockResult = isset($stock_values->fields['products_quantity']) ? $stock_values->fields['products_quantity'] : 0;
           $stockResultArray[] = isset($stock_values->fields['stock_id']) ? $stock_values->fields['stock_id'] : 0;
 
-          if ($stock_values->EOF) {
+          if ($stock_values->RecordCount() == 0) {
   //              $_SESSION['not_account']++;
             $notAccounted = true;
   //              $_SESSION['stockResultN' . $_SESSION['not_account']] = $stockResult;
@@ -1430,7 +1430,7 @@ Of the attributes provided, determine the number of those attributes that are
           //special test to account for qty when all attributes are listed seperetly
           if (!zen_not_null($returnedStock) && $i == 0) {
             //set initial value
-            if ($stock_values->EOF) {
+            if ($stock_values->RecordCount() == 0) {
               $returnedStock = 0;
             } else {
               $returnedStock = $stockResult;
