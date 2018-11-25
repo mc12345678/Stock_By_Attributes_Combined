@@ -59,21 +59,13 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   $sba_add_prods_quantity = array(); // Quantity summary of product in the cart to identify total at each product.
   
   for ($i=0, $n=count($_POST['products_id']); $i<$n; $i++) {
-    $productIsSBA[$i] = isset($_SESSION['pwas_class2']) 
-                         && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
-                         && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
-                          ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'][$i]), true) 
-                          : function_exists('zen_product_is_sba') && zen_product_is_sba(zen_get_prid($_POST['products_id'][$i]), true);
+    $productIsSBA[$i] = $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'][$i]), true);
     
     if ($productIsSBA[$i]) {
 
       $attributes2 = array();
 
-      $attributes2 = isset($_SESSION['pwas_class2'])
-                     && method_exists($_SESSION['pwas_class2'], 'zen_sba_attribs_no_text')
-                     && is_callable(array($_SESSION['pwas_class2'], 'zen_sba_attribs_no_text'))
-                      ? $_SESSION['pwas_class2']->zen_sba_attribs_no_text($_POST['products_id'][$i], $_POST['id'][$_POST['products_id'][$i]], 'products', 'update')
-                      : zen_sba_attribs_no_text($_POST['products_id'][$i], $_POST['id'][$_POST['products_id'][$i]], 'products', 'update');
+      $attributes2 = $_SESSION['pwas_class2']->zen_sba_attribs_no_text($_POST['products_id'][$i], $_POST['id'][$_POST['products_id'][$i]], 'products', 'update');
       
 //      $_SESSION['attribs2_' . $_POST['products_id'][$i]] = $attributes2;
 //      $_SESSION['attribs3_' . $_POST['products_id'][$i]] = $_POST['id'][$_POST['products_id'][$i]];
@@ -410,12 +402,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   /* Do additional prestage work for grid related submission/product*/
   if (
   defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true'
-      ? (isset($_SESSION['pwas_class2'])
-  && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
-  && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
       ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id']))
-      : function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])
-  )
       : true)
   {
     $grid_prod_id = array();
@@ -426,12 +413,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 
   if (isset($_POST['product_id']) 
        && is_array($_POST['product_id']) 
-       && (isset($_SESSION['pwas_class2']) 
-           && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba') 
-           && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba')) 
-             ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'])) 
-             : function_exists('zen_product_is_sba') && zen_product_is_sba(zen_get_prid($_POST['products_id'])) 
-           )
+       && $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'])) 
       ) {
 
         // product is tracked by SBA and has grid layout.
@@ -545,12 +527,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 
   elseif (
   defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' 
-          ? (isset($_SESSION['pwas_class2']) 
-              && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba') 
-              && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
-                ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'])) 
-                : function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])
-             )
+          ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'])) 
           : true) 
   {
     if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
@@ -571,12 +548,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   }
   
   if (defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' 
-       ? (isset($_SESSION['pwas_class2'])
-           && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
-           && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
-             ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id']))
-             : function_exists('zen_product_is_sba') && zen_product_is_sba(zen_get_prid($_POST['products_id']))
-         ) 
+       ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id']))
        : true) {
 
     if (count($grid_id) < 1) {
@@ -738,36 +710,21 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         $product_id = zen_get_uprid($_POST['products_id'], $attributes);
         $attributes2 = array();
 
-        if (isset($_SESSION['pwas_class2'])
-             && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
-             && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba')) 
-              ? $_SESSION['pwas_class2']->zen_product_is_sba($_POST['products_id']) 
-              : function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])
+        if ($_SESSION['pwas_class2']->zen_product_is_sba($_POST['products_id'])
             ) {
-              $attributes2 = method_exists($_SESSION['pwas_class2'], 'zen_sba_attribs_no_text') 
-                && is_callable(array($_SESSION['pwas_class2'], 'zen_sba_attribs_no_text'))
-                  ? $_SESSION['pwas_class2']->zen_sba_attribs_no_text($_POST['products_id'], isset($attributes) && is_array($attributes) ? $attributes : array(), 'products', 'add') 
-                  : zen_sba_attribs_no_text($_POST['products_id'], $attributes, 'products', 'add');
+              $attributes2 = $_SESSION['pwas_class2']->zen_sba_attribs_no_text($_POST['products_id'], isset($attributes) && is_array($attributes) ? $attributes : array(), 'products', 'add');
           $product_id = zen_get_uprid($_POST['products_id'], $attributes2);
         }
 
         $add_max = zen_get_products_quantity_order_max($_POST['products_id']);
         // to address product with maleable attributes where the attribute 
         // is not stock dependent cart_qty needs to reflect the appropriate number.  mc12345678 01-02-2016
-        if (isset($_SESSION['pwas_class2'])
-             && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
-             && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
-              ? $_SESSION['pwas_class2']->zen_product_is_sba($_POST['products_id']) 
-              : function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])
-            ) {
+        if ($_SESSION['pwas_class2']->zen_product_is_sba($_POST['products_id'])) {
           $backup = array();
           $backup = $_SESSION['cart']->contents;
           reset($backup);
       
-          $addProdIDs = method_exists($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info') 
-                        && is_callable(array($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info'))
-                          ? $_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, $attributes2, 'products', 'ids')
-                          : zen_get_sba_attribute_info($product_id, $attributes2, 'products', 'ids');
+          $addProdIDs = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, $attributes2, 'products', 'ids');
           
           $attributes_values = array();
           $contents_key = array();
@@ -782,19 +739,13 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 //              $attributes_values[] = array($prod_id=>$_SESSION['cart']->contents[$prod_id]['attributes_values']);
 //              unset($_SESSION['cart']->contents[$prod_id]['attributes_values']);
             } else {
-              $_SESSION['cart']->contents[$prod_id]['attributes'] = method_exists($_SESSION['pwas_class2'], 'zen_sba_attribs_no_text') 
-                && is_callable(array($_SESSION['pwas_class2'], 'zen_sba_attribs_no_text'))
-                  ? $_SESSION['pwas_class2']->zen_sba_attribs_no_text($_POST['products_id'], isset($_SESSION['cart']->contents[$prod_id]['attributes']) ? $_SESSION['cart']->contents[$prod_id]['attributes'] : array(), 'products', 'addNoText') 
-                  : zen_sba_attribs_no_text($_POST['products_id'], $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'addNoText');
+              $_SESSION['cart']->contents[$prod_id]['attributes'] = $_SESSION['pwas_class2']->zen_sba_attribs_no_text($_POST['products_id'], isset($_SESSION['cart']->contents[$prod_id]['attributes']) ? $_SESSION['cart']->contents[$prod_id]['attributes'] : array(), 'products', 'addNoText');
             }
 /*        $_SESSION['in_backup_' . $prod_id] = array('attributes' => $_SESSION['cart']->contents[$prod_id]['attributes'],
                                                   'addProdIDs' => $addProdIDs,
                                                   'attrib_info' => $_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'ids'));*/
                                                    
-            if ($addProdIDs != ((method_exists($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')
-                                 && is_callable(array($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')))
-                                   ? $_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'ids')
-                                   : zen_get_sba_attribute_info($product_id, $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'ids'))) {
+            if ($addProdIDs != ($_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, $_SESSION['cart']->contents[$prod_id]['attributes'], 'products', 'ids'))) {
 //                                     $_SESSION['in_backup_addProdIDs_' . $prod_id] = 'Skipped';
               continue;
             }
@@ -807,10 +758,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
             }
             $_SESSION['cart']->contents[$product_id] = $_SESSION['cart']->contents[$prod_id];
             
-            if ((method_exists($_SESSION['pwas_class2'], 'zen_sba_has_text_field')
-                && is_callable(array($_SESSION['pwas_class2'], 'zen_sba_has_text_field'))) 
-                  ? $_SESSION['pwas_class2']->zen_sba_has_text_field($addProdIDs)
-                  : zen_sba_has_text_field($addProdIDs)) {
+            if ($_SESSION['pwas_class2']->zen_sba_has_text_field($addProdIDs)) {
               $_SESSION['cart']->contents[$product_id]['qty'] +=  $add_val;
             } else {
               $_SESSION['cart']->contents[$product_id]['qty'] = $add_val;
@@ -825,12 +773,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 //        $cart_qty = $_SESSION['cart']->in_cart_mixed($product_id);
 //      $_SESSION['add_cart_qty'] = $cart_qty;
 
-        if (isset($_SESSION['pwas_class2']) 
-            && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
-            && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
-              ? $_SESSION['pwas_class2']->zen_product_is_sba($_POST['products_id'])
-              : function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])
-            ) {
+        if ($_SESSION['pwas_class2']->zen_product_is_sba($_POST['products_id'])) {
           unset($_SESSION['cart']->contents[$product_id]);
           $_SESSION['cart']->contents = $backup;
           unset($backup);
@@ -856,12 +799,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
         if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'B: FUNCTION ' . __FUNCTION__ . ' Products_id: ' . $_POST['products_id'] . ' cart_qty: ' . $cart_qty . ' $_POST[cart_quantity]: ' . $_POST['cart_quantity'] . ' <br>', 'caution');
 
 //Check if item is an SBA tracked item, if so, then perform analysis of whether to add or not.
-        if (isset($_SESSION['pwas_class2'])
-            && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba') 
-            && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
-              ? $_SESSION['pwas_class2']->zen_product_is_sba($_POST['products_id'])
-              : function_exists('zen_product_is_sba') && zen_product_is_sba($_POST['products_id'])
-            ) {
+        if ($_SESSION['pwas_class2']->zen_product_is_sba($_POST['products_id'])) {
 //Looks like $_SESSION['cart']->in_cart_mixed($prodId) could be used here to pull the attribute related product information to verify same product is being added to cart... This also may help in the shopping_cart routine added for SBA as all SBA products will have this modifier.
 //      $cart_qty = 0;
 
@@ -877,11 +815,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
           $_SESSION['cart']->flag_duplicate_msgs_set = FALSE;
           
 //          $productAttrAreSBA = zen_get_sba_stock_attribute_id($product_id, $attributes, 'products');
-          $productAttrAreSBA = isset($_SESSION['pwas_class2'])
-                               && method_exists($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')
-                               && is_callable(array($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info'))
-                                 ? $_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, isset($attributes) && is_array($attributes) ? $attributes : array(), 'products', 'ids')
-                                 : zen_get_sba_attribute_info($product_id, $attributes, 'products', 'ids');
+          $productAttrAreSBA = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, isset($attributes) && is_array($attributes) ? $attributes : array(), 'products', 'ids');
                 
           if ($productAttrAreSBA === false) {
             $the_list .= PWA_COMBO_OUT_OF_STOCK . "<br />";
