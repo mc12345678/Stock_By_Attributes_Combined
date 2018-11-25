@@ -124,7 +124,7 @@
        <?php
        // This displays ALL images regardless of attribute stock levels. Comment-out the "echo" if you want to skip images.
        for ($k = 0, $m = count($options_name); $k < $m; $k++) {
-if ($options_attributes_image[$k] != '') {
+if (isset($options_attributes_image[$k]) && $options_attributes_image[$k] != '') {
 ?>
 <?php echo $options_attributes_image[$k]; ?>
 <?php

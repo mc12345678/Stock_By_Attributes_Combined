@@ -46,7 +46,7 @@ class products_with_attributes_stock extends base
 
       $attributes = $db->Execute($sql);
       
-      if($attributes->RecordCount() > 0)
+      if ($attributes->RecordCount() > 0)
       {
       
         if ( PRODUCTS_OPTIONS_SORT_BY_PRICE =='1' ) {
@@ -166,7 +166,7 @@ class products_with_attributes_stock extends base
     // returns an array of product ids which contain attributes
     function get_products_with_attributes() {
       global $db;
-      if(isset($_SESSION['languages_id'])){ $language_id = (int)$_SESSION['languages_id'];} else { $language_id=1;}
+      if (isset($_SESSION['languages_id'])){ $language_id = (int)$_SESSION['languages_id'];} else { $language_id=1;}
       $query = 'SELECT DISTINCT pa.products_id, d.products_name, p.products_quantity, p.products_model, p.products_image
                 FROM '.TABLE_PRODUCTS_ATTRIBUTES.' pa
                 left join '.TABLE_PRODUCTS_DESCRIPTION.' d on (pa.products_id = d.products_id)
@@ -195,7 +195,7 @@ class products_with_attributes_stock extends base
               and po.language_id = pov.language_id';
               
       $attributes = $db->Execute($query);
-      if(!$attributes->EOF)
+      if (!$attributes->EOF)
       {    
         $attributes_output = array('option' => $attributes->fields['products_options_name'],
                        'value' => $attributes->fields['products_options_values_name']);
@@ -219,38 +219,42 @@ class products_with_attributes_stock extends base
 function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, $ReturnedProductID = null){
         global $db;
       
-        if(isset($_SESSION['languages_id'])){ $language_id = $_SESSION['languages_id'];} else { $language_id=1;}
-        if( isset($_GET['search']) && $_GET['search']){ // mc12345678 Why was $_GET['search'] omitted?
+        if (isset($_SESSION['languages_id']) && $_SESSION['languages_id'] > 0) {
+          $language_id = $_SESSION['languages_id'];
+        } else { 
+          $language_id = 1;
+        }
+        if (isset($_GET['search']) && $_GET['search']) { // mc12345678 Why was $_GET['search'] omitted?
             $s = zen_db_input($_GET['search']);
            //$w = "(p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '%$s%') AND  " ;//original version of search
             //$w = "( p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '$s%' ) AND  " ;//changed search to products_model 'startes with'.
            //$w = "( p.products_id = '$s' OR d.products_name LIKE '%$s%' ) AND  " ;//removed products_model from search
             $w = " AND ( p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '$s%' ) " ;//changed search to products_model 'startes with'.
-    } else {
-        $w = ''; 
-      $s = '';
-    }
+        } else {
+          $w = ''; 
+          $s = '';
+        }
 
         //Show last edited record or Limit number of records displayed on page
         $SearchRange = null;
-        if( $ReturnedProductID != null && !isset($_GET['search']) ){
+        if (isset($ReturnedProductID) && !isset($_GET['search'])) {
           $ReturnedProductID = zen_db_input($ReturnedProductID);
           //$w = "( p.products_id = '$ReturnedProductID' ) AND  " ;//sets returned record to display
           $w = " AND ( p.products_id = '$ReturnedProductID' ) " ;//sets returned record to display
           if (!isset($_GET['products_filter']) || (isset($_GET['products_filter']) && $_GET['products_filter'] != '' && $_GET['products_filter'] <= 0)) {
             $SearchRange = "limit 1";//show only selected record
           }
-      } /*elseif ( $ReturnedProductID != null && isset($_GET['search'])) {
-          $ReturnedProductID = zen_db_input($ReturnedProductID);
-        $NumberRecordsShown = zen_db_input($NumberRecordsShown);
-      }*/
-      elseif( $NumberRecordsShown > 0 && $SearchBoxOnly == 'false' ){
-        $NumberRecordsShown = zen_db_input($NumberRecordsShown);
-      $SearchRange = " limit $NumberRecordsShown";//sets start record and total number of records to display
-    }
-    elseif( $SearchBoxOnly == 'true' && !isset($_GET['search']) ){
-         $SearchRange = "limit 0";//hides all records
-    }
+        } /*elseif ( $ReturnedProductID != null && isset($_GET['search'])) {
+            $ReturnedProductID = zen_db_input($ReturnedProductID);
+          $NumberRecordsShown = zen_db_input($NumberRecordsShown);
+        }*/
+        elseif ($NumberRecordsShown > 0 && $SearchBoxOnly == 'false' ){
+          $NumberRecordsShown = zen_db_input($NumberRecordsShown);
+          $SearchRange = " limit $NumberRecordsShown";//sets start record and total number of records to display
+        }
+        elseif ($SearchBoxOnly == 'true' && !isset($_GET['search']) ){
+             $SearchRange = "limit 0";//hides all records
+        }
 
         $retArr = array();
 /*        $query_products =    'select distinct pa.products_id, d.products_name, p.products_quantity, 
@@ -311,11 +315,11 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
               <th class="thProdSync">'.PWA_SYNC_QUANTITY.'</th>
               </tr>';
         
-        while(!$products->EOF){ 
+        while (!$products->EOF) { 
 
           // SUB
-          $query = 'select * from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' where products_id="'.(int)$products->fields['products_id'].'"
-                    order by sort ASC;';
+          $query = 'SELECT * FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE products_id=' . (int)$products->fields['products_id'] . '
+                    ORDER BY SORT ASC;';
 
           $attribute_products = $db->Execute($query);
 
@@ -328,7 +332,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
           if ($_SESSION['pwas_class2']->zen_product_is_sba($products->fields['products_id'])) {
             if ($products->fields['products_quantity'] > $attribute_quantity->fields['total_quantity']) {
               $synchronized = '<br/> Prod Qty > Attrib Qty ';
-            } else if ($products->fields['products_quantity'] != $attribute_quantity->fields['total_quantity']) {
+            } elseif ($products->fields['products_quantity'] != $attribute_quantity->fields['total_quantity']) {
               $synchronized = '<br/> Prod Qty < Attrib Qty ';
             }
           }
@@ -357,7 +361,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
                     order by sort ASC;';
 
           $attribute_products = $db->Execute($query);*/
-          if($attribute_products->RecordCount() > 0){
+          if ($attribute_products->RecordCount() > 0) {
 
               $html .= '<table class="stockAttributesTable">';
               $html .= '<tr>';
@@ -372,7 +376,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
                     <th class="stockAttributesHeadingDelete">'.PWA_DELETE.'</th>';
               $html .= '</tr>';
 
-              while(!$attribute_products->EOF){
+              while (!$attribute_products->EOF){
                 
                   $html .= '<tr id="sid-'. $attribute_products->fields['stock_id'] .'">';
                   $html .= '<td class="stockAttributesCellStockId">'."\n";
@@ -401,7 +405,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
                   }
 
                   $attributes_output = array();
-                  foreach($attributes_of_stock as $attri_id)
+                  foreach ($attributes_of_stock as $attri_id)
                   {
                       $stock_attribute = $this->get_attributes_name($attri_id, $_SESSION['languages_id']);
                       if ($stock_attribute['option'] == '' && $stock_attribute['value'] == '') {
@@ -412,7 +416,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
                       }
                   }
 //                  sort($attributes_output);
-                  $html .= implode("\n",$attributes_output);
+                  $html .= implode("\n", $attributes_output);
 
                   $html .= '</td>'."\n";
                   $html .= '<td class="stockAttributesCellQuantity editthis" id="stockid-quantity-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['quantity'].'</td>'."\n";
@@ -433,7 +437,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
               $html .= '</table>';
           }
           $html .= '</div>'."\n";
-          $products->MoveNext();   
+          $products->MoveNext();
       }
       $html .= '</table>' . "\n";
       $html .= zen_image_submit('button_save.gif', IMAGE_SAVE);
@@ -464,7 +468,7 @@ function saveAttrib(){
     foreach ($_POST as $key => $value) {
       $matches = array();
       
-      if(preg_match('/stockid-(.*?)-(.*)/', $key, $matches)) {
+      if (preg_match('/stockid-(.*?)-(.*)/', $key, $matches)) {
         // $matches[1] is expected to be the pwas database table field to be updated
         // $matches[2] is expected to be the pwas stock_id to be updated
 
@@ -483,12 +487,16 @@ function saveAttrib(){
           case 'customid':
           case 'title':
             if ($db->getBindVarValue('NULL', 'string') === 'null' && $value !== 'NULL') {
-              if(empty($value) || is_null($value)){$value = 'NULL';}
+              if (empty($value)) {
+                $value = 'NULL';
+              }
               $value = $db->getBindVarValue($value, 'string');
             } else {
               $value = $db->prepare_input($value); // Maybe if numeric bind to float, else bind to string.
               $value = $this->nullDataEntry($value); // Get the value or string of entered text, if there is nothing then be able to store a null value that is not the text 'null'.
-              if(empty($value) || is_null($value)){$value = 'null';}
+              if (empty($value)) {
+                $value = 'null';
+              }
             }  
             break;
           default:
@@ -555,8 +563,8 @@ function updateAttribQty($stock_id = null, $quantity = null){
     $quantity = 0;
   }
   
-  if( !empty($stock_id) && is_numeric($stock_id) && is_numeric($quantity) ){
-      $query = 'update `'.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.'` set quantity=:quantity: where stock_id=:stock_id: limit 1';
+  if (!empty($stock_id) && is_numeric($stock_id) && is_numeric($quantity)){
+      $query = 'UPDATE `' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . '` SET quantity=:quantity: WHERE stock_id=:stock_id: LIMIT 1';
       $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
       $query = $db->bindVars($query, ':stock_id:', $stock_id, 'integer');
       $result = $db->execute($query);
@@ -579,7 +587,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
   $result = null;
   
   //Set quantity to 0 if not valid input
-  if( !(isset($quantity) && is_numeric($quantity)) ){
+  if (!(isset($quantity) && is_numeric($quantity))){
     $quantity = 0;
   }
   
@@ -610,7 +618,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
       other data about the variant needs to be modified.  That is not the case in this consideration.  The variant identifies
       the customid not the customid identifying the variant.  
     */
-  if( isset($products_id) && is_numeric($products_id) && isset($strAttributes) && is_numeric($quantity) ){
+  if (isset($products_id) && is_numeric($products_id) && isset($strAttributes) && is_numeric($quantity)){
       // Evaluate entry as compared to the desired uniqueness of data in the table.
       /* PRIMARY KEY (`stock_id`),
       UNIQUE KEY `idx_products_id_stock_attributes` (`products_id`,`stock_attributes`),
@@ -668,7 +676,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
       
           $result = $result_final = $db->Execute($query);
           
-      } else if($insert_result === false) {
+      } elseif ($insert_result === false) {
           // A record has been found to match the provided data, now to identify how to proceed with the given data.
           //$result_multiple = null; // Establish base/known value for comparison/review.
           
@@ -771,7 +779,7 @@ function insertTablePASR($products_id = null, $strAttributes = null, $quantity =
   //INSERT INTO `znc_products_attributes_stock_relationship` (`products_id`, `products_attributes_id`, `products_attributes_stock_id`) VALUES (226, 1121, 37);
   
   //Table PASR (Inset and get $pasrid for next query)
-  if( is_numeric($products_id) && isset($strAttributes) ){
+  if (is_numeric($products_id) && isset($strAttributes)){
     
     //Get the last records ID
     $query = "select pas.products_attributes_stock_id
@@ -790,7 +798,7 @@ function insertTablePASR($products_id = null, $strAttributes = null, $quantity =
           `products_attributes_id` =  $strAttributes;";
     $result = $db->execute($query);
   
-    if( $result == 'true' ){
+    if ($result == 'true') {
       //Get the last records ID
       $query = "select pasr.products_attributes_stock_relationship_id
             from ". TABLE_PRODUCTS_ATTRIBUTES_STOCK_RELATIONSHIP ." pasr
@@ -802,7 +810,7 @@ function insertTablePASR($products_id = null, $strAttributes = null, $quantity =
   }
   
   //Table PAS
-  if( is_numeric($quantity) && is_numeric($pasrid) ){
+  if (is_numeric($quantity) && is_numeric($pasrid)) {
     
     $query = "insert into ". TABLE_PRODUCTS_ATTRIBUTES_STOCK ." (`quantity`,`customid`)
           values ($quantity, $customid)
@@ -850,7 +858,7 @@ function insertTablePAS($products_id = null, $quantity = null, $customid = null)
 //   INSERT INTO `znc_products_attributes_stock` (`products_id`, `quantity`, `customid`) VALUES (226, 636, 'test37');
   
   //Table PASR (Inset and get $pasrid for next query)
-  if( is_numeric($products_id) ){
+  if (is_numeric($products_id)) {
 
     $query = "insert into ". TABLE_PRODUCTS_ATTRIBUTES_STOCK ." (`products_id`,`quantity`,`customid`)
           values ($products_id, $quantity, $customid)
@@ -877,7 +885,7 @@ function updateCustomIDAttrib($stockid = null, $customid = null){
   $customid = addslashes($customid);
   $customid = $this->nullDataEntry($customid);//sets proper quoting for input
 
-  if( $customid && is_numeric($stockid) ){
+  if ($customid && is_numeric($stockid) ){
     $query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set customid = ' . $customid . ' where stock_id = ' . $stockid . ' limit 1';
     $result = $db->execute($query);
   }
@@ -892,8 +900,8 @@ function updateTitleAttrib($stockid = null, $skuTitle = null){
   $skuTitle = addslashes($skuTitle);
   $skuTitle = $this->nullDataEntry($skuTitle);//sets proper quoting for input
 
-  if( $skuTitle && is_numeric($stockid) ){
-    $query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set title = ' . $skuTitle . ' where stock_id = ' . $stockid . ' limit 1';
+  if (isset($skuTitle) && $skuTitle && is_numeric($stockid) ){
+    $query = 'UPDATE ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' SET title = ' . $skuTitle . ' WHERE stock_id = ' . $stockid . ' LIMIT 1';
     $result = $db->execute($query);
   }
 
@@ -913,16 +921,16 @@ function selectItemID($Table, $Field, $current = null, $providedQuery = null, $n
 
   global $db;
   
-  if(!$name){
+  if (empty($name)){
     //use the $Field as the select NAME if no $name is provided
     $name = zen_db_input($Field);
   }
-  if(!$id){
+  if (empty($id)){
     //use the $Field as the select ID if no $id is provided
     $id = zen_db_input($Field);
   }
 
-  if($providedQuery){
+  if (isset($providedQuery) && $providedQuery){
     $query = $providedQuery;//provided from calling object
   }
   else{
@@ -931,7 +939,7 @@ function selectItemID($Table, $Field, $current = null, $providedQuery = null, $n
      $query = "SELECT * FROM $Table ORDER BY $Field ASC";
   }
 
-  if($onChange){
+  if (isset($onChange) && $onChange){
     $onChange = "onchange=\"selectItem()\"";
   }
     
@@ -952,7 +960,7 @@ function selectItemID($Table, $Field, $current = null, $providedQuery = null, $n
      while(!$result->EOF){
 
        //set each row background color
-       if($i == 1){
+       if ($i == 1){
          $style = 'style="background-color:silver;"';
          $i = 0;
        }
@@ -986,8 +994,8 @@ function nullDataEntry($fieldtoNULL){
 
   //Need to test for absolute 0 (===), else compare will convert $fieldtoNULL to a number (null) and evauluate as a null 
   //This is due to PHP string to number compare "feature"
-  if(!empty($fieldtoNULL) || $fieldtoNULL === 0){
-    if((is_numeric($fieldtoNULL) && ($fieldtoNULL > 0 && strpos($fieldtoNULL, '0') !== 0 || $fieldtoNULL < 0 && strpos($fieldtoNULL, '0') !== 1)) || $fieldtoNULL === 0){
+  if (!empty($fieldtoNULL) || $fieldtoNULL === 0){
+    if ((is_numeric($fieldtoNULL) && ($fieldtoNULL > 0 && strpos($fieldtoNULL, '0') !== 0 || $fieldtoNULL < 0 && strpos($fieldtoNULL, '0') !== 1)) || $fieldtoNULL === 0){
       $output = $fieldtoNULL;//returns number without quotes
     }
     else{
@@ -1072,7 +1080,7 @@ function nullDataEntry($fieldtoNULL){
         return $customid->fields['products_model'];
       }
       
-      if(is_array($attributes) && !empty($attributes)){
+      if (!empty($attributes) && is_array($attributes)){
         // check if attribute stock values have been set for the product
         // if there are will we continue, otherwise we'll use product level data
         $attribute_stock = $db->Execute("select stock_id 
@@ -1127,7 +1135,7 @@ function nullDataEntry($fieldtoNULL){
       }// If array
       
 //      $customid = $db->Execute($customid_query);
-      if($customid->RecordCount() > 0 && $customid->fields['products_model']){
+      if ($customid->RecordCount() > 0 && $customid->fields['products_model']){
       
         //Test to see if a custom ID exists
         //if there are custom IDs with the attribute, then return them.
@@ -1373,7 +1381,7 @@ function convertDropdownsToSBA()
     $sql = $db->bindVars($sql, ':products_options_type_select:', PRODUCTS_OPTIONS_TYPE_SELECT, 'integer');
 
     $db->Execute($sql);
-    if($db->error){
+    if ($db->error){
       $msg = ' Error Message: ' . $db->error;
       $failed = true;
     }
@@ -1455,7 +1463,7 @@ function convertSBAToSBA()
 
       $db->Execute($sql);
 
-      if($db->error){
+      if ($db->error){
         $msg = ' Error Message: ' . $db->error;
         $failed = true;
 
@@ -1567,7 +1575,7 @@ function convertNonSBAToDropdown()
 
       $db->Execute($sql);
 
-      if($db->error){
+      if ($db->error) {
         $msg = ' Error Message: ' . $db->error;
         $failed = true;
 

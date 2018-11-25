@@ -180,11 +180,20 @@ switch ($action) {
       $products_id = (int)$_POST['products_id'];
       $product_name = zen_get_products_name($products_id);
 
-      $customid = trim($_POST['customid']);
-      $skuTitle = trim($_POST['skuTitle']);
+      $customid = '';
+
+      if (isset($_POST['customid']) && zen_not_null($_POST['customid'])) {
+        $customid = trim($_POST['customid']);
+      }
+
+      $skuTitle = '';
+
+      if (isset($_POST['skuTitle']) && zen_not_null($_POST['skuTitle'])) {
+        $skuTitle = trim($_POST['skuTitle']);
+      }
 
       if (is_numeric($_POST['quantity'])) {
-        $quantity = (float) $_POST['quantity'];
+        $quantity = (float)$_POST['quantity'];
       }
 
       $attributes = $_POST['attributes'];
@@ -249,6 +258,7 @@ switch ($action) {
       $products_id = doubleval($_POST['products_id']);
     }
 
+    $customid = null;
     if (isset($_GET['customid']) && $_GET['customid']) {
       $customid = zen_db_input(trim($_GET['customid']));
     } //s_mack:noconfirm
@@ -256,6 +266,7 @@ switch ($action) {
       $customid = zen_db_input(trim($_POST['customid']));
     }
 
+    $skuTitle = null;
     if ($_GET['skuTitle']) {
       $skuTitle = zen_db_input(trim($_GET['skuTitle']));
     }
@@ -268,13 +279,13 @@ switch ($action) {
       $quantity = doubleval($_GET['quantity']);
     } //s_mack:noconfirm
     //if invalid entry return to product
-    if ((int) $products_id === 0 || is_null($products_id)) {
+    if (!isset($products_id) || (int)$products_id === 0) {
       $messageStack->add_session("Missing or bad products_id!", 'failure');
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $products_id, $request_type));
-    } elseif (!is_numeric($quantity) || is_null($quantity) && $quantity != 0) {
+    } elseif (!isset($quantity) || !is_numeric($quantity)) {
       $messageStack->add_session("Missing or bad Quantity!", 'failure');
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $products_id, $request_type));
-    } elseif (is_null($attributes) || str_replace(',', null, $attributes) == null) {
+    } elseif (!isset($attributes) || str_replace(',', null, $attributes) == null) {
       $messageStack->add_session("Missing Attribute Selection!", 'failure');
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $products_id, $request_type));
     }
@@ -480,14 +491,14 @@ switch ($action) {
         $productAttributeCombo = $products_id . '-' . str_replace(',', '-', $strAttributes);
         $saveResult = $stock->insertNewAttribQty($products_id, $productAttributeCombo, $strAttributes, $quantity, $customid, $skuTitle);
       }
-    } elseif (($_POST['add_edit'] == 'edit') || ($_GET['add_edit'] == 'edit')) { //s_mack:noconfirm
-      if ($_GET['stock_id']) {
+    } elseif (isset($_POST['add_edit']) && ($_POST['add_edit'] == 'edit') || isset($_GET['add_edit']) && ($_GET['add_edit'] == 'edit')) { //s_mack:noconfirm
+      if (isset($_GET['stock_id']) && $_GET['stock_id']) {
         $stock_id = (int)$_GET['stock_id'];
       } //s_mack:noconfirm
       if (isset($_POST['stock_id']) && $_POST['stock_id'] !== '') {
         $stock_id = (int)$_POST['stock_id']; //s_mack:noconfirm
       }
-      if (!($stock_id > 0)) { //s_mack:noconfirm
+      if (!isset($stock_id) || !($stock_id > 0)) { //s_mack:noconfirm
         zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action')), $request_type));
       }
       //update existing records
@@ -507,7 +518,7 @@ switch ($action) {
       //$stock->update_parent_products_stock($products_id);//keep this line as option, but I think this should not be done automatically.
       $messageStack->add_session("Product successfully updated", 'success');
     } else {
-      $messageStack->add_session("Product $products_id update failed: $saveResult", 'failure');
+      $messageStack->add_session("Product $products_id update failed: " . print_r($saveResult, true), 'failure');
     }
 
     zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . (int)$products_id, $request_type));
@@ -830,8 +841,9 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
                   <strong>' . PWA_CUSTOM_ID . ':</strong> ' . zen_draw_input_field('customid') . /*'</p>' .*/ "\n";
           echo '<hr>';
 
+          $msg = '';
           if (count($product_attributes) > 1) {
-            $msg = 'Only add the attributes used to control ' . PWA_QUANTITY . '.<br />Leave the other attribute groups as N/A.<br />';
+            $msg .= 'Only add the attributes used to control ' . PWA_QUANTITY . '.<br />Leave the other attribute groups as N/A.<br />';
           }
           echo $msg . '<p><strong>' . PWA_QUANTITY . '</strong>' . zen_draw_input_field('quantity') . '</p>' . "\n";
         } else {

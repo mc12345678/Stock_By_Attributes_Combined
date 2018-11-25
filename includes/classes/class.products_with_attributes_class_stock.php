@@ -1379,7 +1379,7 @@ Of the attributes provided, determine the number of those attributes that are
           $stockResult = isset($stock_values->fields['stock_id']) ? $stock_values->fields['stock_id'] : 0;
       }
 
-      if (!$stock_values->EOF && $stock_values->RecordCount() == 1) {
+      if (/*!$stock_values->EOF && */$stock_values->RecordCount() == 1) {
         //return the stock for "attribute combinations"
   //          $_SESSION['One_record_1_'. $products_id] = $stockResult;
         switch ($datatype) {
@@ -1490,7 +1490,7 @@ Of the attributes provided, determine the number of those attributes that are
 
       $stock_id = $db->Execute($query);
 
-      if (!$stock_id->EOF && $stock_id->RecordCount() > 1 /*zen_not_null($stock_id) && count($stock_id) > 1*/) {
+      if (/*!$stock_id->EOF && */$stock_id->RecordCount() > 1 /*zen_not_null($stock_id) && count($stock_id) > 1*/) {
         // Log an error instead of displaying it.  This way the store operator can identify additional information.
         trigger_error('This is an error situation, as only one record should be returned.  More than one stock id was returned which should not be possible.', E_USER_WARNING);
       } else {
@@ -1676,11 +1676,11 @@ Of the attributes provided, determine the number of those attributes that are
     $SBA_installed = $db->Execute($inSBA_query, false, false, 0, true);*/
         
     if ($inSBA_query /*!$SBA_installed->EOF && $SBA_installed->RecordCount() > 0*/) { // Added to simplify query/code, assuming caching won't/can't be an issue.
-      $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:;';
+      $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE products_id = :products_id:;';
       $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
       $isSBA = $db->Execute($isSBA_query);//, false, false, 0, true);
     
-      if (!$isSBA->EOF && $isSBA->RecordCount() > 0) {
+      if (/*!$isSBA->EOF && */$isSBA->RecordCount() > 0) {
         $this->_isSBA[(int)$product_id]['status'] = true;
         return true;
       } else {
