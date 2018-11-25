@@ -1349,6 +1349,11 @@ Of the attributes provided, determine the number of those attributes that are
         //  review all of the other attributes to see if they could be
         //  zeroable.. if so, then return the quantity(ies) 
 
+        // The value returned here indicates the quantity
+        //  of non-stocked product that can be considered
+        //  allowable in the cart to support checkout.
+        // This return "value" also identifies to the front end of the cart whether to mark as out-of-stock or not. A non-zero value will support display of availability of the option.
+
         return false;
       }
     } elseif (isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) > 1) {
