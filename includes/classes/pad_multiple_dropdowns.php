@@ -105,7 +105,7 @@ THIS ALSO DOESN'T WORK BECAUSE OF THE COMPARISON(S) BEING PERFORMED... BECAUSE T
               unset($attributes[$o]['ovals'][$a]);
             } // end elseif
           } // end for loop $a < $s
-           $out.='<tr><td align="right" class="main"><b>'.$attributes[0]['oname'].":</b></td><td class=\"main\">".zen_draw_pull_down_menu('id['.$attributes[0]['oid'].']',array_merge(array(array('id'=>0, 'text'=>'Select '.$attributes[0]['oname'])), $attributes[0]['ovals']),$attributes[0]['default'], "onchange=\"i".$attributes[0]['oid']."(this.form);\"")."</td></tr>\n";
+           $out.='<tr><td align="right" class="main"><b>'.$attributes[$o]['oname'].":</b></td><td class=\"main\">".zen_draw_pull_down_menu('id['.$attributes[$o]['oid'].']',array_merge(array(array('id'=>0, 'text'=>'Select '.$attributes[$o]['oname'])), $attributes[$o]['ovals']),$attributes[$o]['default'], "onchange=\"i".$attributes[$o]['oid']."(this.form);\"")."</td></tr>\n";
         } // end for $o       
         $out.=$this->_draw_out_of_stock_message_js($attributes);
         
