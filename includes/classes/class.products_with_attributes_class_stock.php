@@ -311,23 +311,17 @@ function cartProductCount($products_id){
           return $multiplecid;
       
       }
-      else{
-        unset($customid);// = null;
-        //This is used as a fall-back when custom ID is set to be displayed but no attribute is available.
-        //Get product model
-        /*$customid_model_query = 'select products_model
-                        from '.TABLE_PRODUCTS.'
-                        where products_id = :products_id:';
-        $customid_model_query = $db->bindVars($customid_model_query, ':products_id:', $products_id, 'integer');
-        
-        $customid = $db->Execute($customid_model_query);*/
-        // Use ZC default function to obtain the products_model field.
-        $customid = zen_products_lookup($products_id, 'products_model');
-        return $customid;
+//      else{
+      unset($customid);// = null;
+      //This is used as a fall-back when custom ID is set to be displayed but no attribute is available.
+      //Get product model
+      // Use ZC default function to obtain the products_model field.
+      $customid = zen_products_lookup($products_id, 'products_model');
+      return $customid;
         //return result for display
         //return $customid->fields['products_model'];
-      }
-      return null;//nothing to return, should never reach this return
+//      }
+//      return null;//nothing to return, should never reach this return
     }
   }//end of function
 
@@ -344,33 +338,36 @@ function cartProductCount($products_id){
 //  global $db;
 
     $temp_attributes = array();
-    $specAttributes = array();
+//    $specAttributes = array();
     $stock_attributes_list = array();
     $stock_attributes = '';
-    $multi = (count($attribute_list) > 1 ? true : false);
+//    $multi = (count($attribute_list) > 1 ? true : false);
     
-    if (!empty($attribute_list) && is_array($attribute_list)) {
-      if ($from == 'order') {
-        foreach ($attribute_list as $attrib_data) {
-          if (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.  This is probably the best place to do the review because all aspects of the attribute are available.
-            $temp_attributes[$attrib_data['option_id']] = $attrib_data['value_id'];
-          }
-        }
-        $attribute_list = $temp_attributes;
-      } 
-      
-      $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from, $non_sba);
-      
-      
-//      $_SESSION['attributes_list_'. (int)$products_id] = $stock_attributes_list;
-          
-      if (isset($stock_attributes_list) && is_array($stock_attributes_list)) {
-        $stock_attributes = implode(',',$stock_attributes_list);
-      } else {
-        $stock_attributes = $stock_attributes_list;
-      }
+    if (empty($attribute_list) || !is_array($attribute_list)) {
+      return $stock_attributes;
     }
-    
+
+//    if (!empty($attribute_list) && is_array($attribute_list)) {
+    if ($from == 'order') {
+      foreach ($attribute_list as $attrib_data) {
+        if (true) { // mc12345678 Here is one place where verification can be performed as to whether a particular attribute should be added.  This is probably the best place to do the review because all aspects of the attribute are available.
+          $temp_attributes[$attrib_data['option_id']] = $attrib_data['value_id'];
+        }
+      }
+      $attribute_list = $temp_attributes;
+    } 
+
+    $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from, $non_sba);
+
+//    $_SESSION['attributes_list_'. (int)$products_id] = $stock_attributes_list;
+
+    if (isset($stock_attributes_list) && is_array($stock_attributes_list)) {
+      $stock_attributes = implode(',',$stock_attributes_list);
+    } else {
+      $stock_attributes = $stock_attributes_list;
+    }
+//    }
+
     return $stock_attributes;
   }
 
@@ -423,32 +420,34 @@ function cartProductCount($products_id){
         // prepare to search for details for the particular attribute combination passed as a parameter
 
 
+        $text_prefix = 'txt_';
+
         if (defined('TEXT_PREFIX')) {
           $text_prefix = TEXT_PREFIX;
-        } else {
-          $text_prefix = 'txt_';
         }
+
+        $file_prefix = 'upload_';
 
         if (defined('UPLOAD_PREFIX')) {
           $file_prefix = UPLOAD_PREFIX;
-        } else {
-          $file_prefix = 'upload_';
+        }
+
+        $text_value = '0';
+
+        if (defined('PRODUCTS_OPTIONS_VALUE_TEXT_ID')) {
+          $text_value = PRODUCTS_OPTIONS_VALUE_TEXT_ID;
+        }
+
+        $file_value = '0';
+
+        if (defined('PRODUCTS_OPTIONS_VALUE_TEXT_ID')) {
+          $file_value = PRODUCTS_OPTIONS_VALUE_TEXT_ID;
         }
 
         foreach($attribute_list as $optid => $optvalid) {
           if (preg_match('/'.$text_prefix.'/', $optid)) {
-            if (defined('PRODUCTS_OPTIONS_VALUE_TEXT_ID')) {
-              $text_value = PRODUCTS_OPTIONS_VALUE_TEXT_ID;
-            } else {
-              $text_value = '0';
-            }
             $specAttributes[str_replace($text_prefix,'',$optid)] = $text_value;
           } elseif (preg_match('/'.$file_prefix.'/', $optid)) {
-            if (defined('PRODUCTS_OPTIONS_VALUE_TEXT_ID')) {
-              $file_value = PRODUCTS_OPTIONS_VALUE_TEXT_ID;
-            } else {
-              $file_value = '0';
-            }
             $specAttributes[str_replace($file_prefix,'',$optid)] = $file_value;
           } elseif ($optvalid == 0) {
             $specAttributes[$optid] = (int)$optvalid;
@@ -485,17 +484,15 @@ if ($multi && empty($temp_attributes)) $multi = false;
 
         $query = $db->bindVars($query, ':first_search:', $first_search, 'passthru');
 
+      $specAttrib_query = '';
       if (!empty($specAttributes) && is_array($specAttributes)) {
-        $specAttrib_query = '';
         foreach ($specAttributes as $optid=>$optvalid) {
           $specAttrib_query .= ' OR (options_id = :optid: AND options_values_id = :optvalid: AND products_id = :products_id:) ';
           $specAttrib_query = $db->bindVars($specAttrib_query, ':optid:' , $optid, 'integer');
           $specAttrib_query = $db->bindVars($specAttrib_query, ':optvalid:' , $optvalid, 'integer');
         }
-        $query = $db->bindVars($query, ':specAttributes:', $specAttrib_query, 'noquotestring');
-      } else {
-        $query = $db->bindVars($query, ':specAttributes:', '', 'noquotestring');
       }
+      $query = $db->bindVars($query, ':specAttributes:', $specAttrib_query, 'noquotestring');
       $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
 
       $attributes_new = $db->Execute($query);//, false, false, 0, true);
@@ -509,9 +506,8 @@ if ($multi && empty($temp_attributes)) $multi = false;
       
       if (!empty($stock_attributes_list) && is_array($stock_attributes_list)) {
         return $stock_attributes_list;
-      } else {
-        return false;
       }
+      return false;
     }
     return null;
   }
@@ -586,16 +582,20 @@ Of the attributes provided, determine the number of those attributes that are
     $products_id = zen_get_prid($products_id);
 
     //$stock_attribute = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from); // Result is not used. 1/18/2017
+    // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
     if (!$this->zen_product_is_sba($products_id)) {
       return NULL;
     }
-
-    $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
     // Summary of the above, if the product is not tracked by SBA, then return null.
 
-   // Need to evaluate if product is SBA tracked in case the page is posted without the attributes as a separate check.
+    $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
 
-      if (isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) == 1) {
+    // return null if tracked product doesn't have a matching set of attributes.
+    if (!(isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) >= 1)) {
+      return null;
+    }
+
+    if (count($stock_attributes_list) == 1) {
         // Product has one unique record in the database for the list of attributes.  This could be a single option value/option name or it could be a myriad of attributes but entered as a single variant.
         //         echo '<br />Single Attribute <br />';
         // @TODO: what sanitization is in place here?
@@ -608,66 +608,65 @@ Of the attributes provided, determine the number of those attributes that are
         // return the stock qty for the attribute
         if ($stock_values->RecordCount() > 0) {
           return array($stock_values->fields['stock_id']);
-        } else {
-          return false;
         }
-      } elseif (isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) > 1) {
-        //       echo '<br />Multiple attributes <br />';
-        $stockResult = null;
-        //This part checks for "attribute combinations" in the SBA table. (Multiple attributes per Stock ID Row, Multiple Attribute types in stock_attributes Field  i.e, 123,234,321)
-        $stock_attributes = implode(',', $stock_attributes_list);
+        return false;
+    } elseif (count($stock_attributes_list) > 1) {
+      //       echo '<br />Multiple attributes <br />';
+      $stockResult = null;
+      //This part checks for "attribute combinations" in the SBA table. (Multiple attributes per Stock ID Row, Multiple Attribute types in stock_attributes Field  i.e, 123,234,321)
+      $stock_attributes = implode(',', $stock_attributes_list);
+      // create the query to find attribute stock
+      $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :TMPstock_attributes:';
+      $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
+      $stock_query = $db->bindVars($stock_query, ':TMPstock_attributes:', $stock_attributes, 'string');
+      // get the stock value for the combination
+      $stock_values = $db->Execute($stock_query);
+      $stockResult = $stock_values->fields['stock_id'];
+
+      if (/*!$stock_values->EOF && */$stock_values->RecordCount() == 1) {
+        //return the stock for "attribute combinations"
+        return array($stockResult);
+      }
+      //This part is for attributes that are all listed separately in the SBA table for the product
+
+      $stockResult = null;
+      $returnedStock = null;
+      $i = 0;
+      
+      $stockResultArray = array();
+      $notAccounted = false;
+      
+      foreach ($stock_attributes_list as $eachAttribute) {
         // create the query to find attribute stock
-        $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :TMPstock_attributes:';
+        //echo '<br />Multiple Attributes selected (one attribute type per product)<br />';
+        $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :eachAttribute:';
         $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
-        $stock_query = $db->bindVars($stock_query, ':TMPstock_attributes:', $stock_attributes, 'string');
+        $stock_query = $db->bindVars($stock_query, ':eachAttribute:', $eachAttribute, 'passthru');
+
         // get the stock value for the combination
         $stock_values = $db->Execute($stock_query);
-        $stockResult = $stock_values->fields['stock_id'];
+        $stockResult = $stock_values->fields['products_quantity'];
+        $stockResultArray[] = $stock_values->fields['stock_id'];
 
-        if (/*!$stock_values->EOF && */$stock_values->RecordCount() == 1) {
-          //return the stock for "attribute combinations"
-          return array($stockResult);
-        } else {
-          //This part is for attributes that are all listed separately in the SBA table for the product
+        if ($stock_values->RecordCount() == 0) {
+          $notAccounted = true;
+          break;
+        }
 
-          $stockResult = null;
-          $returnedStock = null;
-          $i = 0;
-          
-          $stockResultArray = array();
-          $notAccounted = false;
-          
-          foreach ($stock_attributes_list as $eachAttribute) {
-            // create the query to find attribute stock
-            //echo '<br />Multiple Attributes selected (one attribute type per product)<br />';
-            $stock_query = 'select stock_id, quantity as products_quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id: and stock_attributes like :eachAttribute:';
-            $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
-            $stock_query = $db->bindVars($stock_query, ':eachAttribute:', $eachAttribute, 'passthru');
+        //special test to account for qty when all attributes are listed seperetly
+        if (!zen_not_null($returnedStock) && $i == 0) {
+          //set initial value
+          $returnedStock = $stockResult;
 
-            // get the stock value for the combination
-            $stock_values = $db->Execute($stock_query);
-            $stockResult = $stock_values->fields['products_quantity'];
-            $stockResultArray[] = $stock_values->fields['stock_id'];
-
-            if ($stock_values->RecordCount() == 0) {
-              $notAccounted = true;
-              break;
-            }
-
-            //special test to account for qty when all attributes are listed seperetly
-            if (!zen_not_null($returnedStock) && $i == 0) {
-              //set initial value
-              if ($stock_values->RecordCount() == 0) {
-                $returnedStock = 0;
-              } else {
-                $returnedStock = $stockResult;
-              }
-            } elseif ($returnedStock > $stockResult) {
-              //update for each attribute, if qty is lower than the previous one
-              $returnedStock = $stockResult;
-            } // end if first stock item of attribute
-            $i++;
-          } // end for each attribute.
+          if ($stock_values->RecordCount() == 0) {
+            $returnedStock = 0;
+          }
+        } elseif ($returnedStock > $stockResult) {
+          //update for each attribute, if qty is lower than the previous one
+          $returnedStock = $stockResult;
+        } // end if first stock item of attribute
+        $i++;
+      } // end for each attribute.
 
           /*foreach ($stockResultArray as $stockResult) {
             if (!zen_not_null($stockResult)) {
@@ -676,12 +675,11 @@ Of the attributes provided, determine the number of those attributes that are
             }
           }*/
 
-          if ($notAccounted) {
-            return false;
-          } else {
-            return $stockResultArray;
-          }
-        }
+      if ($notAccounted) {
+        return false;
+      }
+
+      return $stockResultArray;
       
     }
 
@@ -692,7 +690,7 @@ Of the attributes provided, determine the number of those attributes that are
   function zen_sba_has_text_field($sba_table_ids = array()){
     global $db;
     
-    if (!isset($sba_table_ids) || isset($sba_table_ids) && !is_array($sba_table_ids) && $sba_table_ids === false) {
+    if (!isset($sba_table_ids) || !is_array($sba_table_ids) && $sba_table_ids === false) {
       return false;
     }
     
@@ -805,28 +803,28 @@ Of the attributes provided, determine the number of those attributes that are
       //}
     }
 
+    $text_prefix = 'txt_';
+
     if (defined('TEXT_PREFIX')) {
       $text_prefix = constant('TEXT_PREFIX');
-    } else {
-      $text_prefix = 'txt_';
     }
+
+    $file_prefix = 'upload_';
 
     if (defined('UPLOAD_PREFIX')) {
       $file_prefix = UPLOAD_PREFIX;
-    } else {
-      $file_prefix = 'upload_';
     }
+
+    $text_value = '0';
 
     if (defined('PRODUCTS_OPTIONS_VALUE_TEXT_ID')) {
       $text_value = PRODUCTS_OPTIONS_VALUE_TEXT_ID;
-    } else {
-      $text_value = '0';
     }
+
+    $file_value = '0';
 
     if (defined('PRODUCTS_OPTIONS_VALUE_TEXT_ID')) {
       $file_value = PRODUCTS_OPTIONS_VALUE_TEXT_ID;
-    } else {
-      $file_value = '0';
     }
 
     if (!empty($attribute_list) && is_array($attribute_list)) {
@@ -1155,28 +1153,28 @@ Of the attributes provided, determine the number of those attributes that are
 //      }
     }
 
+    $text_prefix = 'txt_';
+
     if (defined('TEXT_PREFIX')) {
       $text_prefix = TEXT_PREFIX;
-    } else {
-      $text_prefix = 'txt_';
     }
+
+    $file_prefix = 'upload_';
 
     if (defined('UPLOAD_PREFIX')) {
       $file_prefix = UPLOAD_PREFIX;
-    } else {
-      $file_prefix = 'upload_';
     }
+
+    $text_value = '0';
 
     if (defined('PRODUCTS_OPTIONS_VALUE_TEXT_ID')) {
       $text_value = PRODUCTS_OPTIONS_VALUE_TEXT_ID;
-    } else {
-      $text_value = '0';
     }
+
+    $file_value = '0';
 
     if (defined('PRODUCTS_OPTIONS_VALUE_TEXT_ID')) {
       $file_value = PRODUCTS_OPTIONS_VALUE_TEXT_ID;
-    } else {
-      $file_value = '0';
     }
 
     if (!empty($attribute_list) && is_array($attribute_list)) {
@@ -1294,8 +1292,10 @@ Of the attributes provided, determine the number of those attributes that are
     $retry = 1;
     while ($retry >= 0) {
     if (!$retry) {
+      $new_attrib_list = $attribute_list;
+
       if ($stocked_overrides) {
-        $new_attrib_list = $attribute_list;
+//        $new_attrib_list = $attribute_list;
         foreach ($new_attrib_list as $keyhere => $products_attribute_id) {
           $attrib_ids_list = $this->zen_get_sba_attribute_ids($products_id, array($keyhere => $products_attribute_id), $from);
           if (zen_not_null($attrib_ids_list) && is_array($attrib_ids_list)) {
@@ -1306,15 +1306,23 @@ Of the attributes provided, determine the number of those attributes that are
             }
           }
         }
-        $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $new_attrib_list, $from);
+/*        $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $new_attrib_list, $from);
       } else {
-        $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
+        $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);*/
       }
+
+      $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $new_attrib_list, $from);
 
       $retry--;
     }
 
-    if (isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) == 1 && $datatype != 'dupTest') {
+    // If there are no attributes to support review, then go through the next step in the cycle.
+    if (!(isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) >= 1)) {
+      $retry--;
+      continue;
+    }
+
+    if (count($stock_attributes_list) == 1 && $datatype != 'dupTest') {
       //         echo '<br />Single Attribute <br />';
       $stock_attributes = $stock_attributes_list[0];
       // create the query to find single attribute stock
@@ -1356,7 +1364,7 @@ Of the attributes provided, determine the number of those attributes that are
 
         return false;
       }
-    } elseif (isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) > 1) {
+    } elseif (count($stock_attributes_list) > 1) {
       // mc12345678 multiple attributes are associated with the product
       //   question is how these relate to the SBA variant.
       //       echo '<br />Multiple attributes <br />';
@@ -1435,10 +1443,10 @@ Of the attributes provided, determine the number of those attributes that are
           //special test to account for qty when all attributes are listed seperetly
           if (!zen_not_null($returnedStock) && $i == 0) {
             //set initial value
+            $returnedStock = $stockResult;
+
             if ($stock_values->RecordCount() == 0) {
               $returnedStock = 0;
-            } else {
-              $returnedStock = $stockResult;
             }
           } elseif ($returnedStock > $stockResult) {
             //update for each attribute, if qty is lower than the previous one
@@ -1489,23 +1497,26 @@ Of the attributes provided, determine the number of those attributes that are
     
     $attribute_info = array();
 
-    if (!empty($attribute_list) && is_array($attribute_list)) {
-      $attribute_info['stock_attribute'] = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
-      $query = 'select stock_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . 
-                ' where `stock_attributes` = "' . $attribute_info['stock_attribute'] . '" and products_id = ' . (int)$products_id;
-
-      $stock_id = $db->Execute($query);
-
-      if (/*!$stock_id->EOF && */$stock_id->RecordCount() > 1 /*zen_not_null($stock_id) && count($stock_id) > 1*/) {
-        // Log an error instead of displaying it.  This way the store operator can identify additional information.
-        trigger_error('This is an error situation, as only one record should be returned.  More than one stock id was returned which should not be possible.', E_USER_WARNING);
-      } else {
-        $attribute_info['stock_id'] = $stock_id->fields['stock_id'];
-        return $attribute_info;
-      }
+    if (empty($attribute_list) || !is_array($attribute_list)) {
+      return null;
     }
 
-    return null;
+    $attribute_info['stock_attribute'] = $this->zen_get_sba_stock_attribute($products_id, $attribute_list, $from);
+    $query = 'select stock_id from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . 
+              ' where `stock_attributes` = "' . $attribute_info['stock_attribute'] . '" and products_id = ' . (int)$products_id;
+
+    $stock_id = $db->Execute($query);
+
+    if (/*!$stock_id->EOF && */$stock_id->RecordCount() > 1 /*zen_not_null($stock_id) && count($stock_id) > 1*/) {
+      // Log an error instead of displaying it.  This way the store operator can identify additional information.
+      trigger_error('This is an error situation, as only one record should be returned.  More than one stock id was returned which should not be possible.', E_USER_WARNING);
+      return null;
+    }
+
+    $attribute_info['stock_id'] = $stock_id->fields['stock_id'];
+
+    return $attribute_info;
+
   }  
   
   /**
@@ -1595,6 +1606,8 @@ Of the attributes provided, determine the number of those attributes that are
     //  by dynamic dropdowns and therefore should not be displayed with dropdowns 
     //  until the option type is properly worked around and supported in the dropdowns.
 //    $special = array(PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_FILE, /*PRODUCTS_OPTIONS_TYPE_READONLY,*/ PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_GRID, PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID);
+    $special = array();
+
     if (defined('PRODUCTS_OPTIONS_TYPE_TEXT')) {
       $special[] = PRODUCTS_OPTIONS_TYPE_TEXT;
     }
@@ -1672,27 +1685,20 @@ Of the attributes provided, determine the number of those attributes that are
       return $this->_isSBA[(int)$product_id]['status'];
     }
     
-    $inSBA_query = $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK); /*'SELECT * 
-                    FROM information_schema.tables
-                    WHERE table_schema = :your_db: 
-                    AND table_name = :table_name:
-                    LIMIT 1;';
-    $inSBA_query = $db->bindVars($inSBA_query, ':your_db:', DB_DATABASE, 'string');
-    $inSBA_query = $db->bindVars($inSBA_query, ':table_name:', TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'string');
-    $SBA_installed = $db->Execute($inSBA_query, false, false, 0, true);*/
-        
+    $inSBA_query = $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK);
+
     if ($inSBA_query /*!$SBA_installed->EOF && $SBA_installed->RecordCount() > 0*/) { // Added to simplify query/code, assuming caching won't/can't be an issue.
       $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE products_id = :products_id:;';
       $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
       $isSBA = $db->Execute($isSBA_query);//, false, false, 0, true);
     
-      if (/*!$isSBA->EOF && */$isSBA->RecordCount() > 0) {
+      if ($isSBA->RecordCount() > 0) {
         $this->_isSBA[(int)$product_id]['status'] = true;
         return true;
-      } else {
-        $this->_isSBA[(int)$product_id]['status'] = false;
-        return false;
       }
+
+      $this->_isSBA[(int)$product_id]['status'] = false;
+      return false;
     }
 
     $this->_isSBA[(int)$product_id] = false;
