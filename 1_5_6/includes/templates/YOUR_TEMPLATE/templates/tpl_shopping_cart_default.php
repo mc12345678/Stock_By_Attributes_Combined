@@ -9,9 +9,9 @@
  * @copyright Copyright 2003-2018 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: Author: DrByte  Modified in v1.5.6 $
+ * @version $Id: Drbyte Sun Jan 7 21:28:50 2018 -0500 Modified in v1.5.6 $
  * 
- * Updated for Stock by Attributes 1.5.3 15-10-04
+ * Updated for Stock by Attributes 1.5.4 18-12-30
  */
 ?>
 <div class="centerColumn" id="shoppingCartDefault">
@@ -87,14 +87,14 @@
 <a href="<?php echo $product['linkProductsName']; ?>"><span class="cartImage back"><?php echo $product['productsImage']; ?></span><span class="cartProdTitle"><?php echo $product['productsName'] . '<span class="alert bold">' . $product['flagStockCheck'] . '</span>'; ?></span></a>
 
 <?php 
-  // START "Stock by Attributes"
+  // START "Stock by Attributes" 1 of 3
   if ( (STOCK_SHOW_LOW_IN_CART == 'true') && $product['flagStockCheck'] ) {
 
       echo '<span class="alert bold">';
-      if( $product['stockAvailable'] <= 0 ){
+      if(isset($product['stockAvailable']) && $product['stockAvailable'] <= 0 ){
         echo '<br class="clearBoth" />' . PWA_OUT_OF_STOCK . '&nbsp;';
       }
-      elseif($product['lowproductstock'] == true){
+			elseif(isset($product['lowproductstock']) && $product['lowproductstock'] == true){
         echo '<br class="clearBoth" />' . PWA_LOW_STOCK . '&nbsp;';
         echo '<br class="clearBoth" />' . PWA_STOCK_AVAILABLE . '&nbsp;';
         echo ((isset($product['stockAvailable'])) ? $product['stockAvailable']: 0);//shows stock
@@ -106,35 +106,35 @@
       echo '</span>';
 
   }
-  // END "Stock by Attributes"
+  // END "Stock by Attributes" 1 of 3
 ?>
 <br class="clearBoth" />
 
 
 <?php
 
-// START "Stock by Attributes" 
-if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && !is_null($product['customid']['value']) ){
+// START "Stock by Attributes" 2 of 3
+if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && isset($product['customid']['value']) ){
   echo '<div class="cartAttribsList">';
   echo PWA_CUSTOMID_NAME . $product['customid']['value'];
   echo '</div>';
 }
-// END "Stock by Attributes"
+// END "Stock by Attributes" 2 of 3
 
   echo $product['attributeHiddenField'];
   if (isset($product['attributes']) && is_array($product['attributes'])) {
     echo '<div class="cartAttribsList">';
     echo '<ul>';
     foreach ($product['attributes'] as $option => $value) {
-    // START "Stock by Attributes"
+    // START "Stock by Attributes" 3 of 3
 ?>
 
 <li><?php echo $value['products_options_name'] . TEXT_OPTION_DIVIDER . nl2br($value['products_options_values_name']);
-      if ($product['customid']['type'] == 'multi' && zen_not_null($value['customid'])) { 
+      if (isset($product['customid']['type']) && $product['customid']['type'] == 'multi' && isset($value['customid']) && zen_not_null($value['customid'])) { 
         echo ' - ' . nl2br(zen_output_string_protected($value['customid'])); 
       } ?></li>
 <?php
-    // END "Stock by Attributes"
+    // END "Stock by Attributes" 3 of 3
     }
   echo '</ul>';
   echo '</div>';
