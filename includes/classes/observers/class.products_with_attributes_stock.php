@@ -70,6 +70,7 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION';
     $attachNotifier[] = 'NOTIFY_HEADER_END_SHOPPING_CART';
     $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_SHIPPING';
+    $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_CONFIRMATION';
 
   
     $this->attach($this, $attachNotifier);
@@ -88,37 +89,44 @@ class products_with_attributes_stock extends base {
   */
   function updateZenGetProductsStock(&$callingClass, $notifier, $products_id, &$products_quantity, &$quantity_handled) {
 
+    // Check if SBA has been initiated, if not then errors will be thrown by some of
+    //   the remaining code.  Exit gracefully from this code to not have it process anything.
+    if (empty($_SESSION['pwas_class2'])) return;
+
     // Check if SBA tracked, if not, then no need to process further.
+    if (!$_SESSION['pwas_class2']->zen_product_is_sba($products_id)) return false;
 
     $backtrace = debug_backtrace();
     $current_level = -1;
     $args = array();
+    $attributes = array();
 
-//    trigger_error('backtrace: ' . print_r($backtrace, true), E_USER_WARNING);
     
     foreach ($backtrace as $level => $data) {
       if ($data['function'] === 'zen_get_products_stock') {
         $current_level = $level;
         $args['zen_get_products_stock'] = $data['args'];
-        $attributes = isset($args[1]) ? $args[1] : null;
-        $dupTest = isset($args[2]) ? $args[2] : null;
+        $attributes = isset($args['zen_get_products_stock'][1]) ? $args['zen_get_products_stock'][1] : null;
+        $dupTest = isset($args['zen_get_products_stock'][2]) ? $args['zen_get_products_stock'][2] : null;
+        if (!empty($this->from)) {
+          $this->setCheckStockParams($this->from);
+        
+          $attributes = !isset($attributes) ? $this->attributes : $attributes;
+        }
+
+
         continue;
       }
       if ($data['function'] === 'zen_check_stock' && $current_level != -1 && $level > $current_level) {
         $current_level = $level;
         $args['zen_check_stock'] = $data['args'];
         $attributes = isset($args['zen_check_stock'][2]) ? $args['zen_check_stock'][2] : null;
-        $from = isset($args['zen_check_stock'][3]) ? $args['zen_check_stock'][3] : 'products';
-
-        if ($from == 'order' && isset($attributes) && is_array($attributes)) {
-          $tmp_attrib = array();
-//  trigger_error('attributes: ' . print_r($attributes, true), E_USER_WARNING);
-          foreach ($attributes as $attrib) {
-            $tmp_attrib[$attrib['option_id']] = $attrib['value_id'];
-          }
-          $attributes = $tmp_attrib;
+        $from = isset($this->from) ? $this->from : (isset($args['zen_check_stock'][3]) ? $args['zen_check_stock'][3] : 'products');
+        if (!empty($this->from) /*&& $data['function'] === 'zen_check_stock' && $current_level != -1*/ /*&& $level == $current_level+1*/) {
+          $this->setCheckStockParams($this->from);
+        
+          $attributes = $this->attributes;
         }
-        break; // This is expected to be met after the check_stock has been completed, therefore no further processing to do.
       }
     }
     
@@ -126,24 +134,21 @@ class products_with_attributes_stock extends base {
       return false;
     }
     
-    if ($products_id && (isset($attributes) && !is_array($attributes) && !zen_not_null($attributes))) {
+    if ($products_id && (empty($attributes) || !is_array($attributes))) {
       //For products without associated attributes, get product level stock quantity
 //  DON'T HANDLE
       return false;
-    } elseif (is_array($attributes) && count($attributes) > 0) {
+    } elseif (!empty($attributes) && is_array($attributes)) {
       // below function/call was written in ZC 1.5.1, 1.5.3, and 1.5.4 to support broadly addressing attributes and for
       //   some reason in ZC 1.5.5, the call was omitted/skipped.
-      $products_quantity =  isset($_SESSION['pwas_class2'])
-          && method_exists($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info')
-          && is_callable(array($_SESSION['pwas_class2'], 'zen_get_sba_attribute_info'))
-              ? $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', (isset($dupTest) && $dupTest == 'true' ? 'dupTest' : 'stock'))
-              : zen_get_sba_attribute_info($products_id, $attributes, 'products', (isset($dupTest) && $dupTest == 'true' ? 'dupTest' : 'stock'));
+      $products_quantity =
+          $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', (isset($dupTest) && $dupTest == 'true' ? 'dupTest' : 'stock'));
       $quantity_handled = true;
       return false;
     }
 
-    $products_quantity = null;
-    $quantity_handled = true;
+//    $products_quantity = null;
+//    $quantity_handled = true;
     return false;
   
   }
@@ -1108,7 +1113,7 @@ class products_with_attributes_stock extends base {
 
          */
 
-        if (!isset($this->_isSBA[(int)$productArray[$i]['id']]['sql' . $i])) {
+        if (!isset($this->_isSBA[(int)$productArray[$i]['id']]['sql' . (int)$i])) {
           //get the option/attribute list
           $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
                                 popt.products_options_type, popt.products_options_length, popt.products_options_comment,
@@ -1235,6 +1240,45 @@ class products_with_attributes_stock extends base {
       } // EOF valid to checkout.
     } // EOF opening validation
   } // EOF function updateNotifyHeaderStartCheckoutShipping 
+  
+  // NOTIFY_HEADER_START_CHECKOUT_CONFIRMATION
+  function updateNotifyHeaderStartCheckoutConfirmation(&$callingClass, $notifier) {
+    $this->from = 'order';
+  }
+  
+  function setCheckStockParams($from) {
+    if ($from == 'order') {
+      $tmp_attrib = array();
+    
+      // If there is no order created then there is nothing to be done at this point.
+      if (!isset($GLOBALS['order'])) return;
+
+      // Duplicate the order information here for use/reading.
+      $order = $GLOBALS['order'];
+
+      // If there are no products in the order, then there is no stock to address.
+      if (empty($order->products)) return;
+      
+      // Expect that the product "counter" is the variable i and is in the global space.
+      if (!isset($GLOBALS['i'])) return;
+
+      $i = $GLOBALS['i'];
+
+      // if the product doesn't have any sub-characteristics or there are no attributes then no specific SBA stock to consider.
+      if (empty($order->products[$i]) && empty($order->products[$i]['attributes'])) return;
+      
+      // Obtain the attributes from the specific product.
+      $attributes = $order->products[$i]['attributes'];
+      
+      // Build the catalog side attributes from the attribute data of the order class.
+      foreach ($attributes as $attrib) {
+        $tmp_attrib[$attrib['option_id']] = $attrib['value_id'];
+      }
+
+      // Set the internal attributes to the temporary array that was generated.
+      $this->attributes = $tmp_attrib;
+    }
+  }
   
   /*
    * Generic function that is activated when any notifier identified in the observer is called but is not found in one of the above previous specific update functions is encountered as a notifier.
