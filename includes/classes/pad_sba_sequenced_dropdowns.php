@@ -572,9 +572,9 @@ Array(
   
 */
     function _build_attributes_array($build_stocked, $build_nonstocked) {
-      global $languages_id;
+//      global $languages_id;
       global $currencies;
-      global $cart;
+//      global $cart;
       global $db;
     
       if (!($build_stocked | $build_nonstocked)) return null;
@@ -776,7 +776,7 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
   
 */
   function _draw_dropdown_sequence_js($attributes) {
-    global $options_html_id;
+//    global $options_html_id;
     $out = '';
     $outArrayList = array();
     $outArrayAdd = array();
