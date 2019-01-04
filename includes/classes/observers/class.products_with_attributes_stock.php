@@ -1225,14 +1225,12 @@ class products_with_attributes_stock extends base {
           $products = $_SESSION['cart']->get_products();
           for ($i = 0, $n = count($products); $i < $n; $i++) {
             unset($attributes);
+            $attributes = null;
+
             if (isset($products[$i]) && is_array($products[$i]) && array_key_exists('attributes', $products[$i]) && isset($products[$i]['attributes']) && is_array($products[$i]['attributes'])) {
               if ($_SESSION['pwas_class2']->zen_product_is_sba($products[$i]['id'])) {
                 $attributes = $products[$i]['attributes'];
-              } else {
-                $attributes = null;
-              }
-            } else {
-              $attributes = null;
+              } 
             }
             if (zen_not_null($attributes)) {
               if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
