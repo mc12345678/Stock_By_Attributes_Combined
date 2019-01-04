@@ -5,38 +5,30 @@
  * Template used to render attribute display/input fields
  *
  * @package templateSystem
- * @copyright Copyright 2003-2016 Zen Cart Development Team
+ * @copyright Copyright 2003-2018 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: Author: DrByte  Sat Oct 17 21:58:04 2015 -0400 Modified in v1.5.5 $
- * Modified to support products with attributes that are not tracked by SBA.
+ * @version $Id: mc12345678 Tue May 8 00:42:18 2018 -0400 Modified in v1.5.6 $
+ * Modified from Dynamic Dropdowns and ZC to support products with attributes 
+ * that are not tracked by SBA.
  * 
- * Stock by Attributes 1.5.4 : mc12345678 15-08-17
+ * Stock by Attributes 1.5.4 : mc12345678 18-12-24
  */
 ?>
 <div id="productAttributes">
 <?php
-    if ($is_SBA_product /*$stock->_isSBA*/ && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && defined('PRODINFO_ATTRIBUTE_DYNAMIC_STATUS') && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS != '0'
-        && ((isset($_SESSION['pwas_class2'])
-            && method_exists($_SESSION['pwas_class2'], 'zen_sba_dd_allowed')
-            && is_callable(array($_SESSION['pwas_class2'], 'zen_sba_dd_allowed')))
-              ? $_SESSION['pwas_class2']->zen_sba_dd_allowed($products_options_names)
-              : ((function_exists('zen_sba_dd_allowed')) 
-                ? zen_sba_dd_allowed($products_options_names)
-                : true)
-            )
+    if (!empty($is_SBA_product) && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && defined('PRODINFO_ATTRIBUTE_DYNAMIC_STATUS') && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS !== '0'
+        && 
+        (
+          !isset($_SESSION['pwas_class2'])
+          || $_SESSION['pwas_class2']->zen_sba_dd_allowed($products_options_names)
+        )
         ) {
       if (!defined('SBA_ZC_DEFAULT')) {
         define('SBA_ZC_DEFAULT','false'); // sets to use the ZC method of HTML tags around attributes.
       }
-      $prodInSBA = (isset($_SESSION['pwas_class2'])
-            && method_exists($_SESSION['pwas_class2'], 'zen_product_is_sba')
-            && is_callable(array($_SESSION['pwas_class2'], 'zen_product_is_sba'))
-              ? $_SESSION['pwas_class2']->zen_product_is_sba($_GET['products_id'])
-              : (function_exists('zen_product_is_sba') 
-                ? zen_product_is_sba($_GET['products_id'])
-                : false)
-            );
+      $prodInSBA = isset($_SESSION['pwas_class2'])
+            && $_SESSION['pwas_class2']->zen_product_is_sba($_GET['products_id']);
     } else { 
 //      $inSBA = new queryFactoryResult($db->link);
 //      $inSBA->EOF = true;
@@ -48,6 +40,7 @@
       $products_attributes_query = $db->bindVars($products_attributes_query, ':products_id:', $_GET['products_id'], 'integer');
       $products_attributes_query = $db->bindVars($products_attributes_query, ':languages_id:', $_SESSION['languages_id'], 'integer');
       $products_attributes = $db->Execute($products_attributes_query);
+      $products_attributes_total = ($products_attributes->EOF || empty($products_attributes->fields['total']) ? 0 : $products_attributes->fields['total']);
       $products_attributes_noread_query = "SELECT count(distinct products_options_id) AS total 
          FROM " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id=:products_id:
          AND patrib.options_id = popt.products_options_id
@@ -56,17 +49,31 @@
       $products_attributes_noread_query = $db->bindVars($products_attributes_noread_query, ':products_id:', $_GET['products_id'], 'integer');
       $products_attributes_noread_query = $db->bindVars($products_attributes_noread_query, ':languages_id:', $_SESSION['languages_id'], 'integer');
       $products_attributes_noread = $db->Execute($products_attributes_noread_query);
-      if ((
-        ((defined('PRODINFO_ATTRIBUTE_PLUGIN_MULTI') && ($products_attributes->fields['total'] > 1) 
-          && ($products_attributes->fields['total'] - $products_attributes_noread->fields['total'] !== $products_attributes->fields['total']/*0*/) 
-          && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2')) 
-           ? file_exists(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_MULTI . '.php') 
-           : ( (defined('PRODINFO_ATTRIBUTE_PLUGIN_SINGLE') 
-              && ($products_attributes->fields['total'] == 1 || ($products_attributes->fields['total'] > 1 && $products_attributes_noread->fields['total'] == 1)) 
-              && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3')) 
-               ? file_exists(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_SINGLE . '.php') 
-               : false )) 
-        && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && $prodInSBA/*!$inSBA->EOF*/)) {
+      $products_attributes_noread_total = ($products_attributes_noread->EOF || empty($products_attributes_noread->fields['total']) ? 0 : $products_attributes_noread->fields['total']);
+      if (
+          ($prodInSBA && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') &&
+            (
+             (
+              defined('PRODINFO_ATTRIBUTE_PLUGIN_MULTI') 
+              && ($products_attributes_total > 1)
+              && ($products_attributes_total - $products_attributes_noread_total !== $products_attributes_total)
+              && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2')
+             )
+              ? file_exists(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_MULTI . '.php')
+              : ( 
+                 (
+                  defined('PRODINFO_ATTRIBUTE_PLUGIN_SINGLE')
+                  && ($products_attributes_total == 1 || 
+                      ($products_attributes_total > 1 && $products_attributes_noread_total == 1)
+                     )
+                  && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3')
+                 )
+                 ? file_exists(DIR_WS_CLASSES . 'pad_' . PRODINFO_ATTRIBUTE_PLUGIN_SINGLE . '.php')
+                 : false 
+                )
+            )
+          )
+         ) {
         //$products_attributes = $db->Execute("select count(distinct products_options_id) as total from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id='" . (int) $_GET['products_id'] . "' and patrib.options_id = popt.products_options_id and popt.language_id = " . (int) $_SESSION['languages_id'] . "");
 
 
