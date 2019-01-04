@@ -93,6 +93,9 @@ class products_with_attributes_stock extends base {
     //   the remaining code.  Exit gracefully from this code to not have it process anything.
     if (empty($_SESSION['pwas_class2'])) return;
 
+    // There is no appropriate product to handle.
+    if (isset($products_id) && (int)$products_id <= 0) return false;
+
     // Check if SBA tracked, if not, then no need to process further.
     if (!$_SESSION['pwas_class2']->zen_product_is_sba($products_id)) return false;
 
@@ -101,6 +104,12 @@ class products_with_attributes_stock extends base {
     $args = array();
     $attributes = array();
 
+    // Note that if the $products_id is formatted using the hashed attributes and there are no text attributes then the
+    //  full attribute designation could be determined "applicable" to this product by comparing all of the possible hashes
+    //  against the provided selection to determine what selections had been made without pulling the individual attribute selection.
+    //  though it does offer the opportunity to identify if the products_id is properly generated through comparison and would
+    //  identify if the cart session or the page html had been modified.
+    
     
     foreach ($backtrace as $level => $data) {
       if ($data['function'] === 'zen_get_products_stock') {
@@ -116,7 +125,8 @@ class products_with_attributes_stock extends base {
 
 
         continue;
-      }
+      } // EOF IF zen_get_products_stock
+
       if ($data['function'] === 'zen_check_stock' && $current_level != -1 && $level > $current_level) {
         $current_level = $level;
         $args['zen_check_stock'] = $data['args'];
@@ -127,30 +137,31 @@ class products_with_attributes_stock extends base {
         
           $attributes = $this->attributes;
         }
-      }
-    }
+      } // EOF IF zen_check_stock && $current_level != -1 && $level > $current_level
+    } // EOF foreach backtrace
     
+    // Somehow ended up in this function but applicable sub-routines were not detected
     if ($current_level === -1) {
       return false;
     }
     
-    if ($products_id && (empty($attributes) || !is_array($attributes))) {
+    // Product were passed but $attributes were not.  
+    if (empty($attributes) || !is_array($attributes)) {
       //For products without associated attributes, get product level stock quantity
 //  DON'T HANDLE
       return false;
-    } elseif (!empty($attributes) && is_array($attributes)) {
-      // below function/call was written in ZC 1.5.1, 1.5.3, and 1.5.4 to support broadly addressing attributes and for
-      //   some reason in ZC 1.5.5, the call was omitted/skipped.
-      $products_quantity =
-          $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', (isset($dupTest) && $dupTest == 'true' ? 'dupTest' : 'stock'));
-      $quantity_handled = true;
-      return false;
     }
+    
+    // below function/call was written in ZC 1.5.1, 1.5.3, and 1.5.4 to support broadly addressing attributes and for
+    //   some reason in ZC 1.5.5, the call was omitted/skipped.
+    $products_quantity =
+        $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', (isset($dupTest) && $dupTest == 'true' ? 'dupTest' : 'stock'));
+    $quantity_handled = true;
+    return false;
+
 
 //    $products_quantity = null;
 //    $quantity_handled = true;
-    return false;
-  
   }
   
   /*
