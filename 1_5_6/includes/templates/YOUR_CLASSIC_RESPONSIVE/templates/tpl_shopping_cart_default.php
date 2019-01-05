@@ -114,7 +114,6 @@
 ?>
 <br class="clearBoth" />
 <?php
-
 // START "Stock by Attributes" 2 of 3
 if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && isset($product['customid']['value']) ){
   echo '<div class="cartAttribsList">';
@@ -122,7 +121,6 @@ if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && isset($product['customid']['value'])
   echo '</div>';
 }
 // END "Stock by Attributes" 2 of 3
-
   echo $product['attributeHiddenField'];
   if (isset($product['attributes']) && is_array($product['attributes'])) {
     echo '<div class="cartAttribsList">';
