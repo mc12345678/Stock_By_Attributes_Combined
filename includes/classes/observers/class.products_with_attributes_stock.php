@@ -570,7 +570,9 @@ class products_with_attributes_stock extends base {
       $this->_products_options_names_current = 0;
     }
     // reset or clear the attribute images so that they do not display adjacent/near the product
-    if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO === '2' && $this->_isSBA) {
+    if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && (SBA_SHOW_IMAGE_ON_PRODUCT_INFO === '2' && $this->_isSBA 
+                                                      || SBA_SHOW_IMAGE_ON_PRODUCT_INFO === '3' && !$this->_isSBA
+                                                      || SBA_SHOW_IMAGE_ON_PRODUCT_INFO === '4')) {
       $options_attributes_image = array();
     }
   }
