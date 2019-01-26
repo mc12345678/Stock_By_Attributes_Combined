@@ -812,8 +812,8 @@ function insertSBAconfiguration(){
       9,".$result.",now(),null,'zen_cfg_select_option(array(\'true\', \'false\'),'),
 
       ('SBA Display Attributes Images', 'SBA_SHOW_IMAGE_ON_PRODUCT_INFO', '1',
-    'Allow swap of the attribute image with the main image or prevent the display of the Attribute Image (and allow swap) on the product information page:<br /><br /> Default: 1 (Swap and display)<br />0 - No swap, display image ZC default<br />1 - Swap and display attr img<br />2 - Swap, but hide attribute image',
-      9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\', \'2\'),'),
+    'Allow swap of the attribute image with the main image or prevent the display of the Attribute Image (and allow swap) on the product information page:<br /><br /> Default: 1 (Swap and display)<br />0 - No swap, display image ZC default<br />1 - Swap and display attr img<br />2 - Swap, but hide attribute image<br />3 - Swap, but hide only *non*-SBA product images<br />4 - Swap, but hide *all* attribute images',
+      9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\', \'2\', \'3\', \'4\'),'),
 
       ('SBA Display Non-DD Out-of-Stock Attributes', 'SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO', '1',
     'Allow display of attributes when using the SBA Select List (Dropdown) Basic Option Name type that are out-of-stock and are not managed by Dynamic Dropdowns.<br /><br /> Default: 1 (Show out-of-stock attributes)<br />0 - Hide out-of-stock attributes<br />1 - Show out-of-stock attributes',
