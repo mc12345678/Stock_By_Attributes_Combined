@@ -176,7 +176,7 @@ class products_with_attributes_stock extends base {
      $this->_options_menu_images = array();
      $this->_moveSelectedAttribute = false;
      $products_options_array = array();
-     $options_attributes_image = array();
+//     $options_attributes_image = array();
      // Could do the calculation here the first time set a variable above as part of the class and then reuse that... instead of the modification to the attributes file...
      if (!zen_not_null($this->_products_options_names_count)) {
        $this->_products_options_names_count = $products_options_names->RecordCount();
@@ -570,7 +570,7 @@ class products_with_attributes_stock extends base {
       $this->_products_options_names_current = 0;
     }
     // reset or clear the attribute images so that they do not display adjacent/near the product
-    if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO === '2') {
+    if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO === '2' && $this->_isSBA) {
       $options_attributes_image = array();
     }
   }
