@@ -1632,8 +1632,12 @@ Of the attributes provided, determine the number of those attributes that are
       // $opt_array = array();
       // If there is at least one option name then perform the testing.
       if ($products_options_names->RecordCount() > 0) { 
-        $products_options_names->Move(0);
-//        $products_options_names->MoveNext();
+        if (method_exists($products_options_names, 'rewind')) {
+          $products_options_names->Rewind();
+        } else {
+          $products_options_names->Move(0);
+          $products_options_names->MoveNext();
+        }
         while (!$products_options_names->EOF) {
           if (in_array($products_options_names->fields['products_options_type'], $special)) {
             return false; // mc12345678 Found that current option type is not supported by Dynamic Dropdowns
