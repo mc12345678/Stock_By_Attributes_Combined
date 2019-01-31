@@ -265,7 +265,7 @@ select  ( pwas.quantity) as quantity, ( pwasans.attribute_type) as pwasans_quant
               " . (STOCK_ALLOW_CHECKOUT !== 'false' 
                 ? "" 
                 : "AND pwas.quantity > 0 ") . "
-		GROUP BY pwas.quantity";
+               GROUP BY pwas.quantity";
 
 
 
