@@ -651,7 +651,7 @@ $sql = "select count(*) as total
                   $options_html_id[] = 'drp-attrib-' . $products_options_names->fields['products_options_id'];
                   $options_menu[] = zen_draw_pull_down_menu('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '"' . $params) . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
-                  $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
+                  $options_comment_position[] = (isset($products_options_names->fields['products_options_comment_position']) && $products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
                   break;
 
                   default:
