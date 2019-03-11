@@ -277,7 +277,7 @@ class products_with_attributes_stock extends base {
       //add out of stock text based on qty
       if ((!isset($products_options_fields['pasqty']) || $products_options_fields['pasqty'] < 1) && STOCK_CHECK == 'true' && isset($products_options_fields['pasid']) && $products_options_fields['pasid'] > 0) {
         //test, only applicable to products with-out the display-only attribute set
-        if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
+        if (!isset($products_options_DISPLAYONLY->fields['attributes_display_only']) || ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1)) {
           $products_options_fields['products_options_values_name'] = $products_options_fields['products_options_values_name'] . PWA_OUT_OF_STOCK;
           // $i in includes/modules/YOUR_TEMPLATE/attributes.php is post incremented ($i++) meaning it is sent here with the 
           //   current value, but upon return will be incremented by 1.  Therefore within this function it should be considered as 
@@ -309,11 +309,11 @@ class products_with_attributes_stock extends base {
                     $PWA_STOCK_QTY .= ' (' . $products_options_fields['customid'] . ') ';
                   }
                 }
-              } elseif (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true' && (!isset($products_options_fields['pasqty']) || $products_options_fields['pasqty'] < 1) && (!isset($products_options_fields['pasid']) || $products_options_fields['pasid'] < 1)) {
+              } elseif (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true' && (!isset($products_options_fields['pasqty']) || ($products_options_fields['pasqty'] < 1)) && (!isset($products_options_fields['pasid']) || ($products_options_fields['pasid'] < 1))) {
                 //test, only applicable to products with-out the display-only attribute set
-                if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
+                if (!isset($products_options_DISPLAYONLY->fields['attributes_display_only']) || ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1)) {
                   //use the qty from the product, unless it is 0, then set to out of stock.
-                  if ($this->_products_options_names_count <= 1) {
+                  if (!isset($this->_products_options_names_count) || ($this->_products_options_names_count <= 1)) {
                     if ($products_options_fields['products_quantity'] > 0) {
                       $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options_fields['products_quantity'] . ' ';
                     } else {
@@ -491,7 +491,7 @@ class products_with_attributes_stock extends base {
           if ($show_attributes_qty_prices_icon == 'true') {
             $options_name[] = ATTRIBUTES_QTY_PRICE_SYMBOL.$products_options_names_fields['products_options_name'];
           } else {
-            $options_name[] = '<label class="attribsSelect" for="' . 'attrib-' . $products_options_names_fields["products_options_id"] . '">' . $products_options_names_fields ["products_options_name"] . '</label>';
+            $options_name[] = '<label class="attribsSelect" for="' . 'attrib-' . $products_options_names_fields["products_options_id"] . '">' . $products_options_names_fields["products_options_name"] . '</label>';
           }
         
         // START "Stock by Attributes" SBA
