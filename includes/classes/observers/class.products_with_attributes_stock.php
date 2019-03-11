@@ -1313,8 +1313,8 @@ class products_with_attributes_stock extends base {
     }
     
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP') {
-      global $products_options_fields;
-      $this->updateNotifyAttributesModuleStartOptionsLoop($callingClass, $notifier, $paramsArray, $products_options_fields);
+      global $products_options;
+      $this->updateNotifyAttributesModuleStartOptionsLoop($callingClass, $notifier, $paramsArray, $products_options->fields);
     }
     
     if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT') {
