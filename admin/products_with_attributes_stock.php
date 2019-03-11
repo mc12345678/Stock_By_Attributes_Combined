@@ -1082,6 +1082,15 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     echo zen_draw_input_field('pwas-search-button', 'Search', 'id="pwas-search-button"', true, 'submit', true);
     echo zen_draw_hidden_field('search_order_by', $search_order_by);
     ?></form>
+    <!--<td valign="top" align="left">
+      <form name="product_dropdown" action="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'SSL'); ?>">
+        <select name="selected" onChange="go_search()">
+          <option value="products_model"<?php if ($search_order_by == 'products_model') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_MODEL; ?></option>
+          <option value="products_id"<?php if ($search_order_by == 'products_id') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_ID; ?></option>
+          <option value="products_name"<?php if ($search_order_by == 'products_name') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_NAME; ?></option>
+        </select>
+      </form>
+    </td>-->
     <span style="margin-right:10px;">&nbsp;</span>
     <a href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, $request_type); ?>">Reset</a><span style="margin-right:10px;">&nbsp;</span><a title="Sets sort value for all attributes to match value in the Option Values Manager" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=auto_sort' . '&search_order_by=' . $search_order_by, $request_type); ?>">Sort</a>
     <span style="margin-right:20px;color:red;">&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $SBAsearchbox; ?></span><?php 
