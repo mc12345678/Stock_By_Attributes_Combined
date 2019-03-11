@@ -20,10 +20,9 @@ $currencies = new currencies();
 //$stock = new products_with_attributes_stock;
 $stock = $products_with_attributes_stock_class;
 
+  $language_id = (isset($_SESSION['languages_id']) ? (int)$_SESSION['languages_id'] : 0);
 //set language
-if (isset($_SESSION['languages_id'])) {
-  $language_id = $_SESSION['languages_id'];
-} else {
+if (!$language_id) {
 
   $languages = zen_get_languages();
   $languages_array = array();
@@ -39,11 +38,7 @@ if (isset($_SESSION['languages_id'])) {
 }
 
 //action
-if (isset($_GET['action']) && zen_not_null($_GET['action'])) {
-  $action = zen_db_input(trim($_GET['action']));
-} else {
-  $action = null;
-}
+  $action = (isset($_GET['action']) ? zen_db_input(trim($_GET['action'])) : '');
 
 if (zen_not_null($action)) {
   if (!isset($products_filter)) $products_filter = 0;
@@ -286,28 +281,41 @@ switch ($action) {
     break;
 
   case 'execute':
-
-    if ($_GET['attributes']) {
+    $attributes = (isset($_GET['attributes']) ? $_GET['attributes'] : '');
+    $attributes = (isset($_POST['attributes']) ? $_POST['attributes'] : $attributes);
+    $attributes = trim($attributes);
+    $attributes = zen_db_prepare_input($attributes);
+//    $attributes = (isset($_POST['attributes']) ? zen_db_prepare_input(trim($_POST['attributes'])) : (isset($_GET['attributes']) ? zen_db_prepare_input(trim($_GET['attributes'])) : ''));
+/*    if ($_GET['attributes']) {
       $attributes = $_GET['attributes']; // Why is this overriding the POST version of the same? Shouldn't it be one or the other not both?
     } //s_mack:noconfirm
     if (isset($_POST['attributes'])) {
       $attributes = $_POST['attributes'];
-    }
+    }*/
 
-    if ($_GET['products_id']) {
+//    $products_id = (isset($_POST['products_id']) ? doubleval($_POST['products_id']) : (isset($_GET['products_id']) ? doubleval($_GET['products_id']): 0));
+    $products_id = (isset($_GET['products_id']) ? $_GET['products_id']: 0);
+    $products_id = (isset($_POST['products_id']) ? $_POST['products_id'] : $products_id);
+    $products_id = doubleval($products_id);
+/*    if ($_GET['products_id']) {
       $products_id = doubleval($_GET['products_id']);  // Why is this overriding the POST version of the same? Shouldn't it be one or the other not both?
     } //s_mack:noconfirm
     if (isset($_POST['products_id'])) {
       $products_id = doubleval($_POST['products_id']);
-    }
+    }*/
 
-    $customid = null;
-    if (isset($_GET['customid']) && $_GET['customid']) {
+//    $customid = null;
+//    $customid = (isset($_POST['customid']) ? zen_db_prepare_input(trim($_POST['customid'])) : (isset($_GET['customid']) ? zen_db_prepare_input(trim($_GET['customid'])) : null));
+    $customid = (isset($_GET['customid']) ? $_GET['customid'] : null);
+    $customid = (isset($_POST['customid']) ? $_POST['customid'] : $customid);
+    $customid = trim($customid);
+    $customid = zen_db_prepare_input($customid);
+/*    if (isset($_GET['customid']) && $_GET['customid']) {
       $customid = zen_db_input(trim($_GET['customid']));
     } //s_mack:noconfirm
     if (isset($_POST['customid'])) {
       $customid = zen_db_input(trim($_POST['customid']));
-    }
+    }*/
 
     $skuTitle = null;
     if ($_GET['skuTitle']) {
@@ -319,7 +327,8 @@ switch ($action) {
 
     //$quantity = $_GET['quantity']; //s_mack:noconfirm
     if (isset($_GET['quantity'])/* && $_GET['quantity']*/) {
-      $quantity = doubleval($_GET['quantity']);
+      $quantity = $_GET['quantity'];
+      $quantity = doubleval($quantity);
     } //s_mack:noconfirm
     //if invalid entry return to product
     if (!isset($products_id) || (int)$products_id === 0) {
@@ -456,6 +465,7 @@ switch ($action) {
 
         $arrNew = return_attribute_combinations($arrMain, $intVars);
 
+//trigger_error('arrNew: ' . print_r($arrNew, true), E_USER_WARNING);
         /*
           if ($intVars >= 1) {
           //adds attribute combinations
@@ -716,13 +726,13 @@ switch ($action) {
 }
 } // EOF zen_not_null($_GET['action'])
 
+  $search_order_by = 'products_model';
+
   if (isset($_GET['search_order_by']) || isset($_POST['search_order_by'])) {
     $search_order_by = $_GET['search_order_by'];
     if (isset($_POST['search_order_by'])) {
       $search_order_by = $_POST['search_order_by'];
     }
-  } else {
-    $search_order_by = 'products_model';
   }
 
   // Add a level of sanitization to the process.
@@ -982,12 +992,12 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     $seachPID = null;
     $seachBox = null;
     if (isset($_GET['updateReturnedPID']) || isset($_POST['updateReturnedPID'])) {
-      $seachPID = doubleval(trim($_GET['updateReturnedPID']));
-      $seachBox = doubleval(trim($_GET['updateReturnedPID']));
+      $seachPID = (isset($_GET['updateReturnedPID'])) ? $_GET['updateReturnedPID'] : '';
       if (isset($_POST['updateReturnedPID'])) {
-        $seachPID = doubleval(trim($_POST['updateReturnedPID']));
-        $seachBox = doubleval(trim($_POST['updateReturnedPID']));
+        $seachPID = $_POST['updateReturnedPID'];
       }
+      $seachPID = trim($seachPID);
+      $seachBox = $seachPID = doubleval($seachPID);
       $seachBox = '' . $seachBox . '';
       $seachPID = '' . $seachPID . '';
     } elseif (isset($_GET['search']) || isset($_POST['search'])) {
@@ -1006,19 +1016,21 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       $seachBox = '' . $seachBox . '';
       $seachPID = '' . $seachPID . '';
     } elseif (isset($_GET['seachPID']) || isset($_POST['seachPID'])) {
-      $seachPID = doubleval(trim($_GET['seachPID']));
-      $seachBox = doubleval(trim($_GET['seachPID']));
+      $seachPID = (isset($_GET['seachPID'])) ? $_GET['seachPID'] : '';
       if (isset($_POST['seachPID'])) {
-       $seachPID = doubleval(trim($_POST['seachPID']));
-       $seachBox = doubleval(trim($_POST['seachPID'])); 
+        $seachPID = $_POST['seachPID'];
       }
+      $seachPID = trim($seachPID);
+      $seachBox = $seachPID = doubleval($seachPID);
       $seachBox = '' . $seachBox . '';
       $seachPID = '' . $seachPID . '';
     } else if (isset($_GET['products_filter']) || isset($_POST['products_filter'])) {
-      $products_filter = $seachBox = $seachPID = doubleval(trim($_GET['products_filter']));
+      $seachPID = (isset($_GET['products_filter'])) ? $_GET['products_filter'] : '';
       if (isset($_POST['products_filter'])) {
-        $products_filter = $seachBox = $seachPID = doubleval(trim($_POST['products_filter']));
+        $seachPID = $_POST['products_filter'];
       }
+      $seachPID = trim($seachPID);
+      $products_filter = $seachBox = $seachPID = doubleval($seachPID);
       $seachBox = '' . $seachBox . '';
       $seachPID = '' . $seachPID . '';
     }
