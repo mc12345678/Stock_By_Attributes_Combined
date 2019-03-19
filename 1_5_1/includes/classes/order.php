@@ -236,6 +236,9 @@ class order extends base {
       $index++;
       $orders_products->MoveNext();
     }
+    // BOF: Stock By Attributes - Added Notifier to support customid
+    $this->notify('NOTIFY_ORDER_AFTER_QUERY', $order_id);
+    // EOF: Stock By Attributes - Added Notifier to support customid
   }
 
   function cart() {
