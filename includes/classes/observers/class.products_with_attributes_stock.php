@@ -1336,12 +1336,37 @@ class products_with_attributes_stock extends base {
     if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_PRODUCT_LINE_ITEM'){
       
     }
+
+    /**
+     * Notifier is not present in ZC 1.5.1 and must be added with a modification to support operation.
+     * ZC 1.5.1 (added):       $this->notify('NOTIFY_ORDER_AFTER_QUERY', $order_id);
+     * ZC 1.5.3 through 1.5.5: $this->notify('NOTIFY_ORDER_AFTER_QUERY', array(), $order_id);
+     * ZC 1.5.6:               $this->notify('NOTIFY_ORDER_AFTER_QUERY', IS_ADMIN_FLAG, $order_id);
+     **/
+    if ($notifier == 'NOTIFY_ORDER_AFTER_QUERY') {
+      $this->updateNotifyOrderAfterQuery($callingClass, $notifier, array(), $paramsArray);
+    }
+    
     if ($notifier == 'NOTIFY_ORDER_PROCESSING_ATTRIBUTES_BEGIN') {
       
 //      $stock_attribute = zen_get_sba_stock_attribute(zen_get_prid($this->products[$i]['id']), $this->products[$i]['attributes'], 'order');
 //      $stock_id = zen_get_sba_stock_attribute_id(zen_get_prid($this->products[$i]['id']), $this->products[$i]['attributes'], 'order'); //true; // Need to use the $stock_attribute/attributes to obtain the attribute id.
     }
 
+    /**
+     * ZC 1.5.1: $this->notify('NOTIFY_ORDER_CART_ADD_PRODUCT_LIST', array('index'=>$index, 'products'=>$products[$i]));
+     **/
+    if ($notifier == 'NOTIFY_ORDER_CART_ADD_PRODUCT_LIST') {
+      $this->updateNotifyOrderCartAddProductList($callingClass, $notifier, $paramsArray);
+    }
+    
+    /**
+     * ZC 1.5.1: $this->notify('NOTIFY_ORDER_CART_ADD_ATTRIBUTE_LIST', array('index'=>$index, 'subindex'=>$subindex, 'products'=>$products[$i], 'attributes'=>$attributes));
+     **/
+    if ($notifier == 'NOTIFY_ORDER_CART_ADD_ATTRIBUTE_LIST') {
+      $this->updateNotifyOrderCartAddAttributeList($callingClass, $notifier, $paramsArray);
+    }
+    
     /**
      *Provided in ZC 1.5.1: $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN', array('i'=>$i, 'stock_values'=>$stock_values));
      **/
@@ -1400,6 +1425,30 @@ class products_with_attributes_stock extends base {
       $this->updateNotifyOrderDuringCreateAddedAttributeLineItem($callingClass, $notifier, $paramsArray, $paramsArray['orders_products_attributes_id']);
     } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
     
+    /**
+     * ZC 1.5.1: $zco_notifier->notify('NOTIFY_HEADER_END_ACCOUNT_HISTORY');
+     **/
+    if ($notifier == 'NOTIFY_HEADER_END_ACCOUNT_HISTORY_INFO') {
+      $this->updateNotifyHeaderEndAccountHistoryInfo($callingClass, $notifier, $paramsArray);
+    }
+
+    /**
+     * ZC 1.5.1: $zco_notifier->notify('NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION');
+     **/
+    if ($notifier == 'NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION') {
+      $this->updateNotifyHeaderEndCheckoutConfirmation($callingClass, $notifier, $paramsArray);
+    }
+    
+    /**
+     * ZC 1.5.1: $zco_notifier->notify('NOTIFY_HEADER_END_SHOPPING_CART');
+     **/
+    if ($notifier == 'NOTIFY_HEADER_END_SHOPPING_CART') {
+      $this->updateNotifyHeaderEndShoppingCart($callingClass, $notifier, $paramsArray);
+    }
+    
+    /**
+     * ZC 1.5.1: $zco_notifier->notify('NOTIFY_HEADER_START_CHECKOUT_SHIPPING');
+     **/
     if ($notifier == 'NOTIFY_HEADER_START_CHECKOUT_SHIPPING') {
       $this->updateNotifyHeaderStartCheckoutShipping($callingClass, $notifier, $paramsArray);
     } //endif NOTIFY_HEADER_START_CHECKOUT_SHIPPING
