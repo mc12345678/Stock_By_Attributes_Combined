@@ -10,7 +10,8 @@ class products_with_attributes_stock_admin extends base {
 
   //
   private $_customid = array();
-  private $_productI;  
+  private $_productI;
+  private $orderProcessed;
 /*  private $_productI;
   
   private $_i;
@@ -41,6 +42,7 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'OPTIONS_NAME_MANAGER_UPDATE_OPTIONS_VALUES_DELETE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME';
+    $attachNotifier[] = 'NOTIFY_ORDER_AFTER_QUERY';
     $attachNotifier[] = 'ORDER_QUERY_ADMIN_COMPLETE';
     $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT_STOCK_DECREMENT'; // Need to code for
     $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT';
@@ -48,7 +50,9 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'EDIT_ORDERS_REMOVE_PRODUCT';
     $attachNotifier[] = 'NOTIFY_EO_GET_PRODUCTS_STOCK'; // Need to code for
 
-    $this->attach($this, $attachNotifier); 
+    $this->attach($this, $attachNotifier);
+
+    $this->orderProcessed = false;
   }  
 
   /*
@@ -351,10 +355,29 @@ class products_with_attributes_stock_admin extends base {
     unset($stock_ids);
   }
 
+  // NOTIFY_ORDER_AFTER_QUERY
+  // Added in ZC 1.5.6 by use of the catalog side: includes/classes/orders.php
+  // Expected to replace ORDER_QUERY_ADMIN_COMPLETE in future versions.
+  // Observer added to support handling if/when that observer is removed.
+  function updateNotifyOrderAfterQuery(&$orderClass, $notifier, $paramsArray, &$orders_id) {
+    if (!empty($paramsArray) && !is_array($paramsArray) && $paramsArray === true) {
+      $this->updateOrderQueryAdminComplete($orderClass, $notifier, array('orders_id'=>$orders_id));
+    }
+  }
+
   // ORDER_QUERY_ADMIN_COMPLETE
   function updateOrderQueryAdminComplete(&$orderClass, $notifier, $paramsArray) {
     global $db;
-    
+
+    if (!empty($this->orderProcessed)) {
+      $this->orderProcessed = false;
+      return;
+    }
+
+    if (empty($this->orderProcessed) && $notifier == 'NOTIFY_ORDER_AFTER_QUERY') {
+      $this->orderProcessed = true;
+    }
+
     $order_id = $paramsArray['orders_id'];
     
     //$orders_products_sba = $db->Execute("select orders_products_attributes_stock_id, orders_products_attributes_id, orders_products_id, stock_id, stock_attribute, customid, products_prid from " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK . " where orders_id = " . (int)$order_id );
@@ -790,6 +813,10 @@ class products_with_attributes_stock_admin extends base {
     if ($notifier == 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME') {
       //, array('current_products_id' => $current_products_id, 'remove_ids' => $remove_downloads_ids, 'options_id'=>$options_id_from, 'options_values_id'=>$options_values_values_id_from));
       $this->updateOptionsValuesManagerDeleteValuesOfOptionname($callingClass, $notifier, $paramsArray);
+    }
+    
+    if ($notifier == 'NOTIFY_ORDER_AFTER_QUERY') {
+      $this->updateNotifyOrderAfterQuery($callingClass, $notifier, $paramsArray, (!empty($paramsArray['orders_id']) ? $paramsArray['orders_id'] : $paramsArray));
     }
     
     if ($notifier == 'ORDER_QUERY_ADMIN_COMPLETE') {
