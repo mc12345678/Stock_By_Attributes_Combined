@@ -407,8 +407,8 @@ class products_with_attributes_stock_admin extends base {
             // Goal of this routine is to provide the individual customid for the specific attribute to be able to capture each individual customid for the
             //   attribute and to then also be able to capture the "total" customid for the product.
             foreach ($orderClass->products[$index]['attributes'] as $key => $value) {
-              if (/*$value['option'] == $orders_products_sba_customid->fields['products_options_id']
-                  &&*/ $value['value_id'] == $orders_products_sba_customid->fields['products_options_values_id']) {
+              if ($value['option_id'] == $orders_products_sba_customid->fields['products_options_id']
+                  && $value['value_id'] == $orders_products_sba_customid->fields['products_options_values_id']) {
                 $orderClass->products[$index]['attributes'][$key]['customid'] = $orders_products_sba_customid->fields['customid'];
                 break;
               }
