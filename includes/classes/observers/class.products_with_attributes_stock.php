@@ -899,7 +899,7 @@ class products_with_attributes_stock extends base {
         */
         if ((isset($callingClass->doStockDecrement) ? $callingClass->doStockDecrement : true)  && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
           // kuroi: trigger and details for attribute low stock email
-          $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid'] . ', name ' . $this->_productI['name'] . ', ';
+          $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid']['value'] . ', name ' . $this->_productI['name'] . ', ';
           foreach($this->_productI['attributes'] as $attributes){
             $callingClass->email_low_stock .= $attributes['option'] . ': ' . $attributes['value'] . ', ';
           }
