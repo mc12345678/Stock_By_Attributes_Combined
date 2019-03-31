@@ -281,7 +281,7 @@ function cartProductCount($products_id){
           $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
         // a difference in the code where there would be an error with it below...
           // Attributes are listed separately but there is more than one.
-          if ($customid->RecordCount() > 0) {
+          if ($customid->RecordCount() == 0) {
             $customid_query = 'select customid as products_model
                         from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
                         where products_id = :products_id: 
