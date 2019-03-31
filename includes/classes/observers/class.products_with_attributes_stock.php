@@ -989,8 +989,10 @@ class products_with_attributes_stock extends base {
     }
     
     for ($i = 0, $n = count($order->products); $i < $n; $i++) {
+      $customid[$i] = '';
+      
       if (STOCK_SBA_DISPLAY_CUSTOMID == 'true') {
-        $customid[$i] = (zen_not_null($order->products[$i]['customid']['value']) 
+        $customid[$i] .= (zen_not_null($order->products[$i]['customid']['value']) 
                 ? '<br />(' . $order->products[$i]['customid']['value'] . ') ' 
                 : $order->products[$i]['customid']['value']);
       }
