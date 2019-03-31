@@ -41,7 +41,7 @@
   ?>
     <tr>
         <td class="accountQuantityDisplay"><?php echo  $order->products[$i]['qty'] . QUANTITY_SUFFIX; ?></td>
-        <td class="accountProductDisplay"><?php echo  $order->products[$i]['name'] . ' ' . $customid[$i]; // MOD for "Stock by Attributes"
+        <td class="accountProductDisplay"><?php echo  $order->products[$i]['name'] . ' ' . $customid[$i]; // MOD for "Stock by Attributes" 1 of 1
 
     if ( (isset($order->products[$i]['attributes'])) && (sizeof($order->products[$i]['attributes']) > 0) ) {
       echo '<ul class="orderAttribsList">';
