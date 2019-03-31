@@ -128,7 +128,7 @@ function cartProductCount($products_id){
 //    global $template_dir;
     $tmp_attribID = trim($name, 'id[]');//used to get the select ID reference to be used in jquery
     $field = '';
-    if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO != '0' && (isset($_GET['products_id']) && $_GET['products_id'] != '' ? $this->zen_product_is_sba($_GET['products_id']) : false)) 
+    if (defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO != '0' && (!empty($_GET['products_id']) ? $this->zen_product_is_sba($_GET['products_id']) : false)) 
     {
       $field = /*'<script ' . *//*src="'.DIR_WS_TEMPLATES . $template_dir . '/jscript/jquery-1.10.2.min.js"*//* '></script> */
         '<script type="text/javascript">
@@ -136,7 +136,7 @@ function cartProductCount($products_id){
           $("#attrib-'.$tmp_attribID.'").change(function(){
       if (typeof $(this).find(":selected").attr("data-src") == "undefined") { 
               $("#SBA_ProductImage").attr("src", "'; // This is the end of the assignment to $field before the below
-      if (isset($options_menu_images) && is_array($options_menu_images) && array_key_exists('product_image', $options_menu_images)) {
+      if (isset($options_menu_images) && is_array($options_menu_images) && (isset($options_menu_images['product_image']) || array_key_exists('product_image', $options_menu_images))) {
         if ($options_menu_images['product_image'] == '' and PRODUCTS_IMAGE_NO_IMAGE_STATUS == '1' 
              or $options_menu_images['product_image'] == DIR_WS_IMAGES and PRODUCTS_IMAGE_NO_IMAGE_STATUS == '1') {
           $field .= DIR_WS_IMAGES . PRODUCTS_IMAGE_NO_IMAGE;
@@ -592,7 +592,7 @@ Of the attributes provided, determine the number of those attributes that are
     $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $attribute_list, $from);
 
     // return null if tracked product doesn't have a matching set of attributes.
-    if (!(isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) >= 1)) {
+    if (!(!empty($stock_attributes_list) && is_array($stock_attributes_list))) {
       return null;
     }
 
@@ -691,7 +691,7 @@ Of the attributes provided, determine the number of those attributes that are
   function zen_sba_has_text_field($sba_table_ids = array()){
     global $db;
     
-    if (!isset($sba_table_ids) || !is_array($sba_table_ids) && $sba_table_ids === false) {
+    if (!isset($sba_table_ids) || !is_array($sba_table_ids) && ($sba_table_ids === false)) {
       return false;
     }
     
@@ -1318,7 +1318,7 @@ Of the attributes provided, determine the number of those attributes that are
     }
 
     // If there are no attributes to support review, then go through the next step in the cycle.
-    if (!(isset($stock_attributes_list) && is_array($stock_attributes_list) && count($stock_attributes_list) >= 1)) {
+    if (!(!empty($stock_attributes_list) && is_array($stock_attributes_list))) {
       $retry--;
       continue;
     }

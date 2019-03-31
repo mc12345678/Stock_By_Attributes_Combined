@@ -614,7 +614,7 @@ class products_with_attributes_stock extends base {
       // If the product has attributes, then need to see what was logged into the orders_products_attributes_stock table.  
       //    If nothing then is a product that has attributes, but was not tracked by SBA. 
       //    If something, then retrieve the desired data (customid)
-      if (is_array($product) && array_key_exists('attributes', $product) && is_array($product['attributes']) && !empty($product['attributes'])) {
+      if (!empty($product) && is_array($product) && array_key_exists('attributes', $product)&& !empty($product['attributes']) && is_array($product['attributes']) ) {
         $orders_products_sba_customid = $db->Execute("select 
                            opas.orders_products_attributes_stock_id, opas.orders_products_attributes_id, 
                            opas.stock_id, opas.stock_attribute, opas.customid, opas.products_prid, 
