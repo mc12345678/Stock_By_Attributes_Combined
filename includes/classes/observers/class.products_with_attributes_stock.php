@@ -164,6 +164,22 @@ class products_with_attributes_stock extends base {
 //    $quantity_handled = true;
   }
   
+  /**
+   * NOTIFY_ZEN_HAS_PRODUCT_ATTRIBUTES_VALUES
+      ZC: 1.56 inserted.
+        $value_to_return = '';
+        $GLOBALS['zco_notifier']->notify('NOTIFY_ZEN_HAS_PRODUCT_ATTRIBUTES_VALUES', $products_id, $value_to_return);
+        if ($value_to_return !== '') {
+          return $value_to_return;
+        }
+   **/
+  function updateNotifyZenHasProductAttributesValues(&$callingClass, $notifier, $products_id, &$value_to_return) {
+    
+    // Saves a database lookup that has or should have already been done.
+    if (isset($this->_isSBA) && $this->_isSBA || !isset($this->_isSBA) && $_SESSION['pwas_class2']->zen_product_is_sba($_GET['products_id'])) {
+      $value_to_return = true;
+    }
+  }
   /*
    * NOTIFY_ATTRIBUTES_MODULE_START_OPTION
    */
