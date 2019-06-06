@@ -1174,7 +1174,9 @@ class products_with_attributes_stock extends base {
         }
 
         while (!$products_options_names->EOF) {
-          $sql = "select distinct pa.attributes_image
+          $sql = "select distinct pa.attributes_image,
+                  pa.products_options_sort_order,
+                  pa.options_values_price
                   from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
                   where     pa.products_id = :products_id:
                   and       pa.options_id = :options_id:
