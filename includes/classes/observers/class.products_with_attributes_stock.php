@@ -1067,7 +1067,7 @@ class products_with_attributes_stock extends base {
     }
 
     for ($i = 0, $n = is_array($productArray) ? count($productArray) : 0 ; $i < $n; $i++) {
-      if (is_array($productArray[$i]) && array_key_exists('attributes', $productArray[$i]) && is_array($productArray[$i]['attributes']) && !empty($productArray[$i]['attributes']) && $_SESSION['pwas_class2']->zen_product_is_sba($productArray[$i]['id'])) {
+      if (is_array($productArray[$i]) && (isset($productArray[$i]['attributes']) || array_key_exists('attributes', $productArray[$i])) && is_array($productArray[$i]['attributes']) && !empty($productArray[$i]['attributes']) && $_SESSION['pwas_class2']->zen_product_is_sba($productArray[$i]['id'])) {
         $productArray[$i]['attributeImage'] = array();
 
         if (STOCK_CHECK == 'true') {
