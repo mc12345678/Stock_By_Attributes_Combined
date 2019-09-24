@@ -55,7 +55,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   $sba_add_prods = array();
   $sba_add_prods['products_id'] = array();
   $sba_add_prods['old'] = array();
-  $sba_add_prods_attribs = array();
+  $sba_add_prods['attribs'] = array();
   $sba_add_prods_cart_quantity = array(); // Quantity of the product already in the cart at this time.
   $sba_add_prods_quantity = array(); // Quantity summary of product in the cart to identify total at each product.
 
@@ -81,7 +81,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
       if (!in_array($product_id, $sba_add_prods['products_id'])) {
         $sba_add_prods['products_id'][] = $product_id;
         $sba_add_prods_cart_quantity[] = $_SESSION['cart']->contents[$_POST['products_id'][$i]]['qty'];
-        $sba_add_prods_attribs[$product_id] = $attributes2;
+        $sba_add_prods['attribs'][$product_id] = $attributes2;
       } else {
         $pos = array_search($product_id, $sba_add_prods['products_id']);
 //        $pos = ($pos === false) ? 0 : $pos;
@@ -102,7 +102,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 //  $_SESSION['productHasText'] = $productHasText;
 /*  $_SESSION['sba_add_prods'] = $sba_add_prods['products_id'];
   $_SESSION['sba_add_prods_old'] = $sba_add_prods['old'];
-  $_SESSION['sba_add_prods_attribs'] = $sba_add_prods_attribs;
+  $_SESSION['sba_add_prods_attribs'] = $sba_add_prods['attribs'];
   $_SESSION['sba_add_prods_cart_quantity'] = $sba_add_prods_cart_quantity; // Quantity of the product already in the cart at this time.*/
   
   
