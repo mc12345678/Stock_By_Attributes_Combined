@@ -56,7 +56,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   $sba_add_prods['products_id'] = array();
   $sba_add_prods['old'] = array();
   $sba_add_prods['attribs'] = array();
-  $sba_add_prods_cart_quantity = array(); // Quantity of the product already in the cart at this time.
+  $sba_add_prods['cart_quantity'] = array(); // Quantity of the product already in the cart at this time.
   $sba_add_prods_quantity = array(); // Quantity summary of product in the cart to identify total at each product.
 
   if (empty($_POST['products_id'])) {
@@ -80,12 +80,12 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
       
       if (!in_array($product_id, $sba_add_prods['products_id'])) {
         $sba_add_prods['products_id'][] = $product_id;
-        $sba_add_prods_cart_quantity[] = $_SESSION['cart']->contents[$_POST['products_id'][$i]]['qty'];
+        $sba_add_prods['cart_quantity'][] = $_SESSION['cart']->contents[$_POST['products_id'][$i]]['qty'];
         $sba_add_prods['attribs'][$product_id] = $attributes2;
       } else {
         $pos = array_search($product_id, $sba_add_prods['products_id']);
 //        $pos = ($pos === false) ? 0 : $pos;
-        $sba_add_prods_cart_quantity[$pos] = $sba_add_prods_cart_quantity[$pos] + $_SESSION['cart']->contents[$_POST['products_id'][$i]]['qty'];
+        $sba_add_prods['cart_quantity'][$pos] = $sba_add_prods['cart_quantity'][$pos] + $_SESSION['cart']->contents[$_POST['products_id'][$i]]['qty'];
       }
 
       // Capture only those prids that have been modified to support this functionality.
@@ -103,7 +103,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 /*  $_SESSION['sba_add_prods'] = $sba_add_prods['products_id'];
   $_SESSION['sba_add_prods_old'] = $sba_add_prods['old'];
   $_SESSION['sba_add_prods_attribs'] = $sba_add_prods['attribs'];
-  $_SESSION['sba_add_prods_cart_quantity'] = $sba_add_prods_cart_quantity; // Quantity of the product already in the cart at this time.*/
+  $_SESSION['sba_add_prods_cart_quantity'] = $sba_add_prods['cart_quantity']; // Quantity of the product already in the cart at this time.*/
   
   
 
@@ -157,7 +157,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
         if ($productIsSBA[$i] && array_key_exists($_POST['products_id'][$i], $sba_add_prods['old'])) {
 //          $_SESSION['cart_qty_1'] = 
           $pos = array_search($sba_add_prods['old'][$_POST['products_id'][$i]], $sba_add_prods['products_id']);
-          $cart_qty = $sba_add_prods_cart_quantity[$pos];
+          $cart_qty = $sba_add_prods['cart_quantity'][$pos];
 //          $_SESSION['cart_qty_1_' . $_POST['products_id'][$i]] = $cart_qty;
         } else {
           $cart_qty = $_SESSION['cart']->in_cart_mixed($_POST['products_id'][$i]); // total currently in cart
@@ -171,7 +171,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
         }
         if ($productIsSBA[$i] && array_key_exists($_POST['products_id'][$i], $sba_add_prods['old'])) {
           $pos = array_search($sba_add_prods['old'][$_POST['products_id'][$i]], $sba_add_prods['products_id']);
-          $cart_qty = $sba_add_prods_cart_quantity[$pos];
+          $cart_qty = $sba_add_prods['cart_quantity'][$pos];
 //          $_SESSION['cart_qty_2_' . $_POST['products_id'][$i]] = $cart_qty;
         } else {
           $cart_qty = $_SESSION['cart']->in_cart_mixed($_POST['products_id'][$i]);
