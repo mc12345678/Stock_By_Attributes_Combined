@@ -154,7 +154,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
          * 
          */
         }
-        if ($productIsSBA[$i] && array_key_exists($_POST['products_id'][$i], $sba_add_prods['old'])) {
+        if ($productIsSBA[$i] && (isset($sba_add_prods['old'][$_POST['products_id'][$i]]) || array_key_exists($_POST['products_id'][$i], $sba_add_prods['old']))) {
 //          $_SESSION['cart_qty_1'] = 
           $pos = array_search($sba_add_prods['old'][$_POST['products_id'][$i]], $sba_add_prods['products_id']);
           $cart_qty = $sba_add_prods['cart_quantity'][$pos];
@@ -169,7 +169,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
            * 
            */
         }
-        if ($productIsSBA[$i] && array_key_exists($_POST['products_id'][$i], $sba_add_prods['old'])) {
+        if ($productIsSBA[$i] && (isset($sba_add_prods['old'][$_POST['products_id'][$i]]) || array_key_exists($_POST['products_id'][$i], $sba_add_prods['old']))) {
           $pos = array_search($sba_add_prods['old'][$_POST['products_id'][$i]], $sba_add_prods['products_id']);
           $cart_qty = $sba_add_prods['cart_quantity'][$pos];
 //          $_SESSION['cart_qty_2_' . $_POST['products_id'][$i]] = $cart_qty;
@@ -181,7 +181,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
       }
       if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'FUNCTION ' . __FUNCTION__ . ' Products_id: ' . $_POST['products_id'][$i] . ' cart_qty: ' . $cart_qty . ' <br>', 'caution');
       $new_qty = $_POST['cart_quantity'][$i]; // new quantity
-      if ($productIsSBA[$i] && array_key_exists($_POST['products_id'][$i], $sba_add_prods['old'])) {
+      if ($productIsSBA[$i] && (isset($sba_add_prods['old'][$_POST['products_id'][$i]]) || array_key_exists($_POST['products_id'][$i], $sba_add_prods['old']))) {
         $pos = array_search($sba_add_prods['old'][$_POST['products_id'][$i]], $sba_add_prods['products_id']);
         $sba_add_prods['quantity'][$pos] = $sba_add_prods['quantity'][$pos] + $_POST['cart_quantity'][$i];
 //        $new_qty = $sba_add_prods['quantity'][$pos];
@@ -189,7 +189,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 //        $_SESSION['cart_qty_4_' . $_POST['products_id'][$i]] = $new_qty;
       }
       
-      if ($productIsSBA[$i] && array_key_exists($_POST['products_id'][$i], $sba_add_prods['old'])) {
+      if ($productIsSBA[$i] && (isset($sba_add_prods['old'][$_POST['products_id'][$i]]) || array_key_exists($_POST['products_id'][$i], $sba_add_prods['old']))) {
         $pos = array_search($sba_add_prods['old'][$_POST['products_id'][$i]], $sba_add_prods['products_id']);
 //        $sba_add_prods['quantity'][$pos] = $sba_add_prods['quantity'][$pos] + $_POST['cart_quantity'][$i];
         $current_qty = $sba_add_prods['quantity'][$pos];
@@ -233,13 +233,13 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 /*          if ($i >= 1) {
             $_SESSION['sba_add_prods_old_'.$i] = $sba_add_prods['old'][$_POST['products_id'][$i]];
           }*/
-      if ($productIsSBA[$i] && array_key_exists($_POST['products_id'][$i], $sba_add_prods['old'])) {
+      if ($productIsSBA[$i] && (isset($sba_add_prods['old'][$_POST['products_id'][$i]]) || array_key_exists($_POST['products_id'][$i], $sba_add_prods['old']))) {
         $pos = array_search($sba_add_prods['old'][$_POST['products_id'][$i]], $sba_add_prods['products_id']);
 //        $sba_add_prods['quantity'][$pos] = $sba_add_prods['quantity'][$pos] + $_POST['cart_quantity'][$i];
         $temp_new_qty = $new_qty;
         $new_qty = $sba_add_prods['quantity'][$pos];
         for ($j=0, $m=$i; $j < $m; $j++) {
-          if (array_key_exists($_POST['products_id'][$j], $sba_add_prods['old'])) {
+          if (isset($sba_add_prods['old'][$_POST['products_id'][$j]]) || array_key_exists($_POST['products_id'][$j], $sba_add_prods['old'])) {
             if ($sba_add_prods['old'][$_POST['products_id'][$i]] == $sba_add_prods['old'][$_POST['products_id'][$j]]) {
               $chk_current_qty = $chk_current_qty - $_POST['cart_quantity'][$j];
               $chk_current_qty_individual = $chk_current_qty_individual - $_POST['cart_quantity'][$j];
@@ -278,7 +278,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
           //$new_qty = (min($chk_current_qty, $chk_current_qty_mixed) < 0) ? max($chk_current_qty, $chk_current_qty_mixed) : min($chk_current_qty, $chk_current_qty_mixed);
             $messageStack->add_session('shopping_cart', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id'][$i]), 'caution');
         }
-      if ($productIsSBA[$i] && array_key_exists($_POST['products_id'][$i], $sba_add_prods['old'])) {
+      if ($productIsSBA[$i] && (isset($sba_add_prods['old'][$_POST['products_id'][$i]]) || array_key_exists($_POST['products_id'][$i], $sba_add_prods['old']))) {
         $pos = array_search($sba_add_prods['old'][$_POST['products_id'][$i]], $sba_add_prods['products_id']);
 //        $sba_add_prods['quantity'][$pos] = $sba_add_prods['quantity'][$pos] + $_POST['cart_quantity'][$i];
         if (STOCK_ALLOW_CHECKOUT == 'false' && ($pos === false || ($sba_add_prods['quantity'][$pos] <= $chk_current_qty))) {
@@ -660,7 +660,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 
         // Need to get the file related information into the $attributes related data.
         if (isset($_GET['number_of_uploads']) && $_GET['number_of_uploads'] > 0) {
-          if (is_array($fileVar) && array_key_exists('file_located', $fileVar) && $fileVar['file_located']) {
+          if (!empty($fileVar['file_located'])) {
             for ($iFile = 1, $nFile = $_GET['number_of_uploads']; $iFile <= $nFile; $iFile++) {
               //rename($_SESSION['file_location_' . $iFile] . '.baksba', $_SESSION['file_location_' . $iFile]);
             }
@@ -745,7 +745,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
               continue;
             }
         
-            if (array_key_exists('attributes_values', $_SESSION['cart']->contents[$prod_id])) {
+            if (isset($_SESSION['cart']->contents[$prod_id]['attributes_values']) || array_key_exists('attributes_values', $_SESSION['cart']->contents[$prod_id])) {
 //              $attributes_values[] = array($prod_id=>$_SESSION['cart']->contents[$prod_id]['attributes_values']);
 //              unset($_SESSION['cart']->contents[$prod_id]['attributes_values']);
             } else {
@@ -979,7 +979,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
                       } else {
                         if ($grid_loop == 1) {
                           $fileVar[$grid_loop][$i]['location'] = $products_options_file;
-                        } elseif ($grid_loop > 1 && array_key_exists('failed', $fileVar[$grid_loop - 1][$i]) && $fileVar[$grid_loop - 1][$i]['failed']) {
+                        } elseif ($grid_loop > 1 && !empty($fileVar[$grid_loop - 1][$i]['failed'])) {
                           $fileVar[$grid_loop][$i]['failed'] = $fileVar[$grid_loop - 1][$i]['failed'];
                           break;
                         } elseif ($grid_loop > 1 && !array_key_exists('failed', $fileVar[$grid_loop - 1][$i])) {
