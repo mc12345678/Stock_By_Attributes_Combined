@@ -325,6 +325,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
           break;
         case ($new_qty > $add_max && $chk_mixed == false):
           $adjust_max= 'true';
+          $requested_qty = $new_qty;
           $new_qty = $add_max ;
           break;
         case (($add_max - $cart_qty + $new_qty >= $add_max) && $new_qty > $add_max && $chk_mixed == true):
