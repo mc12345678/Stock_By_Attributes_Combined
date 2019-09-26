@@ -1669,6 +1669,17 @@ Of the attributes provided, determine the number of those attributes that are
     }*/
   }
 
+  /**
+  *
+  *
+  **/
+  function adjust_quantity($check_qty, $products, $stack = 'shopping_cart') {
+    //@TODO - Need to incorporate independent quantity adjustments for SBA tracked product.
+    $return_value = $_SESSION['cart']->adjust_quantity($check_qty, $products, $stack);
+    
+    return $return_value;
+  }
+  
   // function zen_is_SBA was removed as it was a duplicate of $this->zen_product_is_sba.  If code
   // has been written to use that function, please consider using $this->zen_product_is_sba instead.
   /**
