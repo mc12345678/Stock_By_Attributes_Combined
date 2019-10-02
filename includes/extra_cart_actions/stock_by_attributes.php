@@ -57,7 +57,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   $sba_add_prods_attribs = array();
   $sba_add_prods_cart_quantity = array(); // Quantity of the product already in the cart at this time.
   $sba_add_prods_quantity = array(); // Quantity summary of product in the cart to identify total at each product.
-  
+
+  if (empty($_POST['products_id'])) {
+     $_POST['products_id'] = array();
+  }
+
   for ($i=0, $n=count($_POST['products_id']); $i<$n; $i++) {
     $productIsSBA[$i] = $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'][$i]), true);
     
@@ -402,7 +406,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   /* Test to see if is a grid related submission/product*/
   /* Do additional prestage work for grid related submission/product*/
   if (
-  defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true'
+  defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' && !empty($_SESSION['pwas_class2'])
       ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id']))
       : true)
   {
