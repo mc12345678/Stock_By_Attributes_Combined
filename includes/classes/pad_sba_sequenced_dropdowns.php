@@ -650,20 +650,20 @@ Array(
             $option_price = $products_options->fields['options_values_price']; //<- to display "normal" price, otherwise set to '0' to not attach/display price in field.
 
 // mc12345678 2017-06-25 BOF edited to support wholesale display
-if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
-    $customers_id = $_SESSION['customer_id'];
-    $customer_check = $db->Execute("select * from " . TABLE_CUSTOMERS . " where customers_id = '$customers_id'");
-    if (isset($customer_check->fields['customers_whole']) && $customer_check->fields['customers_whole'] != "0") {
+if (!empty($_SESSION['customer_id'])) {
+    $customers_id = (int)$_SESSION['customer_id'];
+    $customer_check = $db->Execute("select * from " . TABLE_CUSTOMERS . " where customers_id = $customers_id");
+    if (!empty($customer_check->fields['customers_whole']) && !empty($_SESSION['customer_whole']) && (int)$_SESSION['customer_whole'] > 0) {
       $i = (int)$_SESSION['customer_whole'];
       $i--; 
       $option_price_array = $products_options->fields['options_values_price_w'];
       $optionprice = explode("-",$option_price_array);
       $option_price = (float)$optionprice[$i];
     
-      if ($option_price=='0' || $option_price==''){
+      if (empty($option_price) && !empty((float)$optionprice[0])){
         $option_price = (float)$optionprice[0];
       }
-      if ($option_price == '0'){
+      if (empty($option_price)){
         $option_price = $products_options->fields['options_values_price'];
       }
 //      $option_price = (float)$products_options->fields['options_values_price_w'] /*+ $products_options->fields['options_values_price']*/;
@@ -695,13 +695,13 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
 
             // AGF commented out +/- amount to show actual price
             if ($option_price != '0') {
-              $products_options_array[count($products_options_array)-1]['text'] .= /* mc12345678 This TEXT is actually a defined variable and should be used here instead */ ' (' . $products_options->fields['price_prefix'] . $currencies->display_price($option_price, zen_get_tax_rate($this->products_tax_class_id)) .')' /* mc12345678 This TEXT is actually a defined variable and should be used here instead */;
+              $products_options_array[count($products_options_array)-1]['text'] .= ATTRIBUTES_PRICE_DELIMITER_PREFIX . $products_options->fields['price_prefix'] . $currencies->display_price($option_price, zen_get_tax_rate($this->products_tax_class_id)) . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
               // mc12345678 2017-06-25 EOF edited to support wholesale display
             }
 
             // None of the remainder of this "function" is used except to add a space at the end of the text.
             /// Start of Changes- display actual prices instead of +/- Actual Price Pull Down v1.2.3a
-            isset($new_price) && $new_price ? $original_price = $new_price : $original_price = $this->products_original_price; //// check if set special price note $this variable
+            (isset($new_price) && $new_price) ? $original_price = $new_price : $original_price = $this->products_original_price; //// check if set special price note $this variable
 
             $option_price = $products_options->fields['options_values_price'];
             if ($products_options->fields['price_prefix'] == "-") // in case price lowers, don't add values, subtract.
@@ -712,17 +712,17 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
             }
             //  if ($products_options['options_values_price'] != '0') 
             {
-              $products_options_array[count($products_options_array)-1]['text'] .= ' '; // note $this variable //HW: THIS WAS BROKEN - tax class ID was being used as the tax rate.. so a fixed 8 percent in my case.
+            //  $products_options_array[count($products_options_array)-1]['text'] .= ' '; // note $this variable //HW: THIS WAS BROKEN - tax class ID was being used as the tax rate.. so a fixed 8 percent in my case.
             }
             // End Of MOD 
           }
           $products_options->MoveNext();      
         }
 
+        $selected = 0;
+        
         if (isset($_GET['products_id']) && zen_not_null($_GET['products_id']) && isset($_SESSION['cart']->contents[$_GET['products_id']]['attributes'][$products_options_name->fields['products_options_id']])) {
           $selected = $_SESSION['cart']->contents[$_GET['products_id']]['attributes'][$products_options_name->fields['products_options_id']];
-        } else {
-          $selected = 0;
         }
     
         if (!empty($products_options_array)) {
