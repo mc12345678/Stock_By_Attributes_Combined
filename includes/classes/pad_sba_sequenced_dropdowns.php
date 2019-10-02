@@ -382,11 +382,14 @@ Array(
     //  Need to add the display of other information such as the attribute image.
     if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
       $options_order_by = ' order by LPAD(popt.products_options_sort_order,11,"0")';
+      $options_order_by_select = ', popt.products_options_sort_order';
     } else {
       $options_order_by = ' order by popt.products_options_name';
+      $options_order_by_select = ', popt.products_options_name';
     }
 
     $sql = "select distinct popt.products_options_comment  
+           " . $options_order_by_select . "
               from        " . TABLE_PRODUCTS_OPTIONS . " popt
               left join " . TABLE_PRODUCTS_ATTRIBUTES . " pa ON (pa.options_id = popt.products_options_id)
               where           pa.products_id = :products_id:              
@@ -578,6 +581,12 @@ Array(
       global $db;
     
       if (!($build_stocked | $build_nonstocked)) return null;
+
+      if (isset($_GLOBALS['products_price_is_priced_by_attributes'])) {
+        $products_price_is_priced_by_attributes = $_GLOBALS['products_price_is_priced_by_attributes']; // zen_products_lookup($this>>products_id, 'products_priced_by_attribute'); 
+      } else {
+        $products_price_is_priced_by_attributes = zen_products_lookup($this->products_id, 'products_priced_by_attribute');
+      }
       
       if ($build_stocked && $build_nonstocked) {
         $stocked_where="";
@@ -616,7 +625,7 @@ Array(
       while (!$products_options_name->EOF) {
         $products_options_array = array();
 //        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: order by pa.products_options_sort_order";
-        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix, pa.attributes_display_only, pa.attributes_default, pa.products_options_sort_order " . (isset($_SESSION['customer_whole']) && (int)$_SESSION['customer_whole'] !== 0 ? ", pa.options_values_price_w ": "" ) .  " from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: :order_by:"; // mc12345678 2017-06-25 edited to support wholesale display
+        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix, pa.attributes_display_only, pa.attributes_default, pa.products_options_sort_order, pa.attributes_discounted, pa.products_attributes_id " . (isset($_SESSION['customer_whole']) && (int)$_SESSION['customer_whole'] !== 0 ? ", pa.options_values_price_w ": "" ) .  " from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: :order_by:"; // mc12345678 2017-06-25 edited to support wholesale display
 
         $products_options_query = $db->bindVars($products_options_query, ':products_id:', $this->products_id, 'integer');
         $products_options_query = $db->bindVars($products_options_query, ':languages_id:', $_SESSION['languages_id'], 'integer');
@@ -638,30 +647,36 @@ Array(
 //}
             $products_options_array[] = array('id' => $products_options->fields['products_options_values_id'], 'text' => $value_name);
 
+            $option_price = $products_options->fields['options_values_price']; //<- to display "normal" price, otherwise set to '0' to not attach/display price in field.
+
 // mc12345678 2017-06-25 BOF edited to support wholesale display
 if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
     $customers_id = $_SESSION['customer_id'];
-	$customer_check = $db->Execute("select * from " . TABLE_CUSTOMERS . " where customers_id = '$customers_id'");
-		if (isset($customer_check->fields['customers_whole']) && $customer_check->fields['customers_whole'] != "0") {
-			$i = (int)$_SESSION['customer_whole'];
-			$i--;	
-			$option_price_array = $products_options->fields['options_values_price_w'];
-			$optionprice = explode("-",$option_price_array);
-			$option_price = (float)$optionprice[$i];
-		
-			if ($option_price=='0' || $option_price==''){
-				$option_price = (float)$optionprice[0];
-			}
-			if ($option_price == '0'){
-				$option_price = $products_options->fields['options_values_price'];
-			}
-//			$option_price = (float)$products_options->fields['options_values_price_w'] /*+ $products_options->fields['options_values_price']*/;
-		} else {
-		  $option_price = $products_options->fields['options_values_price'];
-		}
+    $customer_check = $db->Execute("select * from " . TABLE_CUSTOMERS . " where customers_id = '$customers_id'");
+    if (isset($customer_check->fields['customers_whole']) && $customer_check->fields['customers_whole'] != "0") {
+      $i = (int)$_SESSION['customer_whole'];
+      $i--; 
+      $option_price_array = $products_options->fields['options_values_price_w'];
+      $optionprice = explode("-",$option_price_array);
+      $option_price = (float)$optionprice[$i];
+    
+      if ($option_price=='0' || $option_price==''){
+        $option_price = (float)$optionprice[0];
+      }
+      if ($option_price == '0'){
+        $option_price = $products_options->fields['options_values_price'];
+      }
+//      $option_price = (float)$products_options->fields['options_values_price_w'] /*+ $products_options->fields['options_values_price']*/;
+    } else {
+      if ($products_options->fields['attributes_discounted'] == 1) {
+        $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
+      }
+    }
 
 } else {
-	$option_price = $products_options->fields['options_values_price']; //<- to display "normal" price, otherwise set to '0' to not attach/display price in field.
+  if ($products_options->fields['attributes_discounted'] == 1) {
+    $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
+  }
 }
 // mc12345678 2017-06-25 EOF edited to support wholesale display
 
