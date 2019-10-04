@@ -59,6 +59,7 @@
         mark_out_of_stock                   mark out of stock attributes flag
         out_of_stock_msgline                show out of stock message line flag
         no_add_out_of_stock                 prevent add to cart of out of stock attributes combinations
+        zgapf                               ReflectionFunction information about function zen_get_attributes_price_final
   
   
 */
@@ -69,7 +70,7 @@
     var $mark_out_of_stock;
     var $out_of_stock_msgline;
     var $no_add_out_of_stock;
-
+    protected $zgapf;
 
 /*
     Method: pad_base
@@ -98,7 +99,13 @@ $tax_class_array = $db->Execute('SELECT products_tax_class_id, products_price /*
         $this->products_tax_class_id = $tax_class_array->fields['products_tax_class_id'];
 $this->products_original_price = $tax_class_array->fields['products_price']; /* AGF */
       }
-      
+
+      if (function_exists('zen_get_attributes_price_final')) {
+        if (class_exists('ReflectionFunction')) {
+          $this->zgapf = new ReflectionFunction('zen_get_attributes_price_final');
+        }
+      }
+
       $this->_SetConfigurationProperties('PRODINFO_ATTRIBUTE_');
 
     }

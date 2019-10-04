@@ -669,13 +669,24 @@ if (isset($_SESSION['customer_id']) && $_SESSION['customer_id']) {
 //      $option_price = (float)$products_options->fields['options_values_price_w'] /*+ $products_options->fields['options_values_price']*/;
     } else {
       if ($products_options->fields['attributes_discounted'] == 1) {
-        $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
+        if (isset($this->zgapf) && $this->zgapf->getNumberOfParameters() > 4) {
+          $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
+        } else {
+          $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false');
+          $option_price = zen_get_discount_calc($this->products_id, true, $option_price);
+        }
       }
     }
 
 } else {
   if ($products_options->fields['attributes_discounted'] == 1) {
-    $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
+    if (isset($this->zgapf) && $this->zgapf->getNumberOfParameters() > 4) {
+      $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
+    } else {
+      $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false');
+      $option_price = zen_get_discount_calc($this->products_id, true, $option_price);
+    }
+   //$option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
   }
 }
 // mc12345678 2017-06-25 EOF edited to support wholesale display
