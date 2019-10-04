@@ -233,7 +233,7 @@ $sql = "select count(*) as total
                   // radio buttons
                   if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_RADIO) {
                     if ($_SESSION['cart']->in_cart($prod_id)) {
-                      if ($_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names->fields['products_options_id']] == $products_options->fields['products_options_values_id']) {
+                      if (isset($_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names->fields['products_options_id']]) && $_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names->fields['products_options_id']] == $products_options->fields['products_options_values_id']) {
                         $selected_attribute = $_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names->fields['products_options_id']];
                       } else {
                         $selected_attribute = false;
@@ -450,7 +450,7 @@ $sql = "select count(*) as total
                         }
                       }
                     } else {
-                      $tmp_value = $_SESSION['cart']->contents[$_GET['products_id']]['attributes_values'][$products_options_names->fields['products_options_id']];
+                      $tmp_value = isset($_SESSION['cart']->contents[$_GET['products_id']]['attributes_values'][$products_options_names->fields['products_options_id']]) ? $_SESSION['cart']->contents[$_GET['products_id']]['attributes_values'][$products_options_names->fields['products_options_id']] : '';
                       // use text area or input box based on setting of products_options_rows in the products_options table
                       if ( $products_options_names->fields['products_options_rows'] > 1 ) {
                         $tmp_html = '  <input disabled="disabled" type="text" name="remaining' . TEXT_PREFIX . $products_options_names->fields['products_options_id'] . '" size="3" maxlength="3" value="' . $products_options_names->fields['products_options_length'] . '" /> ' . TEXT_MAXIMUM_CHARACTERS_ALLOWED . '<br />';
@@ -463,7 +463,7 @@ $sql = "select count(*) as total
                       $tmp_word_cnt_string = '';
                       // calculate word charges
                       $tmp_word_cnt =0;
-                      $tmp_word_cnt_string = $_SESSION['cart']->contents[$_GET['products_id']]['attributes_values'][$products_options_names->fields['products_options_id']];
+                      $tmp_word_cnt_string = $tmp_value;
                       $tmp_word_cnt = zen_get_word_count($tmp_word_cnt_string, $products_options->fields['attributes_price_words_free']);
                       $tmp_word_price = zen_get_word_count_price($tmp_word_cnt_string, $products_options->fields['attributes_price_words_free'], $products_options->fields['attributes_price_words']);
 
@@ -476,7 +476,7 @@ $sql = "select count(*) as total
                       }
                       // calculate letter charges
                       $tmp_letters_cnt =0;
-                      $tmp_letters_cnt_string = $_SESSION['cart']->contents[$_GET['products_id']]['attributes_values'][$products_options_names->fields['products_options_id']];
+                      $tmp_letters_cnt_string = $tmp_value;
                       $tmp_letters_cnt = zen_get_letters_count($tmp_letters_cnt_string, $products_options->fields['attributes_price_letters_free']);
                       $tmp_letters_price = zen_get_letters_count_price($tmp_letters_cnt_string, $products_options->fields['attributes_price_letters_free'], $products_options->fields['attributes_price_letters']);
 
@@ -498,9 +498,10 @@ $sql = "select count(*) as total
                     $number_of_uploads++;
                     if (zen_run_normal() == true and zen_check_show_prices() == true) {
                       // $cart->contents[$_GET['products_id']]['attributes_values'][$products_options_name['products_options_id']]
-                      $tmp_html = '<input type="file" name="id[' . TEXT_PREFIX . $products_options_names->fields['products_options_id'] . ']"  id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '-' . $products_options_value_id . '" /><br />' . $_SESSION['cart']->contents[$prod_id]['attributes_values'][$products_options_names->fields['products_options_id']] . "\n" .
+                      $file_attribute_value = isset($_SESSION['cart']->contents[$prod_id]['attributes_values'][$products_options_names->fields['products_options_id']]) ? $_SESSION['cart']->contents[$prod_id]['attributes_values'][$products_options_names->fields['products_options_id']] : '';
+                      $tmp_html = '<input type="file" name="id[' . TEXT_PREFIX . $products_options_names->fields['products_options_id'] . ']"  id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '-' . $products_options_value_id . '" /><br />' . $file_attribute_value . "\n" .
                       zen_draw_hidden_field(UPLOAD_PREFIX . $number_of_uploads, $products_options_names->fields['products_options_id']) . "\n" .
-                      zen_draw_hidden_field(TEXT_PREFIX . UPLOAD_PREFIX . $number_of_uploads, $_SESSION['cart']->contents[$prod_id]['attributes_values'][$products_options_names->fields['products_options_id']]);
+                      zen_draw_hidden_field(TEXT_PREFIX . UPLOAD_PREFIX . $number_of_uploads, $file_attribute_value);
                     } else {
                       $tmp_html = '';
                     }
@@ -651,7 +652,7 @@ $sql = "select count(*) as total
                   $options_html_id[] = 'drp-attrib-' . $products_options_names->fields['products_options_id'];
                   $options_menu[] = zen_draw_pull_down_menu('id[' . $products_options_names->fields['products_options_id'] . ']', $products_options_array, $selected_attribute, 'id="' . 'attrib-' . $products_options_names->fields['products_options_id'] . '"' . $params) . "\n";
                   $options_comment[] = $products_options_names->fields['products_options_comment'];
-                  $options_comment_position[] = (isset($products_options_names->fields['products_options_comment_position']) && $products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
+                  $options_comment_position[] = ($products_options_names->fields['products_options_comment_position'] == '1' ? '1' : '0');
                   break;
 
                   default:
