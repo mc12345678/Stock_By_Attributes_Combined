@@ -250,7 +250,7 @@ class products_with_attributes_stock extends base {
                   || ($process_this == true && isset($noread) && $noread->fields['total'] == 1)
                 )
                 && defined('SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO') && SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO == '0'
-                && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS !=1 && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS !=3)
+                && (defined('PRODINFO_ATTRIBUTE_DYNAMIC_STATUS') ? (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS !=1 && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS !=3) : true)
                 && (defined('PRODUCTS_OPTIONS_TYPE_GRID') ? $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_GRID : true)
                 && (defined('PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID') ? $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID : true)
               ) 
@@ -348,7 +348,7 @@ class products_with_attributes_stock extends base {
                     $PWA_STOCK_QTY .= ' (' . $products_options_fields['customid'] . ') ';
                   }
                 }
-              } elseif (zen_not_null($products_options_fields['customid']) && (!defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID') || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1') || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2')) {
+              } elseif (isset($products_options_fields['customid']) && zen_not_null($products_options_fields['customid']) && (!defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID') || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1') || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2')) {
                 //show custom ID if flag set to true
                 //test, only applicable to products with-out the display-only attribute set
                 if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
