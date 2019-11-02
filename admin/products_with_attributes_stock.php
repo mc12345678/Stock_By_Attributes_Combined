@@ -593,10 +593,16 @@ switch ($action) {
         $query = 'delete from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id= :products_id:';
         $query = $db->bindVars($query, ':products_id:', $_POST['products_id'], 'integer');
         $db->Execute($query);
-        $query_result = $db->Execute("SELECT ROW_COUNT() as rows;");
+//        $query_result = $db->Execute("SELECT ROW_COUNT() as rows;"); // MariaDB doesn't like this statement, trying next one.
+        if (method_exists($db, 'affectedRows')) {
+          $quantity_affected = $db->affectedRows();
+        } else {
+          $query_result = $db->Execute("SELECT ROW_COUNT() rows;");
+          $quantity_affected = $query_result->fields['rows'];
+        }
         //Use the button 'Sync Quantities' when needed, or uncomment the line below if you want it done automatically.
         //$stock->update_parent_products_stock((int)$_POST['products_id']);//keep this line as option, but I think this should not be done automatically.
-        $messageStack->add_session(($query_result->fields['rows'] > 1 ? sprintf(PWA_DELETED_VARIANT_ALL, $query_result->fields['rows']) : PWA_DELETED_VARIANT), 'failure');
+        $messageStack->add_session(($quantity_affected > 1 ? sprintf(PWA_DELETED_VARIANT_ALL, $quantity_affected /*$query_result->fields['rows']*/) : PWA_DELETED_VARIANT), 'failure');
         zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . (int)$_POST['products_id'], $request_type));
       } else {
         zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . (int)$_POST['products_id'], $request_type));
