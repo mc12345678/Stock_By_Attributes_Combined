@@ -1098,6 +1098,7 @@ class products_with_attributes_stock extends base {
         //  $products_options_type is not yet used for anything else, but was perhaps to address something specific in future
         //  coding.  It will remain off of here for now.
         $custom_multi_query = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($productArray[$i]['id'], $productArray[$i]['attributes'], 'products');
+        $custom_type = 'single';
 
         if (!isset($custom_multi_query) || $custom_multi_query === NULL || $custom_multi_query === false) {
           $custom_type = 'none';
@@ -1107,8 +1108,6 @@ class products_with_attributes_stock extends base {
             $customid_new = $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $value);
             $productArray[$i]['attributes'][$key]['customid'] = ((STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $customid_new : null);
           }
-        } else {
-          $custom_type = 'single';
         }
         $productArray[$i]['customid']['type'] = $custom_type;
         $productArray[$i]['customid']['value'] = (STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $products[$i]['attributes']) : null;
