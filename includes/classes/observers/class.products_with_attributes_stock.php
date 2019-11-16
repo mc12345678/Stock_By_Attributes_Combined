@@ -166,7 +166,7 @@ class products_with_attributes_stock extends base {
   
   /**
    * NOTIFY_ZEN_HAS_PRODUCT_ATTRIBUTES_VALUES
-      ZC: 1.56 inserted.
+      ZC: 1.56 inserted. Used to identify if attributes affect product's price.
         $value_to_return = '';
         $GLOBALS['zco_notifier']->notify('NOTIFY_ZEN_HAS_PRODUCT_ATTRIBUTES_VALUES', $products_id, $value_to_return);
         if ($value_to_return !== '') {
@@ -542,11 +542,11 @@ class products_with_attributes_stock extends base {
               //  if all are disabled, then what is to be addressed? Should it be programatic or
         while (!$products_opt->EOF) {
           if ($prevent_checkout && $products_opt->fields['pasqty'] <= 0 && ($products_opt->fields['attributes_display_only'] && $products_opt->fields['attributes_default'])) {
-            $disablebackorder[] = NULL;
+            $disablebackorder[] = null;
           } elseif ($prevent_checkout && $products_opt->fields['pasqty'] <= 0 && /*$products_opt->fields['products_options_values_id'] != $selected_attribute &&*/ $products_opt->fields['attributes_display_only'] && !$products_opt->fields['attributes_default']) { // If the first item is set as disabled and there is no default, then this could cause the product to be incorrectly added to the cart.
             $disablebackorder[] = ' disabled="disabled" ';
           } elseif ($prevent_checkout && $products_opt->fields['pasqty'] <= 0 && $products_opt->fields['attributes_default']) { // If the first item is set as disabled and there is no default, then this could cause the product to be incorrectly added to the cart.
-            $disablebackorder[] = NULL;
+            $disablebackorder[] = null;
           } elseif ($prevent_checkout && $products_opt->fields['pasqty'] <= 0) {
             $disablebackorder[] = ' disabled="disabled" ';
           } else {  
