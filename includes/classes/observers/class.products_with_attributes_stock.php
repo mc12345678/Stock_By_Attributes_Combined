@@ -177,7 +177,7 @@ class products_with_attributes_stock extends base {
     
     // Saves a database lookup that has or should have already been done.
     if (isset($this->_isSBA) && $this->_isSBA || !isset($this->_isSBA) && $_SESSION['pwas_class2']->zen_product_is_sba($_GET['products_id'])) {
-      $value_to_return = true;
+//      $value_to_return = true;
     }
   }
   /*
