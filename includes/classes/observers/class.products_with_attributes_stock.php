@@ -591,6 +591,26 @@ class products_with_attributes_stock extends base {
                                                       || SBA_SHOW_IMAGE_ON_PRODUCT_INFO === '4')) {
       $options_attributes_image = array();
     }
+    
+    // Problem with the below code moving forwards is that if the selection remains blank, then 
+    //   the verification in the add-to-cart section does not seem to flag this as an issue
+    //   allowing the product to be added to the cart without an attribute selected.
+    // This is regardless of the radio button being preselected or not.
+    // If the radio button remains selected as a default, then when attempting to add the product
+    //   to the cart, the user is notified that an incorrect selection was made and to correct the selection.
+    /*if ($products_options_names_fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA) {
+      if ($GLOBALS['products_options']->RecordCount() == 1) {
+        $disablebackorder = '';
+        
+        if ((STOCK_ALLOW_CHECKOUT == 'false' && $GLOBALS['products_options']->fields['pasqty'] <= 0 && !empty($GLOBALS['products_options']->fields['pasid']) )
+        || ( STOCK_ALLOW_CHECKOUT == 'false' && $GLOBALS['products_options']->fields['products_quantity'] <= 0 && empty($GLOBALS['products_options']->fields['pasid']) )
+        ) {//|| $products_options_READONLY->fields['attributes_display_only'] == 1
+          $disablebackorder = ' disabled="disabled" ';
+        }
+        $old_options_menu = array_pop($options_menu);
+        $options_menu[] = zen_draw_radio_field('id[' . $products_options_names_fields['products_options_id'] . ']', $GLOBALS['products_options_value_id'], empty($disablebackorder), $disablebackorder . 'id="' . 'attrib-' . $products_options_names_fields['products_options_id'] . '-' . $GLOBALS['products_options_value_id'] . '"') . '<label class="attribsRadioButton" for="' . 'attrib-' . $products_options_names_fields['products_options_id'] . '-' . $GLOBALS['products_options_value_id'] . '">' . $GLOBALS['products_options_details'] . '</label>' . "\n";
+      }
+    }*/
   }
    
   /*
