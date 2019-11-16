@@ -13,7 +13,14 @@ if (defined('FILENAME_EDIT_ORDERS') && $_SERVER['SCRIPT_NAME'] == DIR_WS_ADMIN .
 /* ?><script type="text/javascript">
 //var test = function(){ alert('Howdy');};
 </script><?php */
-
+if(!function_exists('zen_html_quotes')) {
+  function zen_html_quotes($string) {
+    if(function_exists('zen_db_output')) {
+      return zen_db_output($string);
+    }
+    return htmlspecialchars($string, ENT_COMPAT, CHARSET, TRUE);
+  }
+}
   
   // Problem with "removing" the $_POST in the following update_order, is that the order of product is modified.
   if (isset($_GET['action']) && $_GET['action'] == 'update_order') {
