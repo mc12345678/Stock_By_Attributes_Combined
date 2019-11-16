@@ -929,14 +929,14 @@ class order extends base {
       $this->notify('NOTIFY_ORDER_PROCESSING_ONE_TIME_CHARGES_BEGIN', $i);
 
       // build output for email notification
-      $this->products_ordered .=  $this->products[$i]['qty'] . ' x ' . $this->products[$i]['name'] . ($this->products[$i]['customid'] != '' ? ' (' . $this->products[$i]['customid'] . ') ' : ($this->products[$i]['model'] != '' ? ' (' . $this->products[$i]['model'] . ') ' : '')) . ' = ' .
+      $this->products_ordered .=  $this->products[$i]['qty'] . ' x ' . $this->products[$i]['name'] . ($this->products[$i]['customid']['value'] != '' ? ' (' . $this->products[$i]['customid']['value'] . ') ' : ($this->products[$i]['model'] != '' ? ' (' . $this->products[$i]['model'] . ') ' : '')) . ' = ' .
       $currencies->display_price($this->products[$i]['final_price'], $this->products[$i]['tax'], $this->products[$i]['qty']) .
       ($this->products[$i]['onetime_charges'] !=0 ? "\n" . TEXT_ONETIME_CHARGES_EMAIL . $currencies->display_price($this->products[$i]['onetime_charges'], $this->products[$i]['tax'], 1) : '') .
       $this->products_ordered_attributes . "\n";
       $this->products_ordered_html .=
       '<tr>' . "\n" .
       '<td class="product-details" align="right" valign="top" width="30">' . $this->products[$i]['qty'] . '&nbsp;x</td>' . "\n" .
-      '<td class="product-details" valign="top">' . nl2br($this->products[$i]['name']) .  ($this->products[$i]['customid'] != '' ? ' (' . nl2br($this->products[$i]['customid']) . ') ' : ($this->products[$i]['model'] != '' ? ' (' . nl2br($this->products[$i]['model']) . ') ' : '')) . "\n" .
+      '<td class="product-details" valign="top">' . nl2br($this->products[$i]['name']) .  ($this->products[$i]['customid']['value'] != '' ? ' (' . nl2br($this->products[$i]['customid']['value']) . ') ' : ($this->products[$i]['model'] != '' ? ' (' . nl2br($this->products[$i]['model']) . ') ' : '')) . "\n" .
       '<nobr>' .
       '<small><em> '. nl2br($this->products_ordered_attributes) .'</em></small>' .
       '</nobr>' .

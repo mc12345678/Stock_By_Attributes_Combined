@@ -921,7 +921,7 @@ class order extends base {
 
       // build output for email notification
 // Start Stock By Attributes SBA 3 of 4
-      $this->products_ordered .=  $this->products[$i]['qty'] . ' x ' . $this->products[$i]['name'] . ($this->products[$i]['customid'] != '' ? ' (' . $this->products[$i]['customid'] . ') ' : ($this->products[$i]['model'] != '' ? ' (' . $this->products[$i]['model'] . ') ' : '')) . ' = ' .
+      $this->products_ordered .=  $this->products[$i]['qty'] . ' x ' . $this->products[$i]['name'] . ($this->products[$i]['customid']['value'] != '' ? ' (' . $this->products[$i]['customid']['value'] . ') ' : ($this->products[$i]['model'] != '' ? ' (' . $this->products[$i]['model'] . ') ' : '')) . ' = ' .
 // End Stock By Attributes SBA 3 of 4
       $currencies->display_price($this->products[$i]['final_price'], $this->products[$i]['tax'], $this->products[$i]['qty']) .
       ($this->products[$i]['onetime_charges'] !=0 ? "\n" . TEXT_ONETIME_CHARGES_EMAIL . $currencies->display_price($this->products[$i]['onetime_charges'], $this->products[$i]['tax'], 1) : '') .
@@ -930,7 +930,7 @@ class order extends base {
       '<tr>' . "\n" .
       '<td class="product-details" align="right" valign="top" width="30">' . $this->products[$i]['qty'] . '&nbsp;x</td>' . "\n" .
 // Start Stock By Attributes SBA 4 of 4
-      '<td class="product-details" valign="top">' . nl2br($this->products[$i]['name']) .  ($this->products[$i]['customid'] != '' ? ' (' . nl2br($this->products[$i]['customid']) . ') ' : ($this->products[$i]['model'] != '' ? ' (' . nl2br($this->products[$i]['model']) . ') ' : '')) . "\n" .
+      '<td class="product-details" valign="top">' . nl2br($this->products[$i]['name']) .  ($this->products[$i]['customid']['value'] != '' ? ' (' . nl2br($this->products[$i]['customid']['value']) . ') ' : ($this->products[$i]['model'] != '' ? ' (' . nl2br($this->products[$i]['model']) . ') ' : '')) . "\n" .
 // End Stock By Attributes SBA 4 of 4
       '<nobr>' .
       '<small><em> '. nl2br($this->products_ordered_attributes) .'</em></small>' .
