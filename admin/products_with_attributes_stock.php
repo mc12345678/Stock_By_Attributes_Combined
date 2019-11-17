@@ -55,7 +55,7 @@ if (zen_not_null($action)) {
   if (isset($_POST['categories_update_id'])) $_POST['categories_update_id'] = (int)$_POST['categories_update_id'];
 
 // set categories and products if not set
-  if ($products_filter == '' and $current_category_id != '') {
+  /*if ($action == 'new_cat') {
     $sql =     "select ptc.*
     from " . TABLE_PRODUCTS_TO_CATEGORIES . " ptc
     left join " . TABLE_PRODUCTS_DESCRIPTION . " pd
@@ -65,21 +65,32 @@ if (zen_not_null($action)) {
     order by pd.products_name";
     $new_product_query = $db->Execute($sql);
     $products_filter = $new_product_query->fields['products_id'];
-    if ($products_filter != '') {
-      zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'products_filter=' . $products_filter . '&current_category_id=' . $current_category_id));
-    }
-  } else {
-    if ($products_filter == '' and $current_category_id == '') {
+    zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'products_filter=' . $products_filter . '&current_category_id=' . $current_category_id));
+  }*/
+
+  if (!zen_not_null($products_filter)) {
+    if (empty($current_category_id)) {
       $reset_categories_id = zen_get_category_tree('', '', '0', '', '', true);
       $current_category_id = $reset_categories_id[0]['id'];
-      $sql = "select ptc.*
+    }
+
+    $sql =     "select ptc.*
       from " . TABLE_PRODUCTS_TO_CATEGORIES . " ptc
       left join " . TABLE_PRODUCTS_DESCRIPTION . " pd
-      on ptc.products_id = pd.products_id and pd.language_id = '" . (int)$_SESSION['languages_id'] . "'
-      where ptc.categories_id='" . $current_category_id . "'
+      on ptc.products_id = pd.products_id
+      and pd.language_id = " . (int)$_SESSION['languages_id'] . "
+      where ptc.categories_id=" . $current_category_id . "
       order by pd.products_name";
       $new_product_query = $db->Execute($sql);
-      $products_filter = isset($new_product_query->fields['products_id']) ? $new_product_query->fields['products_id'] : 0;
+
+    $products_filter = isset($new_product_query->fields['products_id']) ? $new_product_query->fields['products_id'] : 0;
+
+  // set categories and products if not set
+    if (empty($reset_categories_id)) {
+      if (!empty($products_filter)) {
+        zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'products_filter=' . $products_filter . '&current_category_id=' . $current_category_id));
+      }
+    } else {
       $_GET['products_filter'] = $products_filter;
     }
   }
