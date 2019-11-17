@@ -1272,7 +1272,7 @@ if (!empty($_SESSION['customer_id'])) {
   
 */
   function _draw_js_stock_array($combinations) {
-    if (!(is_array($combinations) && !empty($combinations))) {
+    if (!(!empty($combinations) && is_array($combinations))) {
       return '{}';
     }
     $out = '';
@@ -1294,14 +1294,14 @@ if (!empty($_SESSION['customer_id'])) {
 
     for ($combindex = 1, $s = count($combinations); $combindex < $s; $combindex++) {
       $comb = $combinations[$combindex]['comb'];
-      for ($i = 0; $i < count($opts) - 1; $i++) {
+      for ($i = 0, $n = count($opts); $i < $n - 1; $i++) {
         if ($comb[$opts[$i]] != $combinations[$combindex - 1]['comb'][$opts[$i]]) {
           break;
         }
       }
       $out.=str_repeat('}', count($opts) - 1 - $i) . ', ';
       if ($i < count($opts) - 1) {
-        for ($j = $i; $j < count($opts) - 1; $j++) {
+        for ($j = $i, $n = count($opts); $j < $n - 1; $j++) {
           $out.= '"_' . zen_output_string_protected($comb[$opts[$j]]) . '"' . ': {';
         }
       }
