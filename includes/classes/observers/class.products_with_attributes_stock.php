@@ -463,8 +463,8 @@ class products_with_attributes_stock extends base {
     }
 
     //disable radio and disable default selected
-    if ((STOCK_ALLOW_CHECKOUT == 'false' && $products_options->fields['pasqty'] <= 0 && !empty($products_options->fields['pasid']) )
-    || ( STOCK_ALLOW_CHECKOUT == 'false' && $products_options->fields['products_quantity'] <= 0 && empty($products_options->fields['pasid']) )
+    if ((STOCK_ALLOW_CHECKOUT == 'false' && (empty($products_options->fields['pasqty']) || $products_options->fields['pasqty'] <= 0) && !empty($products_options->fields['pasid']) )
+    || ( STOCK_ALLOW_CHECKOUT == 'false' && (empty($products_options->fields['products_quantity']) || $products_options->fields['products_quantity'] <= 0) && empty($products_options->fields['pasid']) )
     ) {//|| $products_options_READONLY->fields['attributes_display_only'] == 1
       if ($selected_attribute == true) {
         $selected_attribute = false;
