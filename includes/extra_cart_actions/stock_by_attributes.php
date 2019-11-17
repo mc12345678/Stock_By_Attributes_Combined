@@ -263,6 +263,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
          */
       }
       $attributes = (isset($_POST['id'][$_POST['products_id'][$i]]) && is_array($_POST['id'][$_POST['products_id'][$i]])) ? $_POST['id'][$_POST['products_id'][$i]] : '';
+      $requested_qty = 0;
 
 // eof: adjust new quantity to be same as current in stock
       if (($add_max == 1 and $cart_qty == 1) && $new_qty != $cart_qty) {
@@ -286,6 +287,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
               break;
             case ($new_qty > $add_max && $chk_mixed == false):
               $adjust_max= 'true';
+              $requested_qty = $new_qty;
               $new_qty = $add_max ;
               break;
             case (($add_max - $cart_qty + $new_qty >= $add_max) && $new_qty > $add_max && $chk_mixed == true):
