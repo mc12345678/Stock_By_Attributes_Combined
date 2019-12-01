@@ -427,15 +427,16 @@ class products_with_attributes_stock extends base {
       // START "Stock by Attributes" SBA added original price for display, and some formatting
       $originalpricedisplaytext = null;
       $attributes_price_final = zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false');
-      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($attributes_price_final == $new_attributes_price || ($attributes_price_final == -$new_attributes_price && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
+//      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($attributes_price_final == $new_attributes_price || ($attributes_price_final == -$new_attributes_price && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
+      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($products_options->fields['attributes_display_only'] && $products_options->fields['attributes_default'] && !$products_options->fields['products_options_sort_order']) && ($attributes_price_final == $new_attributes_price || (($attributes_price_final == -$new_attributes_price) && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
         //Original price struck through
         if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_RADIO || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
           //use this if a PRODUCTS_OPTIONS_TYPE_RADIO or PRODUCTS_OPTIONS_TYPE_CHECKBOX
           //class="normalprice" can be used in a CSS file to control the text properties, not compatable with selection lists
-          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="normalprice">' . $products_options->fields['price_prefix'] . $currencies->display_price($attributes_price_final, zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="normalprice">' . $products_options->fields['price_prefix'] . $currencies->display_price($products_options->fields['options_values_price'], zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
         } else {
           //need to remove the <span> tag for selection lists and text boxes
-          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . $products_options->fields['price_prefix'] . $currencies->display_price(abs($attributes_price_final), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . $products_options->fields['price_prefix'] . $currencies->display_price(abs($products_options_fields['options_values_price']), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
         }
       }
 
