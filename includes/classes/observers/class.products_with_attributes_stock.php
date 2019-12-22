@@ -466,7 +466,7 @@ class products_with_attributes_stock extends base {
     
 //       if ($this->_isSBA && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
     $disablebackorder = null;
-    if (!$this->_isSBA || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' && $this->products_options_names_fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $this->_products_options_names_count/*$products_options_names->RecordCount()*/ == 1 && $this->products_options_names_fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $this->_products_options_names_count/*$products_options_names->RecordCount()*/ > 1)) {
+    if (!$this->_isSBA || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' && $this->products_options_names_fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $this->_products_options_names_count == 1 && $this->products_options_names_fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $this->_products_options_names_count > 1)) {
       return;
     }
 
