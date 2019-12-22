@@ -318,7 +318,7 @@ class products_with_attributes_stock extends base {
       //Exclude the following:
       //PRODUCTS_OPTIONS_TYPE_TEXT PRODUCTS_OPTIONS_TYPE_FILE PRODUCTS_OPTIONS_TYPE_READONLY
       //PRODUCTS_OPTIONS_TYPE_SELECT_SBA
-      $PWA_STOCK_QTY = null; //initialize variable
+      $PWA_STOCK_QTY = ''; //initialize variable
       if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_TEXT) {
         if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_FILE) {
           if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_READONLY) {
