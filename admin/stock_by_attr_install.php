@@ -830,8 +830,8 @@ function insertSBAconfiguration(){
   $result = $result->fields['next_sort_order'];
 
       $sql .=" ('SBA Display CustomID in Attribute Dropdowns', 'ATTRIBUTES_SBA_DISPLAY_CUSTOMID', '2',
-      'Display the CustomID in the Attribute Dropdown list(s) for the customer to see while selecting an option.<br /><br /> 0 - Hide the Custom ID<br /> 1 - Display the Custom ID depending on the setting for display throughout<br /> 2 - Always display the Custom ID (default)<br />',
-      13,".$result.",now(),null,'zen_cfg_select_drop_down(array(array(\'id\'=>\'0\', \'text\'=>\'Off\'), array(\'id\'=>\'1\', \'text''=>\'On Pending SBA Stock\'), array(\'id\'=>\'2\', \'text''=>\'Always On\'), ),');";
+      'Display the CustomID in the Attribute Dropdown list(s) for the customer to see while selecting an option.<br /><br /> 0 - Hide the Custom ID<br /> 1 - Display the Custom ID depending on the setting for display throughout<br /> 2 - Always display the Custom ID (default)<br /> 3 - Always display the Custom ID except at single attributes<br />',
+      13,".$result.",now(),null,'zen_cfg_select_drop_down(array(array(\'id\'=>\'0\', \'text\'=>\'Off\'), array(\'id\'=>\'1\', \'text''=>\'On Pending SBA Stock\'), array(\'id\'=>\'2\', \'text''=>\'Always On\'), array(\'id\'=>\'3\', \'text''=>\'Off for Single Attributes\'), ),');";
 
     /* save for next version when pagination is implemented
      *

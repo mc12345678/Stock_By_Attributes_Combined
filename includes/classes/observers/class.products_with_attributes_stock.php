@@ -304,6 +304,14 @@ class products_with_attributes_stock extends base {
         }
       }
 
+      $show_custom_id_flag = isset($products_options_fields['customid'])
+          && zen_not_null($products_options_fields['customid'])
+          && (
+              !defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID')
+              || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1')
+              || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2'
+              || (ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '3' && $products_options_names->RecordCount() > 1)
+             );
       //Add qty to atributes based on STOCK_SHOW_ATTRIB_LEVEL_STOCK setting
       //Only add to Radio, Checkbox, and selection lists
       //PRODUCTS_OPTIONS_TYPE_RADIO PRODUCTS_OPTIONS_TYPE_CHECKBOX
@@ -321,7 +329,7 @@ class products_with_attributes_stock extends base {
                 if (empty($products_options_DISPLAYONLY->fields['attributes_display_only'])) {
                   $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options_fields['pasqty'] . ' ';
                   //show custom ID if flag set to true
-                  if (zen_not_null($products_options_fields['customid']) && (!defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID') || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1') || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2')) {
+                  if ($show_custom_id_flag) {
                     $PWA_STOCK_QTY .= ' (' . $products_options_fields['customid'] . ') ';
                   }
                 }
@@ -344,11 +352,11 @@ class products_with_attributes_stock extends base {
                   }
 
                   //show custom ID if flag set to true
-                  if (isset($products_options_fields['customid']) && zen_not_null($products_options_fields['customid']) && (!defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID') || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1') || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2')) {
+                  if ($show_custom_id_flag) {
                     $PWA_STOCK_QTY .= ' (' . $products_options_fields['customid'] . ') ';
                   }
                 }
-              } elseif (isset($products_options_fields['customid']) && zen_not_null($products_options_fields['customid']) && (!defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID') || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1') || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2')) {
+              } elseif ($show_custom_id_flag) {
                 //show custom ID if flag set to true
                 //test, only applicable to products with-out the display-only attribute set
                 if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
