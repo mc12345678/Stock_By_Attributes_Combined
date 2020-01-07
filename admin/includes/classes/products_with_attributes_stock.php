@@ -565,7 +565,33 @@ function updateAttribQty($stock_id = null, $quantity = null){
   
   if (!empty($stock_id) && is_numeric($stock_id) && is_numeric($quantity)){
       $query = 'UPDATE `' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . '` SET quantity=:quantity: WHERE stock_id=:stock_id: LIMIT 1';
-      $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
+      // Need to account for issue identified with earlier Zen Cart versions use of the 'float' conversion.
+      //  It has been found that in earlier versions (i.e. 1.5.4), if $quantity were non-zero and passed to bindVars that it would return a 0.
+      //  Therefore it does not matter if a zero is passed to this function as it will still process as a 0.
+      if ($quantity == 0 || $db->bindVars(':test:', ':test:', $quantity, 'float') != 0) {
+        $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
+      } else {
+        // Come here if the bindVars of a non-zero value as a float returns a 0 for potential alternate processing to a float.
+        //  Code adapted from Zen Cart 1.5.6 admin/includes/modules/update_product.php
+        $tempval = $quantity;
+        if ($tempval === null) {
+          $quantity = 0;
+        }
+        if ($quantity !== 0) {
+          $tempval = preg_replace('/[^0-9,\.\-]/', '', $quantity);
+          // do a non-strict compare here:
+          if ($tempval == 0) {
+            $quantity = 0;
+          }
+        }
+
+        if ($tempval != 0) {
+          $quantity = (float)$tempval;
+        }
+        unset($tempval);
+        // Go ahead and process as a string.
+        $query = $db->bindVars($query, ':quantity:', $quantity, 'noquotestring');
+      }
       $query = $db->bindVars($query, ':stock_id:', $stock_id, 'integer');
       $result = $db->execute($query);
   }
