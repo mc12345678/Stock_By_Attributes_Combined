@@ -759,7 +759,7 @@ Of the attributes provided, determine the number of those attributes that are
       return $attribute_list;
     } 
     
-    if (!isset($this->_isSBA[(int)$products_id]['sql'])) {
+    //if (!isset($this->_isSBA[(int)$products_id]['sql'])) {
       if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
         $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
       } else {
@@ -782,8 +782,8 @@ Of the attributes provided, determine the number of those attributes that are
       $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
       $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
       $products_options_names = $db->Execute($sql);
-      $this->_isSBA[(int)$products_id]['sql'] = $products_options_names;
-    } else {
+      //$this->_isSBA[(int)$products_id]['sql'] = $products_options_names;
+    /*} else {
        $products_options_names = $this->_isSBA[(int)$products_id]['sql'];
        if (method_exists($products_options_names, 'rewind')) {
          $products_options_names->Rewind();
@@ -791,7 +791,7 @@ Of the attributes provided, determine the number of those attributes that are
          $products_options_names->Move(0);
          $products_options_names->MoveNext();
        }
-    }
+    }*/
     
     if ($products_options_names->RecordCount() == 0) {
       // @TODO: Log error rather than set session value, unless session value is to be used elsewhere for messaging.
