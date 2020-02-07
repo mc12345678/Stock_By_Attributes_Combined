@@ -42,3 +42,15 @@ define('PWA_PAC', 'Unique Combo');
 define('PWA_EDIT', 'Edit');
 define('PWA_DELETE', 'Delete');
 define('PWA_SUBMIT','Submit');
+
+define('PWA_QUANTITY_MISSING', 'Missing Quantity!');
+define('PWA_PRODUCTS_ID_BAD', 'Missing or bad products_id!');
+define('PWA_QUANTITY_BAD', 'Missing or bad Quantity!');
+define('PWA_ATTRIBUTE_MISSING', 'Missing Attribute Selection!');
+define('PWA_MIX_ERROR_ALL_COMBO', 'Do NOT mix \'All - Attributes\' and \'All - Attributes - Combo\'');
+define('PWA_NO_CHANGES', 'No changes made.');
+define('PWA_UPDATE_SUCCESS', 'Product successfully updated');
+define('PWA_UPDATE_FAILURE', 'Product %1$d update failed: %2$s');
+define('PWA_PARENT_QUANTITY_UPDATE_SUCCESS', 'Parent Product Quantity Updated');
+define('PWA_PARENT_QUANTITIES_UPDATE_SUCCESS', 'Parent Product Quantities Updated');
+define('PWA_SORT_UPDATE_SUCCESS', '%1$d stock attributes updated for sort by primary attribute sort order');
