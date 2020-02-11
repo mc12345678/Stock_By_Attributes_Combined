@@ -328,6 +328,35 @@ function cartProductCount($products_id){
     //}
   }//end of function
 
+  /**
+   * Function to return an array of strings representing the customid values that are available from the current selection
+   *  and below such that as the array is parsed further in that the customid "options" would be reduced to possibly just
+   *  one customid at the end.
+   * @access  public
+   * @param   integer   $products_id      The product id of the product on which to obtain data.
+   * @param   array     $selected         The attribute array of what has already been selected for the $products_id.
+   * @param   string    $from             The source of the attribute list to be able to handle usage in other situations (optional value)
+   * @returns array of array of strings   This should return an array set making it possible to traverse the array to identify what possible customids exist at the next level.
+   **/
+  function zen_get_customid_array($products_id, $attribute_list = array(), $from = 'products') {
+    /*
+    * The plan: If the product is SBA tracked then perform the following:
+    *   Identify the attribute(s) that are part of this product (whether selected or not).
+    *   Sort the list as if it is being displayed (perhaps in reverse order?).
+    *   Determine the customid that exists or could exist for the selection, if working top down, then identify all customids that
+    *     exist with the current selection.  If working from bottom up, then identify the customids that exist for each possible all
+    *     selections made and then work back to see if there are any "partial" selections that make a customid adding the previous/leaf
+    *     ends together to get the string of the group above.  Of course run into the concern/need to sort these, whether they are
+    *     sorted alphabetically or by sequence in the associated list...
+    *   The output of this to then be used as necessary to identify the customid selection/option to be displayed to support
+    *    selection down the list as the sequenced dropdowns are used.
+    */
+    
+    if (!$this->zen_product_is_sba($products_id)) {
+      return null;
+    }
+  }
+  
   /*
    * Function to return the desired stock_attribute field for use with the SBA table products_with_attributes_stock.
    * 
