@@ -186,29 +186,27 @@ class products_with_attributes_stock extends base
     }
   
   
-    function get_attributes_name($attribute_id, $languageId=1)
-    {
+    function get_attributes_name($attribute_id, $languageId = 1) {
       global $db;
 
-      $query = 'select pa.products_attributes_id, po.products_options_name, pov.products_options_values_name
-             from '.TABLE_PRODUCTS_ATTRIBUTES.' pa
-             left join '.TABLE_PRODUCTS_OPTIONS.' po on (pa.options_id = po.products_options_id)
-             left join '.TABLE_PRODUCTS_OPTIONS_VALUES.' pov on (pa.options_values_id = pov.products_options_values_id)
-             where pa.products_attributes_id = "'.$attribute_id.'"
-              AND po.language_id = "'.$languageId.'"
-              and po.language_id = pov.language_id';
+      $query = 'SELECT pa.products_attributes_id, po.products_options_name, pov.products_options_values_name
+             FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
+             LEFT JOIN ' . TABLE_PRODUCTS_OPTIONS . ' po ON (pa.options_id = po.products_options_id)
+             LEFT JOIN ' . TABLE_PRODUCTS_OPTIONS_VALUES . ' pov ON (pa.options_values_id = pov.products_options_values_id)
+             WHERE pa.products_attributes_id = ' . (int)$attribute_id . '
+                   AND po.language_id = ' . (int)$languageId . '
+                   AND po.language_id = pov.language_id';
               
       $attributes = $db->Execute($query);
-      if (!$attributes->EOF)
-      {    
-        $attributes_output = array('option' => $attributes->fields['products_options_name'],
-                       'value' => $attributes->fields['products_options_values_name']);
-        return $attributes_output;
+
+      $attributes_output = false;
+      if (!$attributes->EOF) {
+        $attributes_output = array(
+                                   'option' => $attributes->fields['products_options_name'],
+                                   'value' => $attributes->fields['products_options_values_name'],
+                                  );
       }
-      else
-      {
-        return false;
-      }
+      return $attributes_output;
     }
         
         
