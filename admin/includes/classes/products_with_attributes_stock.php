@@ -16,6 +16,15 @@ if (!defined('IS_ADMIN_FLAG')) {
 
 class products_with_attributes_stock extends base
   {  
+  private $stringTypeToIgnoreNull;
+  
+  function __construct() {
+    if (!isset($GLOBALS['db'])) return;
+    $test_text = 'This is NULL';
+    $test_text_result = $GLOBALS['db']->bindVars(':test_text:', ':test_text:', $test_text, 'string');
+    $this->stringTypeToIgnoreNull = (($test_text_result == 'null') ? 'stringIgnoreNull' : 'string');
+  }
+  
     function get_products_attributes($products_id, $languageId=1)
     {
       global $db;
