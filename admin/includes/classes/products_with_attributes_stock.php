@@ -166,16 +166,20 @@ class products_with_attributes_stock extends base
     // returns an array of product ids which contain attributes
     function get_products_with_attributes() {
       global $db;
-      if (isset($_SESSION['languages_id'])){ $language_id = (int)$_SESSION['languages_id'];} else { $language_id=1;}
+      if (!empty($_SESSION['languages_id'])) {
+        $language_id = (int)$_SESSION['languages_id'];
+      } else {
+        $language_id=1;
+      }
       $query = 'SELECT DISTINCT pa.products_id, d.products_name, p.products_quantity, p.products_model, p.products_image
-                FROM '.TABLE_PRODUCTS_ATTRIBUTES.' pa
-                left join '.TABLE_PRODUCTS_DESCRIPTION.' d on (pa.products_id = d.products_id)
-                left join '.TABLE_PRODUCTS.' p on (pa.products_id = p.products_id)
-                WHERE d.language_id='.$language_id.' 
-                ORDER BY d.products_name ';
+                FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
+                LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' d ON (pa.products_id = d.products_id)
+                LEFT JOIN ' . TABLE_PRODUCTS . ' p ON (pa.products_id = p.products_id)
+                WHERE d.language_id = ' . (int)$language_id . ' 
+                ORDER BY d.products_name';
       $products = $db->Execute($query);
       while(!$products->EOF){
-        $products_array[] = $products->fields['products_id'];
+        $products_array[] = (int)$products->fields['products_id'];
         $products->MoveNext();
       }
       return $products_array;
