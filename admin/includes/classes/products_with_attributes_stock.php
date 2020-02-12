@@ -25,6 +25,44 @@ class products_with_attributes_stock extends base
     $this->stringTypeToIgnoreNull = (($test_text_result == 'null') ? 'stringIgnoreNull' : 'string');
   }
   
+  // Function to account for issue identified with earlier Zen Cart versions use of the 'float' conversion.
+  //  It has been found that in earlier versions (i.e. 1.5.4), if $quantity were non-zero and passed to bindVars that it would return a 0.
+  function query_insert_float($query, $replaceField, $quantity) {
+    global $db;
+    
+    //  It does not matter if a zero is passed to this function as it will still process as a 0 in either set of code.
+    if ($quantity == 0 || $db->bindVars(':test:', ':test:', $quantity, 'float') != 0) {
+      $query = $db->bindVars($query, $replaceField, $quantity, 'float');
+    } else {
+      if (function_exists('convertToFloat')) {
+        $quantity = convertToFloat($quantity);
+      } else {
+        // Come here if the bindVars of a non-zero value as a float returns a 0 for potential alternate processing to a float.
+        //  Code adapted from Zen Cart 1.5.6 admin/includes/modules/update_product.php
+        $tempval = $quantity;
+        if ($tempval === null) {
+          $quantity = 0;
+        }
+        if ($quantity !== 0) {
+          $tempval = preg_replace('/[^0-9,\.\-]/', '', $quantity);
+          // do a non-strict compare here:
+          if ($tempval == 0) {
+            $quantity = 0;
+          }
+        }
+
+        if ($tempval != 0) {
+          $quantity = (float)$tempval;
+        }
+        unset($tempval);
+      }
+      // Go ahead and process as a string as the value has been prepared to be a float and known that 'float' conversion will not work.
+      $query = $db->bindVars($query, $replaceField, $quantity, 'noquotestring');
+    }
+    
+    return $query;
+  }
+  
     function get_products_attributes($products_id, $languageId=1)
     {
       global $db;
@@ -120,7 +158,7 @@ class products_with_attributes_stock extends base
       // Else pull the value from the current stock quantity  and if the "switch" has not been
       //  turned off, the value will stay the same otherwise, it would be set to zero.
       if ($quantity->RecordCount() > 0 && $quantity->fields['products_id'] == zen_get_prid($products_id)) {
-        $query = $db->bindVars($query, ':quantity:', $quantity->fields['quantity'], 'float');
+        $query = $this->query_insert_float($query, ':quantity:', $quantity->fields['quantity']);
       } else {
         // Should add a switch to allow not resetting the quantity to zero when synchronizing quantities... This doesn't entirely make sense that because the product is not listed in the SBA table, that it should be zero'd out...
         $query2 = "select p.products_quantity as quantity from :table: p where products_id=:products_id:";
@@ -129,9 +167,9 @@ class products_with_attributes_stock extends base
         $quantity_orig = $db->Execute($query2);
         
         if ($quantity_orig->RecordCount() > 0 && true /* This is where a switch could be introduced to allow setting to 0 when synchronizing with the SBA table. But as long as true, and the item is not tracked by SBA, then there is no change in the quantity.  header message probably should also appear.. */) {
-          $query = $db->bindVars($query, ':quantity:', $quantity_orig->fields['quantity'], 'float');
+          $query = $this->query_insert_float($query, ':quantity:', $quantity_orig->fields['quantity']);
         } else {
-          $query = $db->bindVars($query, ':quantity:', 0, 'float');
+          $query = $this->query_insert_float($query, ':quantity:', 0);
         }
       }
 
@@ -154,7 +192,7 @@ class products_with_attributes_stock extends base
         // Else pull the value from the current stock quantity  and if the "switch" has not been
         //  turned off, the value will stay the same otherwise, it would be set to zero.
         if ($quantity->RecordCount() > 0 && $quantity->fields['products_id'] == zen_get_prid($products_id)) {
-          $query = $db->bindVars($query, ':quantity:', $quantity->fields['quantity'], 'float');
+          $query = $this->query_insert_float($query, ':quantity:', $quantity->fields['quantity']);
         } else {
           // Should add a switch to allow not resetting the quantity to zero when synchronizing quantities... This doesn't entirely make sense that because the product is not listed in the SBA table, that it should be zero'd out...
           $query2 = "select p.products_quantity as quantity from :table: p where products_id=:products_id:";
@@ -162,9 +200,9 @@ class products_with_attributes_stock extends base
           $query2 = $db->bindVars($query2, ':products_id:', zen_get_prid($products_id), 'integer');
           $quantity_orig = $db->Execute($query2);
           if ($quantity_orig->RecordCount() > 0 && true /* This is where a switch could be introduced to allow setting to 0 when synchronizing with the SBA table. But as long as true, and the item is not tracked by SBA, then there is no change in the quantity.  header message probably should also appear.. */) {
-            $query = $db->bindVars($query, ':quantity:', $quantity_orig->fields['quantity'], 'float');
+            $query = $this->query_insert_float($query, ':quantity:', $quantity_orig->fields['quantity']);
           } else {
-            $query = $db->bindVars($query, ':quantity:', 0, 'float');
+            $query = $this->query_insert_float($query, ':quantity:', 0);
           }
         }
         
@@ -493,7 +531,7 @@ function saveAttrib(){
           case 'quantity':
           case 'sort':
 //            $value = (float)$value; // Get a float value
-            $value = $db->getBindVarValue($value, 'float');
+            $value = $this->query_insert_float(':quantity:', ':quantity:', $value);
             break;
           case 'customid':
           case 'title':
@@ -576,33 +614,7 @@ function updateAttribQty($stock_id = null, $quantity = null){
   
   if (!empty($stock_id) && is_numeric($stock_id) && is_numeric($quantity)){
       $query = 'UPDATE `' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . '` SET quantity=:quantity: WHERE stock_id=:stock_id: LIMIT 1';
-      // Need to account for issue identified with earlier Zen Cart versions use of the 'float' conversion.
-      //  It has been found that in earlier versions (i.e. 1.5.4), if $quantity were non-zero and passed to bindVars that it would return a 0.
-      //  Therefore it does not matter if a zero is passed to this function as it will still process as a 0.
-      if ($quantity == 0 || $db->bindVars(':test:', ':test:', $quantity, 'float') != 0) {
-        $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
-      } else {
-        // Come here if the bindVars of a non-zero value as a float returns a 0 for potential alternate processing to a float.
-        //  Code adapted from Zen Cart 1.5.6 admin/includes/modules/update_product.php
-        $tempval = $quantity;
-        if ($tempval === null) {
-          $quantity = 0;
-        }
-        if ($quantity !== 0) {
-          $tempval = preg_replace('/[^0-9,\.\-]/', '', $quantity);
-          // do a non-strict compare here:
-          if ($tempval == 0) {
-            $quantity = 0;
-          }
-        }
-
-        if ($tempval != 0) {
-          $quantity = (float)$tempval;
-        }
-        unset($tempval);
-        // Go ahead and process as a string.
-        $query = $db->bindVars($query, ':quantity:', $quantity, 'noquotestring');
-      }
+      $query = $this->query_insert_float($query, ':quantity:', $quantity);
       $query = $db->bindVars($query, ':stock_id:', $stock_id, 'integer');
       $result = $db->execute($query);
   }
@@ -699,7 +711,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
             $query = $db->bindVars($query, ':product_attribute_combo:', $productAttributeCombo, 'passthru'); // @TODO Need to also consider ignore NULL style.
           }
           $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'passthru');
-          $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
+          $query = $this->query_insert_float($query, ':quantity:', $quantity);
           if (!isset($customid)) {
             $query = $db->bindVars($query, ':customid:', 'null', 'noquotestring');
           } else {
@@ -768,7 +780,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
           // If no $customid clash (non-empty customid) or if the $customid is empty then update.
           if ($update_result || (isset($result_customid) && $result_customid->fields['total'] == 0) /*!isset($result) || $result->fields['total'] == 0*/) {
               $query = "UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set `quantity` = :quantity:, `customid` = :customid:, `title` = :title: WHERE `products_id` = :products_id: AND `stock_attributes` = :stock_attributes:";
-              $query = $db->bindVars($query, ':quantity:', $quantity, 'float');
+              $query = $this->query_insert_float($query, ':quantity:', $quantity);
               if (!isset($customid)) {
                 $query = $db->bindVars($query, ':customid:', 'null', 'noquotestring');
               } else {
