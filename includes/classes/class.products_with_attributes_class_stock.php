@@ -352,8 +352,87 @@ function cartProductCount($products_id){
     *    selection down the list as the sequenced dropdowns are used.
     */
     
+    // If product is not tracked by SBA then make it known with a null which will evaluate to soft compare to a false.
     if (!$this->zen_product_is_sba($products_id)) {
       return null;
+    }
+    
+    global $db;
+    
+    if (!empty($_SESSION['languages_id']) && $_SESSION['languages_id'] > 0) {
+      $languageId = $_SESSION['languages_id'];
+    } else {
+      $languageId = 1;
+    }
+    
+    //LPAD - Return the string argument, left-padded with the specified string 
+    //example: LPAD(po.products_options_sort_order,11,"0") the field is 11 digits, and is left padded with 0
+    if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
+      $options_order_by= ' ORDER BY LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+    } else {
+      $options_order_by= ' ORDER BY popt.products_options_name';
+    }
+
+    //get the option/attribute list
+    $sql = "SELECT distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
+                            popt.products_options_type
+            FROM " . TABLE_PRODUCTS_OPTIONS . " popt
+            LEFT JOIN " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
+            WHERE patrib.products_id = :products_id:
+            AND popt.language_id = :languages_id: " .
+            $options_order_by;
+
+    $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
+    $sql = $db->bindVars($sql, ':languages_id:', $languageId, 'integer');
+
+    $option_names = $db->Execute($sql);
+      
+    if ($option_names->RecordCount() > 0) {
+      
+      if (PRODUCTS_OPTIONS_SORT_BY_PRICE == '1') {
+        $order_by= ' ORDER BY LPAD(pa.products_options_sort_order,11,"0"), pov.products_options_values_name';
+      } else {
+        $order_by= ' ORDER BY LPAD(pa.products_options_sort_order,11,"0"), pa.options_values_price';
+      }
+      $products_options_array = array();
+      
+      $sql = "SELECT    pov.products_options_values_id,
+                    pov.products_options_values_name,
+                    pa.*
+          FROM      " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov
+          WHERE     pa.products_id = " . (int)$products_id . "
+          AND       pa.options_id = :options_id:
+          AND       pa.options_values_id = pov.products_options_values_id
+          AND       pov.language_id = " . (int)$languageId .
+              $order_by;
+
+      while (!$option_names->EOF) {
+        if (!isset($products_options_array[$option_names->fields['products_options_id']])) {
+          $products_options_array[$option_names->fields['products_options_id']] = array();
+        }
+        /* 
+        Considering (but not set on) this array structure:
+        $products_options_array[options_id] = array(
+                                                    'parent' => (int) previous options_id with a zero base at root.
+                                                    'child' => (int) next_options_id
+                                                    'attributes_id' => indexed array of values to attributes_id
+                                                    'customids' => indexed array using sba_id as the base.
+                                                    'sba_ids' => array of sba_ids using this
+        
+        */
+        
+        $sql2 = $db->bindVars($sql, ':options_id:', $option_names->fields['products_options_id'], 'integer');
+        
+        $option_values = $db->Execute($sql2);
+
+        // Need to process $option_values and further process $option_names
+        while (!$option_values->EOF) {
+          // Need to find all of the SBA variants that contain this products_attributes_id and the associated customid.
+          $option_values->MoveNext();
+        }
+        
+        $option_names->MoveNext();
+      }
     }
   }
   
