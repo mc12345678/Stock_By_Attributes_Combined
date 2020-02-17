@@ -23,7 +23,7 @@ class zcObserverAdvancedSearchCategoriesCustomId extends base {
 //    $attachNotifier[] = 'NOTIFY_HEADER_START_ADVANCED_SEARCH_RESULTS';
     $attachNotifier[] = 'NOTIFY_SEARCH_COLUMNLIST_STRING';
 //    $attachNotifier[] = 'NOTIFY_SEARCH_SELECT_STRING';
-    $attachNotifier[] = 'NOTIFY_SEARCH_FROM_STRING';
+//    $attachNotifier[] = 'NOTIFY_SEARCH_FROM_STRING';
     $attachNotifier[] = 'NOTIFY_SEARCH_WHERE_STRING';
 //    $attachNotifier[] = 'NOTIFY_SEARCH_ORDERBY_STRING';
 //    $attachNotifier[] = 'NOTIFY_HEADER_END_ADVANCED_SEARCH_RESULTS';
@@ -31,7 +31,11 @@ class zcObserverAdvancedSearchCategoriesCustomId extends base {
     $this->attach($this, $attachNotifier);
 
     $this->cat_array_to_search = array();
-    $this->cat_array_to_search[] = '117';
+    // Identify below the category(ies) that are to be the parent in which to
+    //   support search of the product's description.  When tested on ZC 1.5.6
+    //   and ZC 1.5.7, this specific search was not required to support a quick
+    //   search.
+//    $this->cat_array_to_search[] = '117';
     
     $this->enabled = false;
   }  
@@ -48,20 +52,6 @@ function updateNotifySearchColumnlistString(&$callingClass, $notifier) {
   if (defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK')) {
     $this->enabled = true;
   }
-/*  if (isset($keywords) && zen_not_null($keywords)) {
-    if (zen_parse_search_string(stripslashes($_GET['keyword']), $search_keywords)) {
-      for ($i=0, $n=count($search_keywords); $i<$n; $i++ ) {
-        // skip processing this as part of the search if the word does not start with a number (positive or negative)
-        if (empty((int)$search_keywords[$i])) {
-          continue;
-        }
-        $this->enabled = true;
-        // Have identified that one of the words is numeric basically and not a value of zero; therefore can continue to use.
-        break;
-      }
-    }
-  }*/
-
 }
 
 //    $attachNotifier[] = 'NOTIFY_SEARCH_SELECT_STRING';
@@ -77,14 +67,6 @@ function updateNotifySearchFromString(&$callingClass, $notifier, $paramArray) {
     return;
   }
   
-  $from_str .= " LEFT JOIN " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pwas
-                ON pwas.products_id = p2c.products_id
-                AND pwas.products_id = p.products_id
-                AND pwas.products_id = pd.products_id";
-  if (ADVANCED_SEARCH_INCLUDE_METATAGS == 'true' && strpos($from_str, 'mtpd.') !== false) {
-    $from_str .= "
-                AND pwas.products_id = mtpd.products_id";
-  }
 }
 
 // ZC 1.5.7: $zco_notifier->notify('NOTIFY_SEARCH_WHERE_STRING');
@@ -96,11 +78,24 @@ function updateNotifySearchWhereString(&$callingClass, $notifier, $paramArray) {
   
   global $db, $where_str, $keywords, $currencies;
   
-  $where_str .= " OR (p.products_status = 1
+  // @TODO - possibly add a switch to control how the search is incorporated.
+  //   Currently it is OR'd with the existing search, which means that any attempt
+  //   to reduce the results of this portion of the search will not really reduce the
+  //   overall results by much considering any previous search.  This search could
+  //   be standalone; however, the intent is to not take over the existing search
+  //   but instead to supplement with the ability to find product with SBA details.
+  if (true) {
+    $where_str .= " OR ";
+  } else {
+    $where_str .= " WHERE ";
+  }
+
+  $where_str .= "(p.products_status = 1
                  AND p.products_id = pd.products_id
                  AND pd.language_id = :languagesID
                  AND p.products_id = p2c.products_id
-                 AND p2c.categories_id = c.categories_id";
+                 AND p2c.categories_id = c.categories_id
+                 ";
 
   $where_str = $db->bindVars($where_str, ':languagesID', $_SESSION['languages_id'], 'integer');
 
@@ -167,13 +162,50 @@ function updateNotifySearchWhereString(&$callingClass, $notifier, $paramArray) {
                                            LIKE '%:keywords%'
                                            OR m.manufacturers_name
                                            LIKE '%:keywords%'
-                                           OR pwas.customid
-                                           LIKE '%:keywords%'";
+                                           ";
+          $where_str .= "OR p.products_id 
+                                           IN (SELECT products_id 
+                                                FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
+                                           WHERE customid LIKE '%:keywords%')";
+
+          foreach ($this->cat_array_to_search as $cat_key => $cat_val) {
+            $where_str .= "
+                           OR (pd.products_description
+                            LIKE '%:keywords%'
+                           AND p.products_status = 1
+                           AND p.products_id = pd.products_id
+                           AND pd.language_id = :languagesID
+                           AND p.products_id = p2c.products_id
+                           AND p2c.categories_id = c.categories_id
+                           ";
+  
+            $where_str = $db->bindVars($where_str, ':languagesID', $_SESSION['languages_id'], 'integer');
+  
+            $subcategories_array = array();
+            zen_get_subcategories($subcategories_array, $cat_val);
+            $where_str .= " AND p2c.products_id = p.products_id
+                            AND p2c.products_id = pd.products_id
+                            AND (p2c.categories_id = :categoriesID";
+
+            $where_str = $db->bindVars($where_str, ':categoriesID', $cat_val, 'integer');
+
+            if (count($subcategories_array) > 0) {
+              $where_str .= " OR p2c.categories_id in (";
+              for ($i=0, $n=count($subcategories_array); $i<$n; $i++ ) {
+                $where_str .= " :categoriesID";
+                if ($i+1 < $n) $where_str .= ",";
+                $where_str = $db->bindVars($where_str, ':categoriesID', $subcategories_array[$i], 'integer');
+              }
+              $where_str .= ")";
+            }
+            $where_str .= ")"; //p2c.categories_id = :categoriesID
+            $where_str .= ")"; //pd.products_description
+          }
 
           $where_str = $db->bindVars($where_str, ':keywords', $search_keywords[$i], 'noquotestring');
         
           // conditionally include meta tags in search
-          if (ADVANCED_SEARCH_INCLUDE_METATAGS == 'true') {
+          if ((!defined('ADVANCED_SEARCH_INCLUDE_METATAGS') || ADVANCED_SEARCH_INCLUDE_METATAGS == 'true') && strpos($GLOBALS['from_str'], 'mtpd.') !== false) {
               $where_str .= " OR (mtpd.metatags_keywords != '' AND mtpd.metatags_keywords LIKE '%:keywords%')";
               $where_str .= " OR (mtpd.metatags_description != '' AND mtpd.metatags_description LIKE '%:keywords%')";
               $where_str = $db->bindVars($where_str, ':keywords', $search_keywords[$i], 'noquotestring');
@@ -246,100 +278,6 @@ function updateNotifySearchWhereString(&$callingClass, $notifier, $paramArray) {
       $where_str = $db->bindVars($where_str, ':price', $pto, 'float');
     }
   }
-
-
-
-
-
-
-
-/*  if (isset($keywords) && zen_not_null($keywords)) {
-    if (zen_parse_search_string(stripslashes($_GET['keyword']), $search_keywords)) {
-      $where_str .= " OR (";
-      for ($i=0, $n=sizeof($search_keywords); $i<$n; $i++ ) {
-        switch ($search_keywords[$i]) {
-          case '(':
-          case ')':
-          case 'and':
-          case 'or':
-          $where_str .= " " . $search_keywords[$i] . " ";
-          break;
-          default:*/
-/*                  $where_str .= "(pd.products_name LIKE '%:keywords%'
-                                         OR p.products_model
-                                         LIKE '%:keywords%'
-                                         OR m.manufacturers_name
-                                         LIKE '%:keywords%'
-                                         OR pwas.customid
-                                         LIKE '%:keywords%'";
-*/
-/*          $where_str .= "pwas.products_id = p.products_id AND
-                          pwas.products_id = pd.products_id AND
-                          pwas.products_id = p2c.products_id AND
-                          (pwas.customid LIKE '%:keywords%'";
-
-          $where_str = $db->bindVars($where_str, ':keywords', $search_keywords[$i], 'noquotestring');
-        
-          $where_str .= ')';
-          break;
-        }
-      }
-      $where_str .= " )";*/
-
-/*      for ($i=0, $n=sizeof($search_keywords); $i<$n; $i++ ) {
-        switch ($search_keywords[$i]) {
-          case '(':
-          case ')':
-          case 'and':
-          case 'or':
-          $where_str .= " " . $search_keywords[$i] . " ";
-          break;
-          default:
-            if (empty((int)$search_keywords[$i])) {
-              $where_str .= " AND true ";
-              break;
-            }
-            foreach ($this->cat_array_to_search as $cat_key => $cat_val) {
-              $where_str .= "
-                             OR (pd.products_description
-                              LIKE '%:keywords%'
-                             AND p.products_status = 1
-                             AND p.products_id = pd.products_id
-                             AND pd.language_id = :languagesID
-                             AND p.products_id = p2c.products_id
-                             AND p2c.categories_id = c.categories_id
-                             ";
-  
-              $where_str = $db->bindVars($where_str, ':languagesID', $_SESSION['languages_id'], 'integer');
-  
-              $subcategories_array = array();
-              zen_get_subcategories($subcategories_array, $cat_val);
-              $where_str .= " AND p2c.products_id = p.products_id
-                              AND p2c.products_id = pd.products_id
-                              AND (p2c.categories_id = :categoriesID";
-
-              $where_str = $db->bindVars($where_str, ':categoriesID', $cat_val, 'integer');
-
-              if (count($subcategories_array) > 0) {
-                $where_str .= " OR p2c.categories_id in (";
-                for ($i=0, $n=count($subcategories_array); $i<$n; $i++ ) {
-                  $where_str .= " :categoriesID";
-                  if ($i+1 < $n) $where_str .= ",";
-                  $where_str = $db->bindVars($where_str, ':categoriesID', $subcategories_array[$i], 'integer');
-                }
-                $where_str .= ")";
-              }
-              $where_str .= ")"; //p2c.categories_id = :categoriesID
-              $where_str .= ")"; //pd.products_description
-            }
-
-            $where_str = $db->bindVars($where_str, ':keywords', $search_keywords[$i], 'noquotestring');
-
-        }
-      }*/
-  //    $where_str .= " ))";
-  //  }
-  //}
 }
 //    $attachNotifier[] = 'NOTIFY_SEARCH_ORDERBY_STRING';
 function updateNotifySearchOrderbyString(&$callingClass, $notifier, $listing_sql) {
