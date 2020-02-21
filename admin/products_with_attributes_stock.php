@@ -1074,13 +1074,19 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
                 WHERE pd.language_id = ' . $language_id . '
                 order by :search_order_by:'; //order by may be changed to: products_id, products_model, products_name
       $searchList = $db->bindVars($searchList, ':search_order_by:', $search_order_by, 'noquotestring');
-
+?><table>
+	      <tbody>
+	      <tr>
+	      <td>
+<?php
       echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'get', '', true) . "Product Selection List:";
       echo $searchList = $stock->selectItemID(TABLE_PRODUCTS_ATTRIBUTES, 'pa.products_id', $seachPID, $searchList, 'seachPID', 'seachPID', 'selectSBAlist');
       echo zen_draw_input_field('pwas-search-button', 'Search', '', true, 'submit', true);
       echo zen_draw_hidden_field('search_order_by', $search_order_by);
 ?>
       </form>
+</td>
+
       <td valign="top" align="left">
         <form name="search_order_by" action="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'SSL'); ?>">
           <select name="selected" onChange="go_search()">
@@ -1090,6 +1096,9 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
           </select>
         </form>
       </td>
+</tr>
+</tbody>
+</table>
 <?php
     }
 
@@ -1243,7 +1252,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
 
 
       /* set an option in configuration table */ ?>
-        <td colspan="2"><table>
+        <!--<td colspan="2">--><table colspan="2">
         <!-- bof: products_previous_next_display -->
   <tr>
     <td><table border="0" cellspacing="0" cellpadding="0">
@@ -1271,7 +1280,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       </tr>
     </table></td>
   </tr>
-      <tr><form name="set_products_filter_id" <?php echo 'action="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=set_products_filter') . '"'; ?> method="post"><?php echo zen_draw_hidden_field('products_filter', $products_filter); ?><?php echo zen_draw_hidden_field('current_category_id', $current_category_id); ?><?php echo zen_draw_hidden_field('securityToken', $_SESSION['securityToken']); ?>
+      <tr><td><form name="set_products_filter_id" <?php echo 'action="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=set_products_filter') . '"'; ?> method="post"><?php echo zen_draw_hidden_field('products_filter', $products_filter); ?><?php echo zen_draw_hidden_field('current_category_id', $current_category_id); ?><?php echo zen_draw_hidden_field('securityToken', $_SESSION['securityToken']); ?>
 <?php if (isset($_GET['products_filter']) && $_GET['products_filter'] != '') { ?>
         <td colspan="2"><table border="0" cellspacing="0" cellpadding="2">
 <!--            <td class="attributes-even" align="center"><?php echo zen_draw_products_pull_down('products_filter', 'size="10" id="pwas-filter"', '', true, $_GET['products_filter'], true, true); ?></td>-->
@@ -1281,13 +1290,13 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
          echo zen_draw_hidden_field('search_order_by', $search_order_by);
 ?>
           </tr>
-        </table></td>
+        </table><!--</td>-->
 <?php } ?>
-      </form></tr>
+      </form></td></tr>
 
 <!-- eof: products_previous_next_display -->
 
-        </table></td>
+        </table><!--</td>-->
 
     <span id="loading" style="display: none;"><img src="./images/loading.gif" alt="" /> Loading...</span><hr />
     <a class="forward" style="float:right;" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync_all" . '&search_order_by=' . $search_order_by, $request_type); ?>"><strong>Sync All Quantities</strong></a><br class="clearBoth" /><hr />
