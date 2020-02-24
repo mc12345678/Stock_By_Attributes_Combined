@@ -489,7 +489,7 @@ class products_with_attributes_stock extends base {
     * NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED
     */
   function updateNotifyAttributesModuleAttribSelected(&$callingClass, $notifier, $paramsArray){
-    global $products_options_names, $products_options, $selected_attribute, /*$moveSelectedAttribute,*/ $disablebackorder;
+    global /*$products_options_names, */$products_options, $selected_attribute, /*$moveSelectedAttribute,*/ $disablebackorder;
     
 //       if ($this->_isSBA && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
     $disablebackorder = null;
