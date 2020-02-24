@@ -334,7 +334,7 @@ class products_with_attributes_stock extends base {
                   $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options_fields['pasqty'] . ' ';
                   //show custom ID if flag set to true
                   if ($show_custom_id_flag && zen_not_null($products_options_fields['customid'])) {
-                    $PWA_STOCK_QTY .= ' (' . $products_options_fields['customid'] . ') ';
+                    $PWA_STOCK_QTY .= PWA_CUSTOMID_LEFT . $products_options_fields['customid'] . PWA_CUSTOMID_RIGHT;
                   }
                 }
               } elseif (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true' && (!isset($products_options_fields['pasqty']) || ($products_options_fields['pasqty'] < 1)) && empty($products_options_fields['pasid'])) {
@@ -357,14 +357,14 @@ class products_with_attributes_stock extends base {
 
                   //show custom ID if flag set to true
                   if ($show_custom_id_flag && zen_not_null($products_options_fields['customid'])) {
-                    $PWA_STOCK_QTY .= ' (' . $products_options_fields['customid'] . ') ';
+                    $PWA_STOCK_QTY .= PWA_CUSTOMID_LEFT . $products_options_fields['customid'] . PWA_CUSTOMID_RIGHT;
                   }
                 }
               } elseif ($show_custom_id_flag) {
                 //show custom ID if flag set to true
                 //test, only applicable to products with-out the display-only attribute set
                 if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
-                  $PWA_STOCK_QTY .= ' (' . $products_options_fields['customid'] . ') ';
+                  $PWA_STOCK_QTY .= PWA_CUSTOMID_LEFT . $products_options_fields['customid'] . PWA_CUSTOMID_RIGHT;
                 }
               }
             }

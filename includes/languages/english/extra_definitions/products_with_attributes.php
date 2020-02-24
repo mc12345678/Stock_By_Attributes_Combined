@@ -19,3 +19,5 @@ define('PWA_STOCK_QTY_PFX', ' Qty: ');
 define('PWA_STOCK_QTY_SFX', ' Available');
 define('PWA_LOW_STOCK', ' Low Stock! ');
 define('PWA_CUSTOMID_NAME', ' Item # ');
+define('PWA_CUSTOMID_LEFT', ' (');
+define('PWA_CUSTOMID_RIGHT', ') ');
