@@ -439,9 +439,21 @@ class products_with_attributes_stock extends base {
         ) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
       // START "Stock by Attributes" SBA added original price for display, and some formatting
       $originalpricedisplaytext = null;
-      $attributes_price_final = zen_get_attributes_price_final($products_options->fields["products_attributes_id"], 1, '', 'false');
+
+      if (isset($_SESSION['pwas_class2']->zgapf) && $_SESSION['pwas_class2']->zgapf->getNumberOfParameters() > 4) {
+        // Use the latest function for determining the attribute's final price
+        //   This requires/uses 4 parameters to internally determine the price of the attribute
+        global $products_price_is_priced_by_attributes;
+        $attributes_price_final = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
+      } else {
+        // This is the old method of performing attribute price determination which
+        //   has been found to be prone to discrepancies when sales, specials 
+        //   and/or priced-by-attributes are involved
+        $attributes_price_final = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false');
+        $attributes_price_final = zen_get_discount_calc((int)$_GET['products_id'], true, $attributes_price_final);
+      }
 //      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($attributes_price_final == $new_attributes_price || ($attributes_price_final == -$new_attributes_price && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
-      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($products_options->fields['attributes_display_only'] && $products_options->fields['attributes_default'] && !$products_options->fields['products_options_sort_order']) && ($attributes_price_final == $new_attributes_price || (($attributes_price_final == -$new_attributes_price) && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
+      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($products_options->fields['attributes_display_only'] && $products_options->fields['attributes_default'] && !$products_options->fields['products_options_sort_order']) && ($new_attributes_price != $products_options->fields['options_values_price']) && (($attributes_price_final == $new_attributes_price) || (($attributes_price_final == -$new_attributes_price) && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
         //Original price struck through
         if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_RADIO || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
           //use this if a PRODUCTS_OPTIONS_TYPE_RADIO or PRODUCTS_OPTIONS_TYPE_CHECKBOX

@@ -23,6 +23,8 @@ class products_with_attributes_class_stock extends base {
 
   private $_isSBA = array();
   
+  protected $zgapf; // Variable to hold ReflectionFunction information about function zen_get_attributes_price_final
+  
 /**
  * @package includes/functions/extra_functions
  * products_with_attributes.php
@@ -38,6 +40,11 @@ class products_with_attributes_class_stock extends base {
 
   function __construct() {
     $this->_isSBA = array();
+    if (function_exists('zen_get_attributes_price_final')) {
+      if (class_exists('ReflectionFunction')) {
+        $this->zgapf = new ReflectionFunction('zen_get_attributes_price_final');
+      }
+    }
   }
 
 function non_stock_attribute($check_attribute_id/*, $non_stock_id, $non_stock_type, $non_stock_source = '0', $non_stock_language_id = $_SESSION['languages_id']*/) {
