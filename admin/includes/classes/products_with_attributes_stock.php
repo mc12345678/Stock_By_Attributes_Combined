@@ -73,19 +73,19 @@ class products_with_attributes_stock extends base
       
       //LPAD - Return the string argument, left-padded with the specified string 
       //example: LPAD(po.products_options_sort_order,11,"0") the field is 11 digits, and is left padded with 0
-      if (PRODUCTS_OPTIONS_SORT_ORDER=='0') {
-        $options_order_by= ' order by LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
+      if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
+        $options_order_by= ' ORDER BY LPAD(popt.products_options_sort_order,11,"0"), popt.products_options_name';
       } else {
-        $options_order_by= ' order by popt.products_options_name';
+        $options_order_by= ' ORDER BY popt.products_options_name';
       }
 
       //get the option/attribute list
-      $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
+      $sql = "SELECT distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
                               popt.products_options_type
-              from        " . TABLE_PRODUCTS_OPTIONS . " popt
-              left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
-              where patrib.products_id= :products_id:
-              and popt.language_id = :languages_id: " .
+              FROM        " . TABLE_PRODUCTS_OPTIONS . " popt
+              LEFT JOIN " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
+              WHERE patrib.products_id= :products_id:
+              AND popt.language_id = :languages_id: " .
               $options_order_by;
 
       $sql = $db->bindVars($sql, ':products_id:', $products_id, 'integer');
@@ -93,65 +93,60 @@ class products_with_attributes_stock extends base
 
       $attributes = $db->Execute($sql);
       
-      if ($attributes->RecordCount() > 0)
-      {
-      
-        if ( PRODUCTS_OPTIONS_SORT_BY_PRICE =='1' ) {
-          $order_by= ' order by LPAD(pa.products_options_sort_order,11,"0"), pov.products_options_values_name';
-        } else {
-          $order_by= ' order by LPAD(pa.products_options_sort_order,11,"0"), pa.options_values_price';
-        }
-        $products_options_array = array();
-      
-        while(!$attributes->EOF)
-        {
-        
-          $sql = "select    pov.products_options_values_id,
-                        pov.products_options_values_name,
-                        pa.*
-              from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov
-              where     pa.products_id = '" . (int)$products_id . "'
-              and       pa.options_id = '" . (int)$attributes->fields['products_options_id'] . "'
-              and       pa.options_values_id = pov.products_options_values_id
-              and       pov.language_id = '" . (int)$languageId . "' " .
-                $order_by;
-
-          $attributes_array_ans= $db->Execute($sql);
-
-          //loop for each option/attribute listed
-
-          while (!$attributes_array_ans->EOF) {
-            $attributes_array[$attributes->fields['products_options_name']][] =
-              array('id' => $attributes_array_ans->fields['products_attributes_id'],
-                  'text' => $attributes_array_ans->fields['products_options_values_name']
-                        . ' (' . $attributes_array_ans->fields['price_prefix']
-                      . '$'.zen_round($attributes_array_ans->fields['options_values_price'],2) . ')',
-                  'display_only' => $attributes_array_ans->fields['attributes_display_only'],
-                  );
-          
-            $attributes_array_ans->MoveNext();
-          }
-          $attributes->MoveNext();
-        }
-  
-        return $attributes_array;
-  
-      }
-      else
-      {
+      if ($attributes->RecordCount() == 0) {
         return false;
       }
+      
+      if (PRODUCTS_OPTIONS_SORT_BY_PRICE == '1') {
+        $order_by = ' ORDER BY LPAD(pa.products_options_sort_order,11,"0"), pov.products_options_values_name';
+      } else {
+        $order_by = ' ORDER BY LPAD(pa.products_options_sort_order,11,"0"), pa.options_values_price';
+      }
+      $products_options_array = array();
+      
+      while (!$attributes->EOF) {
+        
+        $sql = "SELECT    pov.products_options_values_id,
+                      pov.products_options_values_name,
+                      pa.*
+            FROM      " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov
+            WHERE     pa.products_id = " . (int)$products_id . "
+            AND       pa.options_id = " . (int)$attributes->fields['products_options_id'] . "
+            AND       pa.options_values_id = pov.products_options_values_id
+            AND       pov.language_id = " . (int)$languageId . " " .
+              $order_by;
+
+        $attributes_array_ans= $db->Execute($sql);
+
+        //loop for each option/attribute listed
+
+        while (!$attributes_array_ans->EOF) {
+          $attributes_array[$attributes->fields['products_options_name']][] =
+            array('id' => $attributes_array_ans->fields['products_attributes_id'],
+                'text' => $attributes_array_ans->fields['products_options_values_name']
+                      . ' (' . $attributes_array_ans->fields['price_prefix']
+                    . '$'.zen_round($attributes_array_ans->fields['options_values_price'],2) . ')',
+                'display_only' => $attributes_array_ans->fields['attributes_display_only'],
+                );
+          
+          $attributes_array_ans->MoveNext();
+        }
+        $attributes->MoveNext();
+      }
+  
+      return $attributes_array;
+  
     }
   
     function update_parent_products_stock($products_id)
     {
       global $db;
 
-      $query = 'select sum(quantity) as quantity, products_id from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' where products_id = :products_id:';
+      $query = 'SELECT sum(quantity) AS quantity, products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE products_id = :products_id:';
       $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
       $quantity = $db->Execute($query);
 
-      $query = 'update '.TABLE_PRODUCTS.' set products_quantity=:quantity: where products_id=:products_id:';
+      $query = 'UPDATE ' . TABLE_PRODUCTS . ' SET products_quantity=:quantity: WHERE products_id=:products_id:';
       $query = $db->bindVars($query, ':products_id:', zen_get_prid($products_id), 'integer');
 
       // Tests are this: If the the item was found in the SBA table then update with those results.
@@ -161,7 +156,7 @@ class products_with_attributes_stock extends base
         $query = $this->query_insert_float($query, ':quantity:', $quantity->fields['quantity']);
       } else {
         // Should add a switch to allow not resetting the quantity to zero when synchronizing quantities... This doesn't entirely make sense that because the product is not listed in the SBA table, that it should be zero'd out...
-        $query2 = "select p.products_quantity as quantity from :table: p where products_id=:products_id:";
+        $query2 = "SELECT p.products_quantity AS quantity FROM :table: p WHERE products_id=:products_id:";
         $query2 = $db->bindVars($query2, ':table:', TABLE_PRODUCTS, 'passthru');
         $query2 = $db->bindVars($query2, ':products_id:', zen_get_prid($products_id), 'integer');
         $quantity_orig = $db->Execute($query2);
@@ -182,11 +177,11 @@ class products_with_attributes_stock extends base
       global $db;
       $products_array = $this->get_products_with_attributes();
       foreach ($products_array as $products_id) {
-        $query = 'select sum(quantity) as quantity, products_id from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' where products_id = :products_id:';
+        $query = 'SELECT sum(quantity) AS quantity, products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE products_id = :products_id:';
         $query = $db->bindVars($query, ':products_id:', zen_get_prid($products_id), 'integer');
         $quantity = $db->Execute($query);
 
-        $query = 'update '.TABLE_PRODUCTS.' set  products_quantity=:quantity: where products_id=:products_id:';
+        $query = 'UPDATE ' . TABLE_PRODUCTS . ' SET  products_quantity=:quantity: WHERE products_id=:products_id:';
         $query = $db->bindVars($query, ':products_id:', zen_get_prid($products_id), 'integer');
         // Tests are this: If the the item was found in the SBA table then update with those results.
         // Else pull the value from the current stock quantity  and if the "switch" has not been
@@ -195,7 +190,7 @@ class products_with_attributes_stock extends base
           $query = $this->query_insert_float($query, ':quantity:', $quantity->fields['quantity']);
         } else {
           // Should add a switch to allow not resetting the quantity to zero when synchronizing quantities... This doesn't entirely make sense that because the product is not listed in the SBA table, that it should be zero'd out...
-          $query2 = "select p.products_quantity as quantity from :table: p where products_id=:products_id:";
+          $query2 = "SELECT p.products_quantity AS quantity FROM :table: p WHERE products_id=:products_id:";
           $query2 = $db->bindVars($query2, ':table:', TABLE_PRODUCTS, 'passthru');
           $query2 = $db->bindVars($query2, ':products_id:', zen_get_prid($products_id), 'integer');
           $quantity_orig = $db->Execute($query2);
@@ -225,7 +220,7 @@ class products_with_attributes_stock extends base
                 WHERE d.language_id = ' . (int)$language_id . ' 
                 ORDER BY d.products_name';
       $products = $db->Execute($query);
-      while(!$products->EOF){
+      while (!$products->EOF) {
         $products_array[] = (int)$products->fields['products_id'];
         $products->MoveNext();
       }
@@ -265,7 +260,7 @@ class products_with_attributes_stock extends base
  * $ReturnedPage
  * $NumberRecordsShown
  */
-function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, $ReturnedProductID = null){
+    function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, $ReturnedProductID = null) {
         global $db;
       
         if (isset($_SESSION['languages_id']) && $_SESSION['languages_id'] > 0) {
@@ -298,34 +293,34 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
           $ReturnedProductID = zen_db_input($ReturnedProductID);
           //$w = "( p.products_id = '$ReturnedProductID' ) AND  " ;//sets returned record to display
           $w = " AND ( p.products_id = '$ReturnedProductID' ) " ;//sets returned record to display
-          if (!isset($_GET['products_filter']) || (isset($_GET['products_filter']) && $_GET['products_filter'] != '' && $_GET['products_filter'] <= 0)) {
-            $SearchRange = "limit 1";//show only selected record
+          if (!isset($_GET['products_filter']) || ($_GET['products_filter'] != '' && $_GET['products_filter'] <= 0)) {
+            $SearchRange = "LIMIT 1";//show only selected record
           }
         } /*elseif ( $ReturnedProductID != null && isset($_GET['search'])) {
             $ReturnedProductID = zen_db_input($ReturnedProductID);
           $NumberRecordsShown = zen_db_input($NumberRecordsShown);
         }*/
-        elseif ($NumberRecordsShown > 0 && $SearchBoxOnly == 'false' ){
+        elseif ($NumberRecordsShown > 0 && $SearchBoxOnly == 'false') {
           $NumberRecordsShown = zen_db_input($NumberRecordsShown);
-          $SearchRange = " limit $NumberRecordsShown";//sets start record and total number of records to display
+          $SearchRange = " LIMIT $NumberRecordsShown";//sets start record and total number of records to display
         }
-        elseif ($SearchBoxOnly == 'true' && !isset($_GET['search']) ){
-             $SearchRange = "limit 0";//hides all records
+        elseif ($SearchBoxOnly == 'true' && !isset($_GET['search'])) {
+             $SearchRange = "LIMIT 0";//hides all records
         }
 
         $retArr = array();
-/*        $query_products =    'select distinct pa.products_id, d.products_name, p.products_quantity, 
+/*        $query_products =    'SELECT distinct pa.products_id, d.products_name, p.products_quantity, 
             p.products_model, p.products_image, p.products_type, p.master_categories_id
             
-            FROM '.TABLE_PRODUCTS_ATTRIBUTES.' pa
-            left join '.TABLE_PRODUCTS_DESCRIPTION.' d on (pa.products_id = d.products_id)
-            left join '.TABLE_PRODUCTS.' p on (pa.products_id = p.products_id)
+            FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
+            LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' d ON (pa.products_id = d.products_id)
+            LEFT JOIN ' . TABLE_PRODUCTS . ' p ON (pa.products_id = p.products_id)
             
             WHERE d.language_id='.$language_id.'
             ' . $w . '
-            order by d.products_name
-            '.$SearchRange.'';*/
-        if (isset($_GET['page']) && ($_GET['page'] > 1)) $rows = $_GET['page'] * STOCK_SET_SBA_NUMRECORDS - STOCK_SET_SBA_NUMRECORDS;
+            ORDER BY d.products_name
+            ' . $SearchRange.'';*/
+        if (isset($_GET['page']) && ($_GET['page'] > 1)) $rows = STOCK_SET_SBA_NUMRECORDS * ((int)$_GET['page'] - 1);
 
         if (isset($_GET['search_order_by'])) {
           $search_order_by = zen_db_prepare_input($_GET['search_order_by']);
@@ -342,34 +337,34 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
 
         $html = '';
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
-        $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">';
-        $html .= '<tr>';
-        $html .= '<td class="smallText" valign="top">'; 
-        $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS); 
-        $html .= '</td>';
-        $html .= '<td class="smallText" align="right">';
-        $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']);
-        $html .= '</td>';
-        $html .= '</tr>';
-        $html .= '</table>';
+          $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">';
+          $html .= '<tr>';
+          $html .= '<td class="smallText" valign="top">'; 
+          $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS); 
+          $html .= '</td>';
+          $html .= '<td class="smallText" align="right">';
+          $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']);
+          $html .= '</td>';
+          $html .= '</tr>';
+          $html .= '</table>';
         }
-    $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid='.$ReturnedProductID.(!empty($_GET['page']) ? '&amp;page='.$_GET['page'] : ''), 'post');
-    $html .= zen_draw_hidden_field('save', '1');
-    $html .= zen_draw_hidden_field('pid', $ReturnedProductID);
-    $html .= zen_image_submit('button_save.gif', IMAGE_SAVE) . ' Hint: To quickly edit click in the "Quantity in Stock" field.';
-       $html .= '<br/>';
-    $html .= '
+        $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid=' . $ReturnedProductID . (!empty($_GET['page']) ? '&amp;page=' . $_GET['page'] : ''), 'post');
+        $html .= zen_draw_hidden_field('save', '1');
+        $html .= zen_draw_hidden_field('pid', $ReturnedProductID);
+        $html .= zen_image_submit('button_save.gif', IMAGE_SAVE) . ' Hint: To quickly edit click in the "Quantity in Stock" field.';
+        $html .= '<br/>';
+        $html .= '
     <table id="mainProductTable"> 
     <tr>
-      <th class="thProdId">'.PWA_PRODUCT_ID.'</th>
-      <th class="thProdName">'.PWA_PRODUCT_NAME.'</th>';
+      <th class="thProdId">' . PWA_PRODUCT_ID . '</th>
+      <th class="thProdName">' . PWA_PRODUCT_NAME . '</th>';
     
-    if (STOCK_SHOW_IMAGE == 'true') {$html .= '<th class="thProdImage">'.PWA_PRODUCT_IMAGE.'</th>';}   
+        if (STOCK_SHOW_IMAGE == 'true') {$html .= '<th class="thProdImage">' . PWA_PRODUCT_IMAGE . '</th>';}   
 
-        $html .= '<th class="thProdModel">'.PWA_PRODUCT_MODEL.'</th>            
-              <th class="thProdQty">'.PWA_QUANTITY_FOR_ALL_VARIANTS.'</th>
-              <th class="thProdAdd">'.PWA_ADD_QUANTITY.'</th> 
-              <th class="thProdSync">'.PWA_SYNC_QUANTITY.'</th>
+        $html .= '<th class="thProdModel">' . PWA_PRODUCT_MODEL . '</th>            
+              <th class="thProdQty">' . PWA_QUANTITY_FOR_ALL_VARIANTS . '</th>
+              <th class="thProdAdd">' . PWA_ADD_QUANTITY . '</th> 
+              <th class="thProdSync">' . PWA_SYNC_QUANTITY . '</th>
               </tr>';
         
         while (!$products->EOF) { 
@@ -380,7 +375,9 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
 
           $attribute_products = $db->Execute($query);
 
-          $query = 'SELECT SUM(quantity) as total_quantity FROM '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' where products_id='.(int)$products->fields['products_id'];
+          $query = 'SELECT SUM(quantity) AS total_quantity
+                    FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' 
+                    WHERE products_id=' . (int)$products->fields['products_id'];
 
           $attribute_quantity = $db->Execute($query);
 
@@ -394,58 +391,58 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
             }
           }
 
-          $html .= '<tr>'."\n";
-          $html .= '<td colspan="7">'."\n";
-          $html .= '<div class="productGroup">'."\n";
-          $html .= '<table>'. "\n";
-            $html .= '<tr class="productRow">'."\n";
-            $html .= '<td class="tdProdId">'.$products->fields['products_id'].'</td>';
-            $html .= '<td class="tdProdName">'.$products->fields['products_name'].'</td>';
+          $html .= '<tr>' . "\n";
+          $html .= '<td colspan="7">' . "\n";
+          $html .= '<div class="productGroup">' . "\n";
+          $html .= '<table>' . "\n";
+            $html .= '<tr class="productRow">' . "\n";
+            $html .= '<td class="tdProdId">' . $products->fields['products_id'] . '</td>';
+            $html .= '<td class="tdProdName">' . $products->fields['products_name'] . '</td>';
             
-            if (STOCK_SHOW_IMAGE == 'true') {$html .= '<td class="tdProdImage">'.zen_info_image(zen_output_string($products->fields['products_image']), zen_output_string($products->fields['products_name']), "60", "60").'</td>';}
+            if (STOCK_SHOW_IMAGE == 'true') {$html .= '<td class="tdProdImage">' . zen_info_image(zen_output_string($products->fields['products_image']), zen_output_string($products->fields['products_name']), "60", "60") . '</td>';}
             
             //product.php? page=1 & product_type=1 & cPath=13 & pID=1042 & action=new_product
-            //$html .= '<td class="tdProdModel">'.$products->fields['products_model'] .' </td>';
-            $html .= '<td class="tdProdModel">'.$products->fields['products_model'] . '<br /><a href="'.zen_href_link(FILENAME_PRODUCT, "page=1&amp;product_type=".$products->fields['products_type']."&amp;cPath=".$products->fields['master_categories_id']."&amp;pID=".$products->fields['products_id']."&amp;action=new_product", 'NONSSL').'">Link</a><br /><br /><a href="'.zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, "products_filter=&amp;products_filter=".$products->fields['products_id']."&amp;current_category_id=".$products->fields['master_categories_id'], 'NONSSL').'">' . BOX_CATALOG_CATEGORIES_ATTRIBUTES_CONTROLLER . '</a></td>';
-            $html .= '<td class="tdProdQty">'.$products->fields['products_quantity'].$synchronized.'</td>';
-            $html .= '<td class="tdProdAdd"><a href="'.zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=add&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_ADD_QUANTITY . '</a><br /><br /><a href="'.zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete_all&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">'.PWA_DELETE_VARIANT_ALL.'</a></td>';
-            $html .= '<td class="tdProdSync"><a href="'.zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_SYNC_QUANTITY . '</a></td>';
-            $html .= '</tr>'."\n";
-            $html .= '</table>'."\n";
+            //$html .= '<td class="tdProdModel">' . $products->fields['products_model'] . ' </td>';
+            $html .= '<td class="tdProdModel">' . $products->fields['products_model'] . '<br /><a href="' . zen_href_link(FILENAME_PRODUCT, "page=1&amp;product_type=" . $products->fields['products_type'] . "&amp;cPath=" . $products->fields['master_categories_id'] . "&amp;pID=" . $products->fields['products_id'] . "&amp;action=new_product", 'NONSSL').'">Link</a><br /><br /><a href="' . zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, "products_filter=&amp;products_filter=" . $products->fields['products_id'] . "&amp;current_category_id=" . $products->fields['master_categories_id'], 'NONSSL') . '">' . BOX_CATALOG_CATEGORIES_ATTRIBUTES_CONTROLLER . '</a></td>';
+            $html .= '<td class="tdProdQty">' . $products->fields['products_quantity'] . $synchronized . '</td>';
+            $html .= '<td class="tdProdAdd"><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=add&amp;products_id=" . $products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL') . '">' . PWA_ADD_QUANTITY . '</a><br /><br /><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete_all&amp;products_id=" . $products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_DELETE_VARIANT_ALL .'</a></td>';
+            $html .= '<td class="tdProdSync"><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_SYNC_QUANTITY . '</a></td>';
+            $html .= '</tr>' . "\n";
+            $html .= '</table>' . "\n";
             
           // SUB            
-/*          $query = 'select * from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' where products_id="'.$products->fields['products_id'].'"
-                    order by sort ASC;';
+/*          $query = 'SELECT * FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE products_id="' . $products->fields['products_id'] . '"
+                    ORDER BY sort ASC;';
 
           $attribute_products = $db->Execute($query);*/
           if ($attribute_products->RecordCount() > 0) {
 
               $html .= '<table class="stockAttributesTable">';
               $html .= '<tr>';
-              $html .= '<th class="stockAttributesHeadingStockId">'.PWA_STOCK_ID.'</th>
+              $html .= '<th class="stockAttributesHeadingStockId">' . PWA_STOCK_ID.'</th>
                     <th class="stockAttributesHeadingComboId" title="This number is the Product ID and related Attributes (Unique Combo).">'.PWA_PAC.'</th>
-                    <th class="stockAttributesHeadingVariant">'.PWA_VARIANT.'</th>
-                    <th class="stockAttributesHeadingQuantity">'.PWA_QUANTITY_IN_STOCK.'</th>
-                    <th class="stockAttributesHeadingSort">'.PWA_SORT_ORDER.'</th>
+                    <th class="stockAttributesHeadingVariant">' . PWA_VARIANT .'</th>
+                    <th class="stockAttributesHeadingQuantity">' . PWA_QUANTITY_IN_STOCK . '</th>
+                    <th class="stockAttributesHeadingSort">' . PWA_SORT_ORDER . '</th>
                     <th class="stockAttributesHeadingCustomid" title="The Custom ID MUST be Unique, no duplicates allowed!">'.PWA_CUSTOM_ID.'</th>
-                    <th class="stockAttributesHeadingSKUTitleId">'.PWA_SKU_TITLE.'</th>
-                    <th class="stockAttributesHeadingEdit">'.PWA_EDIT.'</th>
-                    <th class="stockAttributesHeadingDelete">'.PWA_DELETE.'</th>';
+                    <th class="stockAttributesHeadingSKUTitleId">' . PWA_SKU_TITLE . '</th>
+                    <th class="stockAttributesHeadingEdit">' . PWA_EDIT . '</th>
+                    <th class="stockAttributesHeadingDelete">' . PWA_DELETE . '</th>';
               $html .= '</tr>';
 
-              while (!$attribute_products->EOF){
+              while (!$attribute_products->EOF) {
                 
-                  $html .= '<tr id="sid-'. $attribute_products->fields['stock_id'] .'">';
-                  $html .= '<td class="stockAttributesCellStockId">'."\n";
+                  $html .= '<tr id="sid-' . $attribute_products->fields['stock_id'] . '">';
+                  $html .= '<td class="stockAttributesCellStockId">' . "\n";
                   $html .= $attribute_products->fields['stock_id'];
-                  $html .= '</td>'."\n";
-                  $html .= '<td>' . $attribute_products->fields['product_attribute_combo'] . '</td>'."\n";
-                  $html .= '<td class="stockAttributesCellVariant">'."\n";
+                  $html .= '</td>' . "\n";
+                  $html .= '<td>' . $attribute_products->fields['product_attribute_combo'] . '</td>' . "\n";
+                  $html .= '<td class="stockAttributesCellVariant">' . "\n";
                  
                   if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
-                    $options_order_by= ' order by LPAD(po.products_options_sort_order,11,"0"), po.products_options_name';
+                    $options_order_by= ' ORDER BY LPAD(po.products_options_sort_order,11,"0"), po.products_options_name';
                   } else {
-                    $options_order_by= ' order by po.products_options_name';
+                    $options_order_by= ' ORDER BY po.products_options_name';
                   }
 
                   $sort2_query = "SELECT DISTINCT pa.products_attributes_id 
@@ -469,36 +466,36 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
                         // delete stock attribute
                         $db->Execute("DELETE FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE stock_id = " . $attribute_products->fields['stock_id'] . " LIMIT 1;");
                       } else { 
-                        $attributes_output[] = '<strong>'.$stock_attribute['option'].':</strong> '.$stock_attribute['value'].'<br />';
+                        $attributes_output[] = '<strong>' . $stock_attribute['option'] . ':</strong> ' . $stock_attribute['value'] . '<br />';
                       }
                   }
 //                  sort($attributes_output);
                   $html .= implode("\n", $attributes_output);
 
-                  $html .= '</td>'."\n";
-                  $html .= '<td class="stockAttributesCellQuantity editthis" id="stockid-quantity-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['quantity'].'</td>'."\n";
-                  $html .= '<td class="stockAttributesCellSort editthis" id="stockid-sort-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['sort'].'</td>'."\n";
-                  $html .= '<td class="stockAttributesCellCustomid editthis" id="stockid-customid-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['customid'].'</td>'."\n";
-                  $html .= '<td class="stockAttributesCellTitle" id="stockid-title-'. $attribute_products->fields['stock_id'] .'">'.$attribute_products->fields['title'].'</td>'."\n";
-                  $html .= '<td class="stockAttributesCellEdit">'."\n";
-                  $html .= '<a href="'.zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=edit&amp;products_id=".$products->fields['products_id'].'&amp;attributes='.$attribute_products->fields['stock_attributes'].'&amp;q='.$attribute_products->fields['quantity'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">'.PWA_EDIT_QUANTITY.'</a>'; //s_mack:prefill_quantity
-                  $html .= '</td>'."\n";
-                  $html .= '<td class="stockAttributesCellDelete">'."\n";
-                  $html .= '<a href="'.zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete&amp;products_id=".$products->fields['products_id'].'&amp;attributes='.$attribute_products->fields['stock_attributes'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">'.PWA_DELETE_VARIANT.'</a>';
-                  $html .= '</td>'."\n";
-                  $html .= '</tr>'."\n";
+                  $html .= '</td>' . "\n";
+                  $html .= '<td class="stockAttributesCellQuantity editthis" id="stockid-quantity-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['quantity'] . '</td>' . "\n";
+                  $html .= '<td class="stockAttributesCellSort editthis" id="stockid-sort-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['sort'] . '</td>' . "\n";
+                  $html .= '<td class="stockAttributesCellCustomid editthis" id="stockid-customid-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['customid'] . '</td>' . "\n";
+                  $html .= '<td class="stockAttributesCellTitle" id="stockid-title-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['title'] . '</td>' . "\n";
+                  $html .= '<td class="stockAttributesCellEdit">' . "\n";
+                  $html .= '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=edit&amp;products_id=" . $products->fields['products_id'] . '&amp;attributes=' . $attribute_products->fields['stock_attributes'] . '&amp;q=' . $attribute_products->fields['quantity'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL') . '">' . PWA_EDIT_QUANTITY . '</a>'; //s_mack:prefill_quantity
+                  $html .= '</td>' . "\n";
+                  $html .= '<td class="stockAttributesCellDelete">' . "\n";
+                  $html .= '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete&amp;products_id=" . $products->fields['products_id'] . '&amp;attributes=' . $attribute_products->fields['stock_attributes'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_DELETE_VARIANT . '</a>';
+                  $html .= '</td>' . "\n";
+                  $html .= '</tr>' . "\n";
                  
 
                   $attribute_products->MoveNext();
               }
               $html .= '</table>';
           }
-          $html .= '</div>'."\n";
+          $html .= '</div>' . "\n";
           $products->MoveNext();
       }
       $html .= '</table>' . "\n";
       $html .= zen_image_submit('button_save.gif', IMAGE_SAVE);
-      $html .= '</form>'."\n";
+      $html .= '</form>' . "\n";
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
       $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">';
       $html .= '<tr>';
@@ -516,7 +513,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
     }
 
 //Used with jquery to edit qty on stock page and to save
-function saveAttrib(){
+function saveAttrib() {
 
   global $db;
 //  $stock = $products_with_attributes_stock_class; // Should replace all cases of $stock with the class variable name.
@@ -575,31 +572,31 @@ function saveAttrib(){
       $id3 = intval(str_replace('stockid3-', '', $key));//sort
       $id4 = intval(str_replace('stockid4-', '', $key));//customid  */
 
-/*        if($id1 > 0){
+/*        if ($id1 > 0) {
           $value = $this->nullDataEntry($value);
-          if(empty($value) || is_null($value)){$value = 'null';}
+          if (empty($value) || is_null($value)) {$value = 'null';}
            $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET title = $value WHERE stock_id = " .$id1. " LIMIT 1";
            $db->execute($sql);
           $i++;
         }*/
-/*        if($id2 > 0){
+/*        if ($id2 > 0) {
           $value = doubleval($value);
-          if(empty($value) || is_null($value)){$value = 0;}
+          if (empty($value) || is_null($value)) {$value = 0;}
       $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET quantity = $value WHERE stock_id = " .$id2. " LIMIT 1";
             $db->execute($sql);
             $i++;
         }      
-        if($id3 > 0){
+        if ($id3 > 0) {
           $value = doubleval($value);
-          if(empty($value) || is_null($value)){$value = 0;}
+          if (empty($value) || is_null($value)) {$value = 0;}
           $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET sort = $value WHERE stock_id = " .$id3. " LIMIT 1";
           $db->execute($sql);
           $i++;
         }
-        if($id4 > 0){
+        if ($id4 > 0) {
           $value = addslashes($value);
           $value = $this->nullDataEntry($value);
-          if(empty($value) || is_null($value)){$value = 'null';}
+          if (empty($value) || is_null($value)) {$value = 'null';}
           $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET customid = $value WHERE stock_id = " .$id4. " LIMIT 1";
           $db->execute($sql);
           $i++;
@@ -612,7 +609,7 @@ function saveAttrib(){
 }
 
 //Update attribute qty
-function updateAttribQty($stock_id = null, $quantity = null){
+function updateAttribQty($stock_id = null, $quantity = null) {
   global $db;
   $result = null;
 
@@ -620,7 +617,7 @@ function updateAttribQty($stock_id = null, $quantity = null){
     $quantity = 0;
   }
   
-  if (!empty($stock_id) && is_numeric($stock_id) && is_numeric($quantity)){
+  if (!empty($stock_id) && is_numeric($stock_id) && is_numeric($quantity)) {
       $query = 'UPDATE `' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . '` SET quantity=:quantity: WHERE stock_id=:stock_id: LIMIT 1';
       $query = $this->query_insert_float($query, ':quantity:', $quantity);
       $query = $db->bindVars($query, ':stock_id:', $stock_id, 'integer');
@@ -632,7 +629,7 @@ function updateAttribQty($stock_id = null, $quantity = null){
 
 //New attribute qty insert
 //The on duplicate updates an existing record instead of adding a new one
-function insertNewAttribQty($products_id = null, $productAttributeCombo = null, $strAttributes = null, $quantity = 0, $customid = null, $skuTitle = null){
+function insertNewAttribQty($products_id = null, $productAttributeCombo = null, $strAttributes = null, $quantity = 0, $customid = null, $skuTitle = null) {
   global $db;
   //$stock = $products_with_attributes_stock_class; // Should replace all instance of $stock with the class variable.
   $productAttributeCombo = $this->nullDataEntry($productAttributeCombo);//sets proper quoting for input
@@ -644,7 +641,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
   $result = null;
   
   //Set quantity to 0 if not valid input
-  if (!(isset($quantity) && is_numeric($quantity))){
+  if (!(isset($quantity) && is_numeric($quantity))) {
     $quantity = 0;
   }
   
@@ -675,7 +672,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
       other data about the variant needs to be modified.  That is not the case in this consideration.  The variant identifies
       the customid not the customid identifying the variant.  
     */
-  if (isset($products_id) && is_numeric($products_id) && isset($strAttributes) && is_numeric($quantity)){
+  if (isset($products_id) && is_numeric($products_id) && isset($strAttributes) && is_numeric($quantity)) {
       // Evaluate entry as compared to the desired uniqueness of data in the table.
       /* PRIMARY KEY (`stock_id`),
       UNIQUE KEY `idx_products_id_stock_attributes` (`products_id`,`stock_attributes`),
@@ -826,7 +823,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
 //IN-WORK New attribute qty insert NEEDS MORE THOUGHT
 //NEED one qty for multiple attributes, this does not accomplish this.
 //The on duplicate updates an existing record instead of adding a new one
-function insertTablePASR($products_id = null, $strAttributes = null, $quantity = null, $customid = null){
+function insertTablePASR($products_id = null, $strAttributes = null, $quantity = null, $customid = null) {
   
   global $db;
   // $stock = $products_with_attributes_stock_class;
@@ -837,7 +834,7 @@ function insertTablePASR($products_id = null, $strAttributes = null, $quantity =
   //INSERT INTO `znc_products_attributes_stock_relationship` (`products_id`, `products_attributes_id`, `products_attributes_stock_id`) VALUES (226, 1121, 37);
   
   //Table PASR (Inset and get $pasrid for next query)
-  if (is_numeric($products_id) && isset($strAttributes)){
+  if (is_numeric($products_id) && isset($strAttributes)) {
     
     //Get the last records ID
     $query = "select pas.products_attributes_stock_id
@@ -906,7 +903,7 @@ function insertTablePASR($products_id = null, $strAttributes = null, $quantity =
 //products_attributes_stock INWORK New attribute qty insert NEEDS MORE THOUGHT
 //NEED one qty for multiple attributes, this does not accomplish this.
 //The on duplicate updates an existing record instead of adding a new one
-function insertTablePAS($products_id = null, $quantity = null, $customid = null){
+function insertTablePAS($products_id = null, $quantity = null, $customid = null) {
 
   global $db;
   //$stock = $products_with_attributes_stock_class;
@@ -937,13 +934,13 @@ function insertTablePAS($products_id = null, $quantity = null, $customid = null)
 //ABOVE IN-WORK New attribute qty insert NEEDS MORE THOUGHT
 
 //Update Custom ID of Attribute using the StockID as a key
-function updateCustomIDAttrib($stockid = null, $customid = null){
+function updateCustomIDAttrib($stockid = null, $customid = null) {
   //global $db;
   //$stock = $products_with_attributes_stock_class;
   $customid = $GLOBALS['db']->prepare_input($customid);
   $customid = $this->nullDataEntry($customid);//sets proper quoting for input
 
-  if ($customid && is_numeric($stockid) ){
+  if ($customid && is_numeric($stockid) ) {
     $query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set customid = ' . $customid . ' where stock_id = ' . $stockid . ' limit 1';
     $result = $GLOBALS['db']->execute($query);
   }
@@ -952,13 +949,13 @@ function updateCustomIDAttrib($stockid = null, $customid = null){
 }
 
 //Update  sku Title of Attribute using the StockID as a key
-function updateTitleAttrib($stockid = null, $skuTitle = null){
+function updateTitleAttrib($stockid = null, $skuTitle = null) {
 //  global $db;
   //$stock = $products_with_attributes_stock_class;
   $skuTitle = $GLOBALS['db']->prepare_input($skuTitle);
   $skuTitle = $this->nullDataEntry($skuTitle);//sets proper quoting for input
 
-  if (isset($skuTitle) && $skuTitle && is_numeric($stockid) ){
+  if (isset($skuTitle) && $skuTitle && is_numeric($stockid) ) {
     $query = 'UPDATE ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' SET title = ' . $skuTitle . ' WHERE stock_id = ' . $stockid . ' LIMIT 1';
     $result = $GLOBALS['db']->execute($query);
   }
@@ -975,20 +972,20 @@ function updateTitleAttrib($stockid = null, $skuTitle = null){
 //$current = the current value in the database for this item.
 //$providedQuery = This is a provided query that overrides the default $Table and $Field,
 //note the $Field input (field name) is required to get returned data if name is not set or if there is not a $providedQuery.
-function selectItemID($Table, $Field, $current = null, $providedQuery = null, $name= null, $id = null, $class = null, $style = null, $onChange = null){
+function selectItemID($Table, $Field, $current = null, $providedQuery = null, $name= null, $id = null, $class = null, $style = null, $onChange = null) {
 
   global $db;
   
-  if (empty($name)){
+  if (empty($name)) {
     //use the $Field as the select NAME if no $name is provided
     $name = zen_db_input($Field);
   }
-  if (empty($id)){
+  if (empty($id)) {
     //use the $Field as the select ID if no $id is provided
     $id = zen_db_input($Field);
   }
 
-  if (isset($providedQuery) && $providedQuery){
+  if (isset($providedQuery) && $providedQuery) {
     $query = $providedQuery;//provided from calling object
   }
   else{
@@ -997,7 +994,7 @@ function selectItemID($Table, $Field, $current = null, $providedQuery = null, $n
      $query = "SELECT * FROM $Table ORDER BY $Field ASC";
   }
 
-  if (isset($onChange) && $onChange){
+  if (isset($onChange) && $onChange) {
     $onChange = "onchange=\"selectItem()\"";
   }
     
@@ -1015,10 +1012,10 @@ function selectItemID($Table, $Field, $current = null, $providedQuery = null, $n
    */
     $i = 1;
   $result = $db->Execute($query);
-     while(!$result->EOF){
+     while (!$result->EOF) {
 
        //set each row background color
-       if ($i == 1){
+       if ($i == 1) {
          $style = 'style="background-color:silver;"';
          $i = 0;
        }
@@ -1032,7 +1029,7 @@ function selectItemID($Table, $Field, $current = null, $providedQuery = null, $n
         $Item .= '&nbsp;&nbsp;Model:&nbsp;&nbsp;' . $result->fields["products_model"];
         $Item .= '&nbsp;&nbsp;Name:&nbsp;&nbsp;' . $result->fields["products_name"];
             
-    if ( ($Item == $current AND $current != NULL) || ($rowID == $current AND $current != NULL) ){
+    if (($Item == $current AND $current != NULL) || ($rowID == $current AND $current != NULL)) {
         $Output .= '<option selected="selected" $style value="' . $rowID . '">' . $Item . '</option>';
       }
       else{
@@ -1048,12 +1045,12 @@ function selectItemID($Table, $Field, $current = null, $providedQuery = null, $n
 }
 
 //NULL entry for database
-function nullDataEntry($fieldtoNULL){
+function nullDataEntry($fieldtoNULL) {
 
   //Need to test for absolute 0 (===), else compare will convert $fieldtoNULL to a number (null) and evauluate as a null 
   //This is due to PHP string to number compare "feature"
-  if (!empty($fieldtoNULL) || $fieldtoNULL === 0){
-    if ((is_numeric($fieldtoNULL) && ($fieldtoNULL > 0 && strpos($fieldtoNULL, '0') !== 0 || $fieldtoNULL < 0 && strpos($fieldtoNULL, '0') !== 1)) || $fieldtoNULL === 0){
+  if (!empty($fieldtoNULL) || $fieldtoNULL === 0) {
+    if ((is_numeric($fieldtoNULL) && ($fieldtoNULL > 0 && strpos($fieldtoNULL, '0') !== 0 || $fieldtoNULL < 0 && strpos($fieldtoNULL, '0') !== 1)) || $fieldtoNULL === 0) {
       $output = $fieldtoNULL;//returns number without quotes
     }
     else{
@@ -1138,10 +1135,10 @@ function nullDataEntry($fieldtoNULL){
         return $customid->fields['products_model'];
       }
       
-      if (!empty($attributes) && is_array($attributes)){
+      if (!empty($attributes) && is_array($attributes)) {
         // check if attribute stock values have been set for the product
         // if there are will we continue, otherwise we'll use product level data
-        $attribute_stock = $db->Execute("select stock_id 
+        $attribute_stock = $db->Execute("SELECT stock_id
                                          FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
                                          WHERE products_id = " . (int)$products_id . ";");
     
@@ -1150,8 +1147,8 @@ function nullDataEntry($fieldtoNULL){
           $first_search = ' WHERE options_values_id IN ('.implode(',',zen_db_prepare_input($attributes)).') ';
           
           // obtain the attribute ids
-          $query = 'select products_attributes_id 
-              from '.TABLE_PRODUCTS_ATTRIBUTES.' 
+          $query = 'SELECT products_attributes_id
+              FROM ' . TABLE_PRODUCTS_ATTRIBUTES . '
                   :first_search:
                   and products_id = :products_id: 
                   order by products_attributes_id;';
@@ -1159,7 +1156,7 @@ function nullDataEntry($fieldtoNULL){
           $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
           $attributes_new = $db->Execute($query);
           
-          while(!$attributes_new->EOF){
+          while (!$attributes_new->EOF) {
             $stock_attributes[] = $attributes_new->fields['products_attributes_id'];
             $attributes_new->MoveNext();
           }
@@ -1168,24 +1165,24 @@ function nullDataEntry($fieldtoNULL){
         }
         
         //Get product model
-        $customid_model_query = 'select products_model 
-                        from '.TABLE_PRODUCTS.' 
-                        where products_id = '. (int)$products_id . ';';
+        $customid_model_query = 'SELECT products_model
+                        FROM ' . TABLE_PRODUCTS . '
+                        WHERE products_id = ' . (int)$products_id . ';';
 
         //Get custom id as products_model considering that all of the attributes as a group define the customid.
-        $customid_query = 'select customid as products_model
-                    from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
-                    where products_id = :products_id: 
-                    and stock_attributes in (:stock_attributes:)'; 
+        $customid_query = 'SELECT customid AS products_model
+                    FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . '
+                    WHERE products_id = :products_id:
+                    AND stock_attributes IN (:stock_attributes:)';
         $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
         $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'string');
         $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
         
-        if ($attribute_stock->RecordCount() > 0 && $customid->RecordCount() == 0 && zen_not_null($stock_attributes_comb)){ // if a customid does not exist for the combination of attributes then perhaps the attributes are individually listed.
-          $customid_query = 'select customid as products_model
-                    from '.TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK.' 
-                    where products_id = :products_id: 
-                    and stock_attributes in (:stock_attributes:)'; 
+        if ($attribute_stock->RecordCount() > 0 && $customid->RecordCount() == 0 && zen_not_null($stock_attributes_comb)) { // if a customid does not exist for the combination of attributes then perhaps the attributes are individually listed.
+          $customid_query = 'SELECT customid AS products_model
+                    FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . '
+                    WHERE products_id = :products_id:
+                    AND stock_attributes IN (:stock_attributes:)';
           $customid_query = $db->bindVars($customid_query, ':products_id:', $products_id, 'integer');
           $customid_query = $db->bindVars($customid_query, ':stock_attributes:', $stock_attributes_comb, 'passthru');
           $customid = $db->Execute($customid_query); //moved to inside this loop as for some reason it has made
@@ -1193,7 +1190,7 @@ function nullDataEntry($fieldtoNULL){
       }// If array
       
 //      $customid = $db->Execute($customid_query);
-      if ($customid->RecordCount() > 0 && $customid->fields['products_model']){
+      if ($customid->RecordCount() > 0 && $customid->fields['products_model']) {
       
         //Test to see if a custom ID exists
         //if there are custom IDs with the attribute, then return them.
@@ -1210,7 +1207,7 @@ function nullDataEntry($fieldtoNULL){
           
           // With zen_not_null statement below, only existing customids will be comma separated.  Here is a possible
           // Switch per "product" or store that allows the customid to be merged or presented in parts.
-        while(!$customid->EOF && zen_not_null($customid->fields['products_model'])){
+        while (!$customid->EOF && zen_not_null($customid->fields['products_model'])) {
           $multiplecid .= $customid->fields['products_model'] . ', ';
           $customid->MoveNext();
         }
@@ -1370,8 +1367,8 @@ function nullDataEntry($fieldtoNULL){
 
           if ($add_attribute == true) {
             // New attribute - insert it
-            $db->Execute("insert into " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " (products_id, product_attribute_combo, stock_attributes, quantity, sort, title)
-                          values ('" . (int)$products_id_to . "',
+            $db->Execute("INSERT INTO " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " (products_id, product_attribute_combo, stock_attributes, quantity, sort, title)
+                          VALUES (" . (int)$products_id_to . ",
             '" . (int)$products_id_to . '-' . implode('-', $products_attributes_combo) . "',
             '" . $products_attributes_id_to . "',
             '" . (float)$products_copy_from->fields['quantity'] . "',
@@ -1382,13 +1379,13 @@ function nullDataEntry($fieldtoNULL){
           }
           if ($update_attribute == true) {
             // Update attribute - Just attribute settings not ids
-            $db->Execute("update " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set
+            $db->Execute("UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " SET
             product_attribute_combo='" . (int)$products_id_to . '-' . implode('-', $products_attributes_combo) . "',
             quantity='" . (float)$products_copy_from->fields['quantity'] . "',
             sort='" . $products_copy_from->fields['sort'] . "',
             title='" . $products_copy_from->fields['title'] . "'"
-             . " where products_id=" . (int)$products_id_to . " and stock_attributes= '" . $products_attributes_id_to . "'");
-//             . " where products_id='" . $products_id_to . "'" . " and options_id= '" . $products_copy_from->fields['options_id'] . "' and options_values_id='" . $products_copy_from->fields['options_values_id'] . "' and attributes_image='" . $products_copy_from->fields['attributes_image'] . "' and attributes_price_base_included='" . $products_copy_from->fields['attributes_price_base_included'] .  "'");
+             . " WHERE products_id=" . (int)$products_id_to . " AND stock_attributes= '" . $products_attributes_id_to . "'");
+//             . " WHERE products_id='" . $products_id_to . "'" . " AND options_id= '" . $products_copy_from->fields['options_id'] . "' AND options_values_id='" . $products_copy_from->fields['options_values_id'] . "' AND attributes_image='" . $products_copy_from->fields['attributes_image'] . "' AND attributes_price_base_included='" . $products_copy_from->fields['attributes_price_base_included'] .  "'");
 
             $messageStack->add_session(TEXT_SBA_ATTRIBUTE_COPY_UPDATING . $products_copy_from->fields['stock_id'] . ' for Products ID#' . $products_id_to, 'caution');
           }
@@ -1439,7 +1436,7 @@ function convertDropdownsToSBA()
     $sql = $db->bindVars($sql, ':products_options_type_select:', PRODUCTS_OPTIONS_TYPE_SELECT, 'integer');
 
     $db->Execute($sql);
-    if ($db->error){
+    if ($db->error) {
       $msg = ' Error Message: ' . $db->error;
       $failed = true;
     }
@@ -1521,7 +1518,7 @@ function convertSBAToSBA()
 
       $db->Execute($sql);
 
-      if ($db->error){
+      if ($db->error) {
         $msg = ' Error Message: ' . $db->error;
         $failed = true;
 
