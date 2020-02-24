@@ -321,6 +321,7 @@ switch ($action) {
     $customid = (isset($_POST['customid']) ? $_POST['customid'] : $customid);
     $customid = trim($customid);
     $customid = zen_db_prepare_input($customid);
+    $customid = zen_db_input($customid);
 /*    if (isset($_GET['customid']) && $_GET['customid']) {
       $customid = zen_db_input(trim($_GET['customid']));
     } //s_mack:noconfirm

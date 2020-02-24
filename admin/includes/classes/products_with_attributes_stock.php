@@ -680,6 +680,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
       if (!isset($customid) || trim($customid) == '' || trim($customid) == "''" || $customid === 'null') {
           $customid = null;
       }
+      $customid = $this->nullDataEntry($customid);
 
       // query for any duplicate records based on input where the input has a match to a non-empty key.
       $query = "SELECT count(*) AS total FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE (products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . (isset($customid) /* @TODO if customid is not required to be unique then and with a false */ ? "OR customid = :customid:" : "");
