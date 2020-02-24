@@ -803,7 +803,7 @@ Of the attributes provided, determine the number of those attributes that are
     if ($products_options_names->RecordCount() == 0) {
       // @TODO: Log error rather than set session value, unless session value is to be used elsewhere for messaging.
       // $_SESSION['sba_extra_functions_error'] = 'SBA product can not have any attributes';
-      trigger_error('SBA product can not have any attributes', E_USER_WARNING);
+      trigger_error('SBA product must have at least one attribute, this product does not have any. Attributes expected were:: ' . print_r($attribute_list, true) . ' : ' . /*print_r($products_options_names, true) .*/ ' from: ' . $from, E_USER_WARNING);
       //There's an issue because this shouldn't be possible
     } else {
       //if (isset($_SESSION['sba_extra_functions_error'])) {
