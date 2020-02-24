@@ -12,6 +12,10 @@
  *
  * Stock by Attributes 1.5.4  15-11-14 mc12345678
  */
+if (!defined('PWA_DISPLAY_CUSTOMID')) {
+  define('PWA_DISPLAY_CUSTOMID', 'right');  // Three values currently used: 'right', 'left', or ''.  Original design considered right.
+}
+
 class products_with_attributes_stock extends base {
 
   //
@@ -368,6 +372,13 @@ class products_with_attributes_stock extends base {
         }
       }
 
+      if (PWA_DISPLAY_CUSTOMID == 'right') {
+        $products_options_array[$i]['text'] .= $PWA_STOCK_QTY;
+      } else if (PWA_DISPLAY_CUSTOMID == 'left') {
+        // Add customid to beginning of option value's text.
+        $products_options_array[$i]['text'] = $PWA_STOCK_QTY . $products_options_array[$i]['text'];
+      }
+
       //create image array for use in select list to rotate visable image on select.  Applicable only to
       // product that is stocked by attribute. To apply to other product then must move this down outside
       // of the end of the End if _isSBA section
@@ -465,7 +476,11 @@ class products_with_attributes_stock extends base {
         }
       }
 
-      $products_options_display_price .= $originalpricedisplaytext . $PWA_STOCK_QTY;
+      if (PWA_DISPLAY_CUSTOMID == 'right') {
+        $products_options_display_price .= $originalpricedisplaytext . $PWA_STOCK_QTY;
+      } else if (PWA_DISPLAY_CUSTOMID == 'left') {
+        $products_options_display_price .= $originalpricedisplaytext;
+      }
       // END "Stock by Attributes" SBA
     }
   }
