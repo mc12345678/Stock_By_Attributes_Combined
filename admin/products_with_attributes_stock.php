@@ -1126,7 +1126,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     }
 
     ?><div id="hugo1" style="background-color: green; padding: 2px 10px;"></div>
-    <?php echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'get', 'id="pwas-search2"', true);
+    <?php echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'post', 'id="pwas-search2"', true);
     echo zen_draw_label(PWA_TEXT_SEARCH, 'search', '');
     echo zen_draw_input_field('search', $seachBox, 'id="pwas-filter"', false, 'text', true);
     echo zen_draw_input_field('pwas-search-button', PWA_BUTTON_SEARCH, 'id="pwas-search-button"', false, 'submit', true);
