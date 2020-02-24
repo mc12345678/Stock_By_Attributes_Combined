@@ -621,7 +621,11 @@ Array(
       } else {
         $order_by = ' order by LPAD(pa.products_options_sort_order,11,"0"), pa.options_values_price';
       }
-    
+      
+      $customid_sql = "SELECT customid, stock_attributes FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pwas WHERE products_id = :products_id:";
+      $customid_sql = $db->bindVars($customid_sql, ':products_id:', $this->products_id, 'integer');
+      $customid_ans = $db->Execute($customid_sql);
+
       while (!$products_options_name->EOF) {
         $products_options_array = array();
 //        $products_options_query = "select pov.products_options_values_id, pov.products_options_values_name, pa.options_values_price, pa.price_prefix from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = :products_id: and pa.options_id = :products_options_id: and pa.options_values_id = pov.products_options_values_id and pov.language_id = :languages_id: order by pa.products_options_sort_order";
