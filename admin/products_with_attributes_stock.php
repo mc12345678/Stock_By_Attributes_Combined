@@ -330,7 +330,7 @@ switch ($action) {
     }*/
 
     $skuTitle = null;
-    if ($_GET['skuTitle']) {
+    if (isset($_GET['skuTitle']) && $_GET['skuTitle']) {
       $skuTitle = zen_db_input(trim($_GET['skuTitle']));
     }
     if (isset($_POST['skuTitle'])) {
@@ -1020,7 +1020,10 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       $seachPID = '' . $seachPID . '';
     } elseif (isset($_GET['search']) || isset($_POST['search'])) {
       $SearchRange = '';
-      $seachBox = trim($_GET['search']);
+      $seachBox = '';
+      if (isset($_GET['search'])) {
+        $seachBox = trim($_GET['search']);
+      }
       if (isset($_POST['search'])) {
         $seachBox = trim($_POST['search']);
       }

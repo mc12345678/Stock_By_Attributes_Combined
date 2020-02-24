@@ -329,7 +329,7 @@ class products_with_attributes_stock extends base {
                 if (empty($products_options_DISPLAYONLY->fields['attributes_display_only'])) {
                   $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options_fields['pasqty'] . ' ';
                   //show custom ID if flag set to true
-                  if ($show_custom_id_flag) {
+                  if ($show_custom_id_flag && zen_not_null($products_options_fields['customid'])) {
                     $PWA_STOCK_QTY .= ' (' . $products_options_fields['customid'] . ') ';
                   }
                 }
@@ -352,7 +352,7 @@ class products_with_attributes_stock extends base {
                   }
 
                   //show custom ID if flag set to true
-                  if ($show_custom_id_flag) {
+                  if ($show_custom_id_flag && zen_not_null($products_options_fields['customid'])) {
                     $PWA_STOCK_QTY .= ' (' . $products_options_fields['customid'] . ') ';
                   }
                 }

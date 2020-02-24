@@ -269,7 +269,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
         global $db;
       
         if (isset($_SESSION['languages_id']) && $_SESSION['languages_id'] > 0) {
-          $language_id = $_SESSION['languages_id'];
+          $language_id = (int)$_SESSION['languages_id'];
         } else { 
           $language_id = 1;
         }
@@ -320,7 +320,7 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
         if (isset($_GET['page']) && ($_GET['page'] > 1)) $rows = $_GET['page'] * STOCK_SET_SBA_NUMRECORDS - STOCK_SET_SBA_NUMRECORDS;
 
         if (isset($_GET['search_order_by'])) {
-          $search_order_by = $_GET['search_order_by'];
+          $search_order_by = zen_db_prepare_input($_GET['search_order_by']);
         } else {
           $search_order_by = 'products_model';
         }
