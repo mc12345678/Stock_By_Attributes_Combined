@@ -278,7 +278,15 @@ function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, 
            //$w = "(p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '%$s%') AND  " ;//original version of search
             //$w = "( p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '$s%' ) AND  " ;//changed search to products_model 'startes with'.
            //$w = "( p.products_id = '$s' OR d.products_name LIKE '%$s%' ) AND  " ;//removed products_model from search
-            $w = " AND ( p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '$s%' ) " ;//changed search to products_model 'startes with'.
+            $w = " AND ( p.products_id = '$s' 
+                        OR d.products_name LIKE '%$s%' 
+                        OR p.products_model LIKE '%$s%' 
+                        OR p.products_id 
+                IN (SELECT products_id 
+                      FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK. " pwas 
+                      WHERE pwas.customid 
+                        LIKE '%$s%')
+                        ) "; //changed search to products_model 'starts with'.
         } else {
           $w = ''; 
           $s = '';

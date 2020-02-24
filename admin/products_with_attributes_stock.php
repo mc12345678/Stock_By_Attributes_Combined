@@ -1028,8 +1028,27 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
         $seachBox = trim($_POST['search']);
       }
       $s = zen_db_input($seachBox);
-      $w = " AND ( p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '$s%' ) ";
-      $query_products = "select distinct pa.products_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_DESCRIPTION . " d, " . TABLE_PRODUCTS . " p WHERE d.language_id='" . $language_id . "' and pa.products_id = d.products_id and pa.products_id = p.products_id " . $w . " order by d.products_name " . $SearchRange . "";
+      $w = " AND ( p.products_id = '$s'
+              OR d.products_name 
+                LIKE '%$s%' 
+              OR p.products_model 
+                LIKE '%$s%' 
+              OR p.products_id 
+                IN (SELECT products_id 
+                      FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK. " pwas 
+                      WHERE pwas.customid 
+                        LIKE '%$s%'))";
+      
+      $query_products = "SELECT distinct pa.products_id 
+                          FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa,
+                          " . TABLE_PRODUCTS_DESCRIPTION . " d,
+                          " . TABLE_PRODUCTS . " p
+                          WHERE d.language_id=" . (int)$language_id . " 
+                          AND pa.products_id = d.products_id 
+                          AND pa.products_id = p.products_id 
+                          " . $w . " 
+                          ORDER BY d.products_name 
+                          " . $SearchRange;
       $products_answer = $db->Execute($query_products);
       if (!$products_answer->EOF && $products_answer->RecordCount() == 1 ) {
         $seachPID = $products_answer->fields['products_id'];
