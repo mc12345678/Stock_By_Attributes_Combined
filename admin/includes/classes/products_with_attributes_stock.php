@@ -161,11 +161,12 @@ class products_with_attributes_stock extends base
         $query2 = $db->bindVars($query2, ':products_id:', zen_get_prid($products_id), 'integer');
         $quantity_orig = $db->Execute($query2);
         
+        $quantity_val = 0;
         if ($quantity_orig->RecordCount() > 0 && true /* This is where a switch could be introduced to allow setting to 0 when synchronizing with the SBA table. But as long as true, and the item is not tracked by SBA, then there is no change in the quantity.  header message probably should also appear.. */) {
-          $query = $this->query_insert_float($query, ':quantity:', $quantity_orig->fields['quantity']);
-        } else {
-          $query = $this->query_insert_float($query, ':quantity:', 0);
+          $quantity_val = $quantity_orig->fields['quantity'];
         }
+        
+        $query = $this->query_insert_float($query, ':quantity:', $quantity_val);
       }
 
       $db->Execute($query);
