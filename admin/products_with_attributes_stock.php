@@ -735,6 +735,87 @@ switch ($action) {
     $messageStack->add_session(sprintf(PWA_SORT_UPDATE_SUCCESS, $count), 'success');
     zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', $request_type));
     break;
+  case 'search-all':
+
+    if (isset($_POST['pwas-adjust-qty-button'])) {
+      if (!empty($_POST['pwas-adjust-qty'])) {
+        $SearchRange = '';
+        $seachBox = '';
+        if (isset($_GET['search'])) {
+          $seachBox = trim($_GET['search']);
+        }
+        // Posted content overrides url content.
+        if (isset($_POST['search'])) {
+          $seachBox = trim($_POST['search']);
+        }
+        $s = zen_db_input($seachBox);
+
+        $change = 0.0;
+        if (isset($_POST['pwas-adjust-qty'])) {
+          $change = (float)$_POST['pwas-adjust-qty'];
+        }
+        
+        $w = " AND pwas.customid LIKE '%$s' ";
+        $query_products = "SELECT pwas.stock_id, products_id
+                      FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pwas
+                      WHERE pwas.customid
+                          LIKE '%$s%'
+                      ORDER BY pwas.stock_id ASC";
+        
+        $products_answer = $db->Execute($query_products);
+        
+        // No records found by seaarch, provide notification that nothing to adjust and the content of the search.
+        if ($products_answer->RecordCount() == 0) {
+          $messageStack->add_session(sprintf(PWA_ADJUST_QUANTITY_NONE_FOUND, $s, $change), 'caution');
+          zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action', 'pwas-search-button')) . '&search=' . $s, $request_type));
+        }
+        
+        // Directly process result if only one is found, though perhaps this should
+        //   be an option instead of a guarantee?
+        if (!$products_answer->EOF && $products_answer->RecordCount() == 1) {
+// matching record found, can do add and then report. @TODO
+          $sql = "UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
+                  SET quantity = quantity + " . $change . "
+                  WHERE stock_id = " . $products_answer->fields['stock_id'];
+          
+          $result = $db->Execute($sql);
+          
+          if (method_exists($db, 'affectedRows')) {
+            $quantity_affected = $db->affectedRows();
+          } else {
+            $query_result = $db->Execute("SELECT ROW_COUNT() rows;");
+            $quantity_affected = $query_result->fields['rows'];
+          }
+
+          
+          // If the change happened, then report it.
+          if ($quantity_affected > 0) {
+            $seachPID = $products_answer->fields['products_id'];
+
+            $sql = "SELECT quantity FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
+                    WHERE stock_id = " . $products_answer->fields['stock_id'];
+
+            if (method_exists('ExecuteNoCache', $db)) {
+              $result = $db->ExecuteNoCache($sql);
+            } else {
+              $result = $db->Execute($sql, false, false, 0, true);
+            }
+            
+            $final_quantity = 0;
+            if (!$result->EOF) {
+              $final_quantity = $result->fields['quantity'];
+            }
+
+            $messageStack->add_session(sprintf(PWA_ADJUST_QUANTITY_SUCCESS, $seachPID, $products_answer->fields['stock_id'], $s, $change, $final_quantity), 'success');
+            zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action', 'pwas-search-button')) . '&search=' . $s, $request_type));
+          }
+        } else if (!$products_answer->EOF) {
+          // multiple records found, need to display and offer options.
+          $messageStack->add_session(sprintf(PWA_ADJUST_QUANTITY_MULTIPLE_NOT_SUPPORTED_YET, $s, $change), 'info');
+          zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action', 'pwas-search-button')) . '&search=' . $s, $request_type));
+        }
+      }
+    }
 
   default:
 
@@ -1126,11 +1207,13 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     }
 
     ?><div id="hugo1" style="background-color: green; padding: 2px 10px;"></div>
-    <?php echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'post', 'id="pwas-search2"', true);
+    <?php echo zen_draw_form('pwas-search', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by . '&action=search-all', 'post', 'id="pwas-search2"', true);
     echo zen_draw_label(PWA_TEXT_SEARCH, 'search', '');
     echo zen_draw_input_field('search', $seachBox, 'id="pwas-filter"', false, 'text', true);
     echo zen_draw_input_field('pwas-search-button', PWA_BUTTON_SEARCH, 'id="pwas-search-button"', false, 'submit', true);
     echo zen_draw_hidden_field('search_order_by', $search_order_by);
+    echo zen_draw_input_field('pwas-adjust-qty', '', 'id="pwas-adjust-qty"', false, 'text', true);
+    echo zen_draw_input_field('pwas-adjust-qty-button', PWA_BUTTON_ADJUST, 'id="adjust_quantity_button"', false, 'submit', true);
     ?></form>
     <!--<td valign="top" align="left">
       <form name="product_dropdown" action="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'SSL'); ?>">

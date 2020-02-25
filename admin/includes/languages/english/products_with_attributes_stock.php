@@ -55,4 +55,9 @@ define('PWA_UPDATE_FAILURE', 'Product %1$d update failed: %2$s');
 define('PWA_PARENT_QUANTITY_UPDATE_SUCCESS', 'Parent Product Quantity Updated');
 define('PWA_PARENT_QUANTITIES_UPDATE_SUCCESS', 'Parent Product Quantities Updated');
 define('PWA_SORT_UPDATE_SUCCESS', '%1$d stock attributes updated for sort by primary attribute sort order');
+define('PWA_ADJUST_QUANTITY_SUCCESS', 'Product %1$d with stock_id %2$d found on search \'%3$s\' has been updated by %4$f to a value of %5$f.');
+define('PWA_ADJUST_QUANTITY_NONE_FOUND', 'No product were found using search content of \'%1$s\' to adjust quantity by %2$f.');
+define('PWA_ADJUST_QUANTITY_MULTIPLE_NOT_SUPPORTED_YET', 'Multiple product were found using the search criteria \'%1$s\' to try to adjust by %2$f; however, this is not yet supported. Try a search that provides a single variant.');
 define('PWA_BUTTON_SEARCH', 'Search');
+define('PWA_BUTTON_ADJUST', 'Adjust');
+

@@ -57,4 +57,8 @@ div.productGroup table {width: 100%;}
 
 .thProdId,.thProdName,.thProdImage, .thProdModel,.thProdQty, .thProdAdd, .thProdSync{ padding: 6px;border: 1px solid #999;}
 
+#adjust_quantity_button {float: right;}
+
+#pwas-adjust-qty {float: right;}
+
 table {width: 100%;}
