@@ -138,9 +138,9 @@ switch ($action) {
       $query = 'SELECT DISTINCT
                         pa.products_id, d.products_name
                       FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
-                          left join ' . TABLE_PRODUCTS_DESCRIPTION . ' d on (pa.products_id = d.products_id)
+                          LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' d ON (pa.products_id = d.products_id)
                       WHERE d.language_id= :language_id: 
-                      order by d.products_name';
+                      ORDER BY d.products_name';
       $query = $db->bindVars($query, ':language_id:', $language_id, 'integer');
       
       $products = $db->execute($query);
