@@ -673,7 +673,7 @@ switch ($action) {
         $options_order_by= ' order by po.products_options_name';
       }
 
-      $sort_query = "SELECT DISTINCT pa.products_attributes_id, pov.products_options_values_sort_order as sort
+      $sort_query = "SELECT DISTINCT pa.products_attributes_id, pov.products_options_values_sort_order as sort, po.products_options_sort_order, po.products_options_name
              FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa
              LEFT JOIN " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov on (pov.products_options_values_id = pa.options_values_id)
              LEFT JOIN " . TABLE_PRODUCTS_OPTIONS . " po on (po.products_options_id = pa.options_id) 
@@ -1120,7 +1120,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
                       WHERE pwas.customid 
                         LIKE '%$s%'))";
       
-      $query_products = "SELECT distinct pa.products_id 
+      $query_products = "SELECT distinct pa.products_id, d.products_name
                           FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa,
                           " . TABLE_PRODUCTS_DESCRIPTION . " d,
                           " . TABLE_PRODUCTS . " p
@@ -1171,7 +1171,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     if (STOCK_SBA_SEARCHLIST == 'true') {
       //Product Selection Listing at top of page
       $searchList = 'select distinct pa.products_id, pd.products_name,
-                 p.products_model
+                 p.products_model, :search_order_by:
                    FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
                   left join ' . TABLE_PRODUCTS_DESCRIPTION . ' pd on (pa.products_id = pd.products_id)
                   left join ' . TABLE_PRODUCTS . ' p on (pa.products_id = p.products_id)
