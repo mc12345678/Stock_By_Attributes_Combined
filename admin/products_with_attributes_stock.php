@@ -136,11 +136,11 @@ switch ($action) {
     } else {
 
       $query = 'SELECT DISTINCT
-                        pa.products_id, d.products_name
+                        pa.products_id, pd.products_name
                       FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
-                          LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' d ON (pa.products_id = d.products_id)
-                      WHERE d.language_id= :language_id: 
-                      ORDER BY d.products_name';
+                          LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' pd ON (pa.products_id = pd.products_id)
+                      WHERE pd.language_id= :language_id:
+                      ORDER BY pd.products_name';
       $query = $db->bindVars($query, ':language_id:', $language_id, 'integer');
       
       $products = $db->execute($query);
@@ -842,6 +842,12 @@ switch ($action) {
       $search_order_by = 'products_model';
     }
   }
+  if ($sniffer->field_exists(TABLE_PRODUCTS, $search_order_by)) {
+    $search_order_by = 'p.' . $search_order_by;
+  }
+  if ($sniffer->field_exists(TABLE_PRODUCTS_DESCRIPTION, $search_order_by)) {
+    $search_order_by = 'pd.' . $search_order_by;
+  }
 
 
   //global $template_dir; // Why does this variable need to be made global? Isn't it already in the global space?
@@ -1110,7 +1116,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       }
       $s = zen_db_input($seachBox);
       $w = " AND ( p.products_id = '$s'
-              OR d.products_name 
+              OR pd.products_name
                 LIKE '%$s%' 
               OR p.products_model 
                 LIKE '%$s%' 
@@ -1120,15 +1126,15 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
                       WHERE pwas.customid 
                         LIKE '%$s%'))";
       
-      $query_products = "SELECT distinct pa.products_id, d.products_name
+      $query_products = "SELECT distinct pa.products_id, pd.products_name
                           FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa,
-                          " . TABLE_PRODUCTS_DESCRIPTION . " d,
+                          " . TABLE_PRODUCTS_DESCRIPTION . " pd,
                           " . TABLE_PRODUCTS . " p
-                          WHERE d.language_id=" . (int)$language_id . " 
-                          AND pa.products_id = d.products_id 
+                          WHERE pd.language_id=" . (int)$language_id . "
+                          AND pa.products_id = pd.products_id
                           AND pa.products_id = p.products_id 
                           " . $w . " 
-                          ORDER BY d.products_name 
+                          ORDER BY pd.products_name
                           " . $SearchRange;
       $products_answer = $db->Execute($query_products);
       if (!$products_answer->EOF && $products_answer->RecordCount() == 1 ) {
@@ -1194,9 +1200,9 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       <td valign="top" align="left">
         <form name="search_order_by" action="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'SSL'); ?>">
           <select name="selected" onChange="go_search()">
-            <option value="products_model"<?php if ($search_order_by == 'products_model') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_MODEL; ?></option>
-            <option value="products_id"<?php if ($search_order_by == 'products_id') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_ID; ?></option>
-            <option value="products_name"<?php if ($search_order_by == 'products_name') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_NAME; ?></option>
+            <option value="products_model"<?php if ($search_order_by == 'p.products_model') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_MODEL; ?></option>
+            <option value="products_id"<?php if ($search_order_by == 'p.products_id') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_ID; ?></option>
+            <option value="products_name"<?php if ($search_order_by == 'pd.products_name') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_NAME; ?></option>
           </select>
         </form>
       </td>
@@ -1218,9 +1224,9 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     <!--<td valign="top" align="left">
       <form name="product_dropdown" action="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'search_order_by=' . $search_order_by, 'SSL'); ?>">
         <select name="selected" onChange="go_search()">
-          <option value="products_model"<?php if ($search_order_by == 'products_model') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_MODEL; ?></option>
-          <option value="products_id"<?php if ($search_order_by == 'products_id') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_ID; ?></option>
-          <option value="products_name"<?php if ($search_order_by == 'products_name') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_NAME; ?></option>
+          <option value="products_model"<?php if ($search_order_by == 'p.products_model') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_MODEL; ?></option>
+          <option value="products_id"<?php if ($search_order_by == 'p.products_id') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_ID; ?></option>
+          <option value="products_name"<?php if ($search_order_by == 'pd.products_name') { echo ' SELECTED'; } ?>><?php echo PWA_PRODUCT_NAME; ?></option>
         </select>
       </form>
     </td>-->
