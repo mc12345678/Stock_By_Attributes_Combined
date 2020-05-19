@@ -214,12 +214,12 @@ class products_with_attributes_stock extends base
       } else {
         $language_id=1;
       }
-      $query = 'SELECT DISTINCT pa.products_id, d.products_name, p.products_quantity, p.products_model, p.products_image
+      $query = 'SELECT DISTINCT pa.products_id, pd.products_name, p.products_quantity, p.products_model, p.products_image
                 FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
-                LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' d ON (pa.products_id = d.products_id)
+                LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' pd ON (pa.products_id = pd.products_id)
                 LEFT JOIN ' . TABLE_PRODUCTS . ' p ON (pa.products_id = p.products_id)
-                WHERE d.language_id = ' . (int)$language_id . ' 
-                ORDER BY d.products_name';
+                WHERE pd.language_id = ' . (int)$language_id . '
+                ORDER BY pd.products_name';
       $products = $db->Execute($query);
       while (!$products->EOF) {
         $products_array[] = (int)$products->fields['products_id'];
@@ -262,7 +262,7 @@ class products_with_attributes_stock extends base
  * $NumberRecordsShown
  */
     function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, $ReturnedProductID = null) {
-        global $db;
+        global $db, $sniffer;
       
         if (isset($_SESSION['languages_id']) && $_SESSION['languages_id'] > 0) {
           $language_id = (int)$_SESSION['languages_id'];
@@ -310,16 +310,16 @@ class products_with_attributes_stock extends base
         }
 
         $retArr = array();
-/*        $query_products =    'SELECT distinct pa.products_id, d.products_name, p.products_quantity, 
+/*        $query_products =    'SELECT distinct pa.products_id, pd.products_name, p.products_quantity,
             p.products_model, p.products_image, p.products_type, p.master_categories_id
             
             FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
-            LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' d ON (pa.products_id = d.products_id)
+            LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' pd ON (pa.products_id = pd.products_id)
             LEFT JOIN ' . TABLE_PRODUCTS . ' p ON (pa.products_id = p.products_id)
             
-            WHERE d.language_id='.$language_id.'
+            WHERE pd.language_id='.$language_id.'
             ' . $w . '
-            ORDER BY d.products_name
+            ORDER BY pd.products_name
             ' . $SearchRange.'';*/
         if (isset($_GET['page']) && ($_GET['page'] > 1)) $rows = STOCK_SET_SBA_NUMRECORDS * ((int)$_GET['page'] - 1);
 
@@ -329,7 +329,19 @@ class products_with_attributes_stock extends base
           $search_order_by = 'products_model';
         }
 
-        $query_products =    "SELECT DISTINCT pa.products_id, d.products_name, p.products_quantity, p.products_model, p.products_image, p.products_type, p.master_categories_id FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_DESCRIPTION . " d, " . TABLE_PRODUCTS . " p WHERE d.language_id=" . (int)$language_id . " AND pa.products_id = d.products_id AND pa.products_id = p.products_id " . $w . " ORDER BY " . $search_order_by . " " . $SearchRange;
+        if (!$sniffer->field_exists(TABLE_PRODUCTS, $search_order_by)) {
+          if (!$sniffer->field_exists(TABLE_PRODUCTS_DESCRIPTION, $search_order_by)) {
+            $search_order_by = 'products_model';
+          }
+        }
+        if ($sniffer->field_exists(TABLE_PRODUCTS, $search_order_by)) {
+          $search_order_by = 'p.' . $search_order_by;
+        }
+        if ($sniffer->field_exists(TABLE_PRODUCTS_DESCRIPTION, $search_order_by)) {
+          $search_order_by = 'pd.' . $search_order_by;
+        }
+
+        $query_products =    "SELECT DISTINCT pa.products_id, pd.products_name, p.products_quantity, p.products_model, p.products_image, p.products_type, p.master_categories_id, " . $search_order_by . " FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_DESCRIPTION . " pd, " . TABLE_PRODUCTS . " p WHERE pd.language_id=" . (int)$language_id . " AND pa.products_id = pd.products_id AND pa.products_id = p.products_id " . $w . " ORDER BY " . $search_order_by . " " . $SearchRange;
 
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
           $products_split = new splitPageResults($_GET['page'], STOCK_SET_SBA_NUMRECORDS, $query_products, $products_query_numrows);
@@ -446,7 +458,7 @@ class products_with_attributes_stock extends base
                     $options_order_by= ' ORDER BY po.products_options_name';
                   }
 
-                  $sort2_query = "SELECT DISTINCT pa.products_attributes_id 
+                  $sort2_query = "SELECT DISTINCT pa.products_attributes_id, po.products_options_sort_order, po.products_options_name
                          FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa
                    LEFT JOIN " . TABLE_PRODUCTS_OPTIONS . " po on (po.products_options_id = pa.options_id) 
                          WHERE pa.products_attributes_id in (" . $attribute_products->fields['stock_attributes'] . ")
