@@ -40,9 +40,14 @@ class products_with_attributes_class_stock extends base {
 
   function __construct() {
     $this->_isSBA = array();
+    $this->zgapf = false;
     if (function_exists('zen_get_attributes_price_final')) {
       if (class_exists('ReflectionFunction')) {
-        $this->zgapf = new ReflectionFunction('zen_get_attributes_price_final');
+        $zgapf = new ReflectionFunction('zen_get_attributes_price_final');
+        if ($zgapf->getNumberOfParameters() > 4) {
+          $this->zgapf = true;
+        }
+        unset ($zgapf);
       }
     }
   }

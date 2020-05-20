@@ -451,7 +451,7 @@ class products_with_attributes_stock extends base {
       // START "Stock by Attributes" SBA added original price for display, and some formatting
       $originalpricedisplaytext = null;
 
-      if (isset($_SESSION['pwas_class2']->zgapf) && $_SESSION['pwas_class2']->zgapf->getNumberOfParameters() > 4) {
+      if (!empty($_SESSION['pwas_class2']->zgapf)) {
         // Use the latest function for determining the attribute's final price
         //   This requires/uses 4 parameters to internally determine the price of the attribute
         global $products_price_is_priced_by_attributes;

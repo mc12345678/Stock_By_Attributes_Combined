@@ -654,6 +654,7 @@ Array(
             $option_price = $products_options->fields['options_values_price']; //<- to display "normal" price, otherwise set to '0' to not attach/display price in field.
 
 // mc12345678 2017-06-25 BOF edited to support wholesale display
+
 if (!empty($_SESSION['customer_id'])) {
     $customers_id = (int)$_SESSION['customer_id'];
     $customer_check = $db->Execute("select * from " . TABLE_CUSTOMERS . " where customers_id = $customers_id");
@@ -671,20 +672,12 @@ if (!empty($_SESSION['customer_id'])) {
         $option_price = $products_options->fields['options_values_price'];
       }
 //      $option_price = (float)$products_options->fields['options_values_price_w'] /*+ $products_options->fields['options_values_price']*/;
-    } else {
-      if ($products_options->fields['attributes_discounted'] == 1) {
-        if (isset($this->zgapf) && $this->zgapf->getNumberOfParameters() > 4) {
-          $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
-        } else {
-          $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false');
-          $option_price = zen_get_discount_calc($this->products_id, true, $option_price);
-        }
-      }
     }
+}
 
-} else {
+if (empty($_SESSION['customer_id']) || !(!empty($customer_check->fields['customers_whole']) && !empty($_SESSION['customer_whole']) && (int)$_SESSION['customer_whole'] > 0)) {
   if ($products_options->fields['attributes_discounted'] == 1) {
-    if (isset($this->zgapf) && $this->zgapf->getNumberOfParameters() > 4) {
+    if (!empty($this->zgapf)) {
       $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
     } else {
       $option_price = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false');
