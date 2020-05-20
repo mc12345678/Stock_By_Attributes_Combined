@@ -102,7 +102,11 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
 
       if (function_exists('zen_get_attributes_price_final')) {
         if (class_exists('ReflectionFunction')) {
-          $this->zgapf = new ReflectionFunction('zen_get_attributes_price_final');
+          $zgapf = new ReflectionFunction('zen_get_attributes_price_final');
+          if ($zgapf->getNumberOfParameters() > 4) {
+            $this->zgapf = true;
+          }
+          unset ($zgapf);
         }
       }
 
