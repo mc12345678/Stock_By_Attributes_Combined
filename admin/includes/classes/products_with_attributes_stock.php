@@ -262,7 +262,7 @@ class products_with_attributes_stock extends base
  * $NumberRecordsShown
  */
     function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, $ReturnedProductID = null) {
-        global $db, $sniffer;
+        global $db, $sniffer, $languages;
       
         if (isset($_SESSION['languages_id']) && $_SESSION['languages_id'] > 0) {
           $language_id = (int)$_SESSION['languages_id'];
@@ -459,27 +459,37 @@ class products_with_attributes_stock extends base
                   }
 
                   $sort2_query = "SELECT DISTINCT pa.products_attributes_id, po.products_options_sort_order, po.products_options_name
+                         , po.language_id
                          FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa
                    LEFT JOIN " . TABLE_PRODUCTS_OPTIONS . " po on (po.products_options_id = pa.options_id) 
                          WHERE pa.products_attributes_id in (" . $attribute_products->fields['stock_attributes'] . ")
+                         GROUP BY po.language_id, pa.products_attributes_id
                          " . $options_order_by; 
                   $sort_class = $db->Execute($sort2_query);
                   $array_temp_sorted_array = array();
                   $attributes_of_stock = array();
                   while (!$sort_class->EOF) {
-                    $attributes_of_stock[] = $sort_class->fields['products_attributes_id'];
+                    $attributes_of_stock[] = array(
+                                              'products_attributes_id' => $sort_class->fields['products_attributes_id'],
+                                              'language_id' => $sort_class->fields['language_id'],
+                                              );
                     $sort_class->MoveNext();
                   }
 
                   $attributes_output = array();
                   foreach ($attributes_of_stock as $attri_id)
                   {
-                      $stock_attribute = $this->get_attributes_name($attri_id, $_SESSION['languages_id']);
+                      $stock_attribute = $this->get_attributes_name($attri_id['products_attributes_id'], $attri_id['language_id']/*$_SESSION['languages_id']*/);
                       if ($stock_attribute['option'] == '' && $stock_attribute['value'] == '') {
                         // delete stock attribute
                         $db->Execute("DELETE FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE stock_id = " . $attribute_products->fields['stock_id'] . " LIMIT 1;");
                       } else { 
-                        $attributes_output[] = '<strong>' . $stock_attribute['option'] . ':</strong> ' . $stock_attribute['value'] . '<br />';
+                        foreach ($languages as $lang) {
+                          if ($lang['id'] == $attri_id['language_id']) {
+                            break;
+                          }
+                        }
+                        $attributes_output[] = $lang['code'] . ':' . '<strong>' . $stock_attribute['option'] . ':</strong> ' . $stock_attribute['value'] . '<br />';
                       }
                   }
 //                  sort($attributes_output);
