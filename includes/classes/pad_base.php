@@ -378,7 +378,7 @@ $this->products_original_price = $tax_class_array->fields['products_price']; /* 
           }
 
           /// Start of Changes- display actual prices instead of +/- Actual Price Pull Down v1.2.3a
-          $new_price ? $original_price = $new_price : $original_price = $this->products_original_price; //// check if set special price note $this variable
+          isset($new_price) ? $original_price = $new_price : $original_price = $this->products_original_price; //// check if set special price note $this variable
 
           $option_price = $products_options->fields['options_values_price'];
           if ($products_options->fields['price_prefix'] == "-") // in case price lowers, don't add values, subtract.
