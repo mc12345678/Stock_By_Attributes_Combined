@@ -13,7 +13,7 @@
  * Stock by Attributes 1.5.4  15-11-14 mc12345678
  */
 if (!defined('PWA_DISPLAY_CUSTOMID')) {
-  define('PWA_DISPLAY_CUSTOMID', 'right');  // Three values currently used: 'right', 'left', or ''.  Original design considered right.
+  define('PWA_DISPLAY_CUSTOMID', 'rightstock'); // 'leftall' (first in text), 'leftstock' (to the left of the stock quantity), 'rightstock' (default - to the right of the stock before other text), 'rightall' (furthest right item), '' (don't display customid regardless of admin setting to display)
 }
 
 class products_with_attributes_stock extends base {
@@ -46,6 +46,12 @@ class products_with_attributes_stock extends base {
   private $_options_menu_images;
   
   private $_products_options_fields;
+
+  // Value of the customid to add to text, primarily for the SBA Select List (Dropdown) Basic type of dropdown
+  private $customid;
+
+  // boolean to identify whether to add the customid or not, primarily for the SBA Select List (Dropdown) Basic type of dropdown
+  private $try_customid;
   
   
   /*
@@ -323,6 +329,8 @@ class products_with_attributes_stock extends base {
       //PRODUCTS_OPTIONS_TYPE_TEXT PRODUCTS_OPTIONS_TYPE_FILE PRODUCTS_OPTIONS_TYPE_READONLY
       //PRODUCTS_OPTIONS_TYPE_SELECT_SBA
       $PWA_STOCK_QTY = ''; //initialize variable
+      $this->customid = '';
+      $this->try_customid = false;
       if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_TEXT) {
         if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_FILE) {
           if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_READONLY) {
@@ -334,7 +342,8 @@ class products_with_attributes_stock extends base {
                   $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options_fields['pasqty'] . ' ';
                   //show custom ID if flag set to true
                   if ($show_custom_id_flag && zen_not_null($products_options_fields['customid'])) {
-                    $PWA_STOCK_QTY .= PWA_CUSTOMID_LEFT . $products_options_fields['customid'] . PWA_CUSTOMID_RIGHT;
+                    $this->customid = PWA_CUSTOMID_LEFT . $products_options_fields['customid'] . PWA_CUSTOMID_RIGHT;
+                    $this->try_customid = true;
                   }
                 }
               } elseif (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true' && (!isset($products_options_fields['pasqty']) || ($products_options_fields['pasqty'] < 1)) && empty($products_options_fields['pasid'])) {
@@ -357,14 +366,16 @@ class products_with_attributes_stock extends base {
 
                   //show custom ID if flag set to true
                   if ($show_custom_id_flag && zen_not_null($products_options_fields['customid'])) {
-                    $PWA_STOCK_QTY .= PWA_CUSTOMID_LEFT . $products_options_fields['customid'] . PWA_CUSTOMID_RIGHT;
+                    $this->customid = PWA_CUSTOMID_LEFT . $products_options_fields['customid'] . PWA_CUSTOMID_RIGHT;
+                    $this->try_customid = true;
                   }
                 }
               } elseif ($show_custom_id_flag) {
                 //show custom ID if flag set to true
                 //test, only applicable to products with-out the display-only attribute set
                 if ($products_options_DISPLAYONLY->fields['attributes_display_only'] < 1) {
-                  $PWA_STOCK_QTY .= PWA_CUSTOMID_LEFT . $products_options_fields['customid'] . PWA_CUSTOMID_RIGHT;
+                  $this->customid = PWA_CUSTOMID_LEFT . $products_options_fields['customid'] . PWA_CUSTOMID_RIGHT;
+                  $this->try_customid = true;
                 }
               }
             }
@@ -372,11 +383,20 @@ class products_with_attributes_stock extends base {
         }
       }
 
-      if (PWA_DISPLAY_CUSTOMID == 'right') {
-        $products_options_array[$i]['text'] .= $PWA_STOCK_QTY;
-      } else if (PWA_DISPLAY_CUSTOMID == 'left') {
+      if ($this->try_customid) {
+        if (PWA_DISPLAY_CUSTOMID == 'rightstock') {
+          $PWA_STOCK_QTY .= $this->customid;
+        } else if (PWA_DISPLAY_CUSTOMID == 'leftstock') {
+          // Add customid to beginning of option value's above stock text.
+          $PWA_STOCK_QTY = $this->customid . $PWA_STOCK_QTY;
+        }
+      }
+
+      // Add the stock quantity text to the end of the existing products_options text.
+      $products_options_array[$i]['text'] .= $PWA_STOCK_QTY;
+      if ($this->try_customid && PWA_DISPLAY_CUSTOMID == 'leftall') {
         // Add customid to beginning of option value's text.
-        $products_options_array[$i]['text'] = $PWA_STOCK_QTY . $products_options_array[$i]['text'];
+        $products_options_array[$i]['text'] = $this->customid . $products_options_array[$i]['text'];
       }
 
       //create image array for use in select list to rotate visable image on select.  Applicable only to
@@ -476,10 +496,8 @@ class products_with_attributes_stock extends base {
         }
       }
 
-      if (PWA_DISPLAY_CUSTOMID == 'right') {
-        $products_options_display_price .= $originalpricedisplaytext . $PWA_STOCK_QTY;
-      } else if (PWA_DISPLAY_CUSTOMID == 'left') {
-        $products_options_display_price .= $originalpricedisplaytext;
+      if ($this->try_customid && PWA_DISPLAY_CUSTOMID == 'rightall') {
+        $products_options_display_price .= $originalpricedisplaytext . $this->customid;
       }
       // END "Stock by Attributes" SBA
     }
