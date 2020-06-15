@@ -243,7 +243,7 @@ class products_with_attributes_stock extends base
       $attributes = $db->Execute($query);
 
       $attributes_output = false;
-      if (!$attributes->EOF) {
+      if ($attributes->RecordCount() > 0) {
         $attributes_output = array(
                                    'option' => $attributes->fields['products_options_name'],
                                    'value' => $attributes->fields['products_options_values_name'],
@@ -480,6 +480,7 @@ class products_with_attributes_stock extends base
                   foreach ($attributes_of_stock as $attri_id)
                   {
                       $stock_attribute = $this->get_attributes_name($attri_id['products_attributes_id'], $attri_id['language_id']/*$_SESSION['languages_id']*/);
+                      if ($stock_attribute === false) continue; // If the products_attributes_id is not found in the selected language then move on.
                       if ($stock_attribute['option'] == '' && $stock_attribute['value'] == '') {
                         // delete stock attribute
                         $db->Execute("DELETE FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE stock_id = " . $attribute_products->fields['stock_id'] . " LIMIT 1;");
