@@ -194,7 +194,9 @@ switch ($action) {
     break;
 
   case 'confirm':
-    if (isset($_POST['products_id']) && (int) $_POST['products_id'] > 0) {
+    if (!(isset($_POST['products_id']) && (int) $_POST['products_id'] > 0)) {
+      zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action')), $request_type));
+    }
 
       if (!isset($_POST['quantity']) || !is_numeric($_POST['quantity'])) {
         $messageStack->add_session(PWA_QUANTITY_MISSING, 'failure');
@@ -285,9 +287,6 @@ switch ($action) {
         $hidden_form .= zen_draw_hidden_field('add_edit', 'add') . "\n";
         $s_mack_noconfirm .="add_edit=add&"; //s_mack:noconfirm
       }
-    } else {
-      zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action')), $request_type));
-    }
     zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, $s_mack_noconfirm . "action=execute", $request_type)); //s_mack:noconfirm
     break;
 
