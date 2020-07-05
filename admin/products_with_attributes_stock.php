@@ -16,6 +16,16 @@ require(DIR_WS_CLASSES . 'currencies.php');
 $currencies = new currencies();
 //require(DIR_WS_CLASSES . 'products_with_attributes_stock.php');
 
+// Adds a function used here not introduced until Zen Cart 1.5.5.
+//   Below can be removed from systems fully running Zen Cart 1.5.5 or above.
+if (!function_exists('zen_draw_label')) {
+  function zen_draw_label($text, $for, $parameters = '')
+  {
+      $label = '<label for="' . $for . '"' . (!empty($parameters) ? ' ' . $parameters : '') . '>' . $text . '</label>';
+      return $label;
+  }
+}
+
 //new object from class
 //$stock = new products_with_attributes_stock;
 $stock = $products_with_attributes_stock_class;
