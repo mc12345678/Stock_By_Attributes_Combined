@@ -269,6 +269,8 @@ class products_with_attributes_stock extends base
         } else { 
           $language_id = 1;
         }
+        $s = '';
+        $w = '';
         if (isset($_GET['search']) && $_GET['search']) { // mc12345678 Why was $_GET['search'] omitted?
             $s = zen_db_input($_GET['search']);
            //$w = "(p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '%$s%') AND  " ;//original version of search
@@ -283,9 +285,6 @@ class products_with_attributes_stock extends base
                       WHERE pwas.customid 
                         LIKE '%$s%')
                         ) "; //changed search to products_model 'starts with'.
-        } else {
-          $w = ''; 
-          $s = '';
         }
 
         //Show last edited record or Limit number of records displayed on page
