@@ -242,14 +242,14 @@ class products_with_attributes_stock extends base
               
       $attributes = $db->Execute($query);
 
-      $attributes_output = false;
-      if ($attributes->RecordCount() > 0) {
-        $attributes_output = array(
-                                   'option' => $attributes->fields['products_options_name'],
-                                   'value' => $attributes->fields['products_options_values_name'],
-                                  );
+      if ($attributes->RecordCount() == 0) {
+        return false;
       }
-      return $attributes_output;
+
+      return array(
+                   'option' => $attributes->fields['products_options_name'],
+                   'value' => $attributes->fields['products_options_values_name'],
+                   );
     }
         
         
