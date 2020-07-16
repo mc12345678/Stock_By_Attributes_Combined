@@ -192,20 +192,25 @@ class products_with_attributes_stock extends base {
   }
   /*
    * NOTIFY_ATTRIBUTES_MODULE_START_OPTION
+   * Added by SBA for ZC 1.5.0 through 1.5.4.
+   * ZC 1.5.5, ZC 1.5.6,
+   * ZC 1.5.7: $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_START_OPTION', $products_options_names->fields);
    */
-   function updateNotifyAttributesModuleStartOption(&$callingClass, $notifier, $paramsArray) {
+   function updateNotifyAttributesModuleStartOption(&$callingClass, $notifier, $products_options_names_fields) {
      global $db, $sql, /*$options_menu_images, $moveSelectedAttribute, */
-        $products_options_array, $options_attributes_image,
-        $products_options_names, /*$products_options_names_count,*/
+        $products_options_array, /*$options_attributes_image,*/
+        /*$products_options_names, *//*$products_options_names_count,*/
        /*$stock,*/ $is_SBA_product, $order_by, $products_options; //, $pwas_class;
      
      $this->_options_menu_images = array();
      $this->_moveSelectedAttribute = false;
-     $products_options_array = array();
+     if (!isset($products_options_array)) {
+       $products_options_array = array();
+     }
 //     $options_attributes_image = array();
      // Could do the calculation here the first time set a variable above as part of the class and then reuse that... instead of the modification to the attributes file...
      if (!zen_not_null($this->_products_options_names_count)) {
-       $this->_products_options_names_count = $products_options_names->RecordCount();
+       $this->_products_options_names_count = $GLOBALS['products_options_names']->RecordCount();
      }
 //     $products_options_names_count = $products_options_names->RecordCount();
      $this->_isSBA = false;
@@ -220,6 +225,8 @@ class products_with_attributes_stock extends base {
      if (!$this->_isSBA) {
       return;
      }
+
+      $products_options_type = $products_options_names_fields['products_options_type'];
        // Want to do a SQL statement to see the quantity of non-READONLY attributes.  If there is only one non-READONLY attribute, then
        //   do additional SQL to add the "missing" attributes that would get displayed.  But, do not have the "main" sql modified otherwise
        //   the display will get all wonky (multiple listings where not desired).  Will need to modify the SQL result for each result applicable to the
@@ -227,7 +234,7 @@ class products_with_attributes_stock extends base {
        // Understand that already cycling through the product options, therefore if there are multiple options, the current option is not readonly
        //   and there is only one non-readonly attribute, then that is when the "new" sql needs to be activated to populate the current option...
        $process_this = false;
-       if (!$this->_noread_done && $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_READONLY && $products_options_names->RecordCount() > 1) {
+       if (!$this->_noread_done && $products_options_type != PRODUCTS_OPTIONS_TYPE_READONLY && $this->_products_options_names_count > 1) {
          $sql_noread = "SELECT count(distinct products_options_id) AS total
            FROM " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id = :products_id:
            AND patrib.options_id = popt.products_options_id
@@ -262,8 +269,8 @@ class products_with_attributes_stock extends base {
                 )
                 && defined('SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO') && SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO == '0'
                 && (!defined('PRODINFO_ATTRIBUTE_DYNAMIC_STATUS') || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS != '1' && PRODINFO_ATTRIBUTE_DYNAMIC_STATUS != '3'))
-                && (!defined('PRODUCTS_OPTIONS_TYPE_GRID') || $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_GRID)
-                && (!defined('PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID') || $products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID)
+                && (!defined('PRODUCTS_OPTIONS_TYPE_GRID') || $products_options_type != PRODUCTS_OPTIONS_TYPE_GRID)
+                && (!defined('PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID') || $products_options_type != PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID)
               ) 
                ? " AND (pas.quantity > '0' OR (pas.quantity IS NULL AND pa.attributes_display_only = '1')) "
                : ""
@@ -272,7 +279,7 @@ class products_with_attributes_stock extends base {
             $order_by;
               
        $sql = $db->bindVars($sql, ':products_id:', $_GET['products_id'], 'integer');
-       $sql = $db->bindVars($sql, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
+       $sql = $db->bindVars($sql, ':options_id:', $products_options_names_fields['products_options_id'], 'integer');
        $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
 
        $products_options = $db->Execute($sql);
