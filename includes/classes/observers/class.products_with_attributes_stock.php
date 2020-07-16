@@ -599,22 +599,76 @@ class products_with_attributes_stock extends base {
               //   and disabled, then try to bump to the next attribute.
               //  if the last attribute is default and disabled, then try to bump to the first/next
               //  if all are disabled, then what is to be addressed? Should it be programatic or
+        $move2next = false;
         while (!$products_opt->EOF) {
-          if ($prevent_checkout && $products_opt->fields['pasqty'] <= 0 && ($products_opt->fields['attributes_display_only'] && $products_opt->fields['attributes_default'])) {
-            $disablebackorder[] = null;
-          } elseif ($prevent_checkout && $products_opt->fields['pasqty'] <= 0 && /*$products_opt->fields['products_options_values_id'] != $selected_attribute &&*/ $products_opt->fields['attributes_display_only'] && !$products_opt->fields['attributes_default']) { // If the first item is set as disabled and there is no default, then this could cause the product to be incorrectly added to the cart.
+          // Early escape if there is no reason to specifically disable the option.
+          if (!$prevent_checkout
+            || $products_opt->fields['pasqty'] > 0
+            || $products_opt->fields['attributes_display_only'] && $products_opt->fields['attributes_default']) {
+
+            $disablebackorder[] = '';
+            // If previous selected default was invalid, then because this option is "selectable", make it the new default.
+            if ($move2next) {
+              $selected_attribute = $products_opt->fields['options_values_id'];
+              $move2next = false;
+            }
+            $products_opt->MoveNext();
+            continue;
+          }
+
+          // Identify if the given option name/option value combination is defined as a specific variant for this specific selection.
+          //   This only really works for single optin name product or if each option name/option value is split out. For combined attributes, this
+          //   does not properly identify the presence/existence of the variant.  That aspect probably needs to be controlled from the front end of
+          //   the store via javascript/jQuery and/or upon selection of the combination without the extra screen modification.
+          $isDefined = !empty($_SESSION['pwas_class2']->zen_get_sba_attribute_info($prod_id, array($products_opt->fields['options_id'] => $products_opt->fields['options_values_id']) /*$products_options_array*/, 'product', 'ids'));
+          // If the item is display only then disable it from selection. display_only with default is handled above.
+          if ($products_opt->fields['attributes_display_only'] && !$products_opt->fields['attributes_default']) {
             $disablebackorder[] = ' disabled="disabled" ';
-          } elseif ($prevent_checkout && $products_opt->fields['pasqty'] <= 0 && $products_opt->fields['attributes_default']) { // If the first item is set as disabled and there is no default, then this could cause the product to be incorrectly added to the cart.
-            $disablebackorder[] = null;
-          } elseif ($prevent_checkout && $products_opt->fields['pasqty'] <= 0) {
+          } elseif ($isDefined && $products_opt->fields['attributes_default']) {
+            // If the option name/option value combination has its own stock_id and it is/was a default, then because there is insufficient stock, disable it.
+            //   Also, because it was set as a default, then this selects/suggests another default be selected so that at least one is chosen.
+            $disablebackorder[] = ' disabled="disabled" '; //' disabled="disabled" ';
+            $move2next = true;
+          } elseif ($isDefined) {
+            // By this point, it is not display only, it is not a default, it is identified as a known variant, it is out of stock and not
+            //   permitted to be added to the cart, so disable it.
             $disablebackorder[] = ' disabled="disabled" ';
-          } else {  
-            $disablebackorder[] = null;
+          } elseif (zen_get_products_stock($products_opt->fields['products_id']) <= 0) {
+            // Basically the expectation is that this options_id/options value doesn't have a variant defined and the total quantity of product is <=0
+            //   then disable the option as a general rule
+            $disablebackorder[] = ' disabled="disabled" ';
+          } else {
+            // There doesn't appear to be any remaining reason to disable the variant, so allow it to be added and go ahead and suggest this variant as the new default.
+            $disablebackorder[] = '';
+            if ($move2next) {
+              $selected_attribute = $products_opt->fields['options_values_id'];
+              $move2next = false;
+            }
           }
           $products_opt->MoveNext();
         }
         unset($products_opt);
         unset($prevent_checkout);
+        // If have exited the above loop and still need to resolve to the next option value, attempt to find the next available option value.
+        if($move2next) {
+          $sba_counter = 0;
+          foreach ($products_options_array as $prod_key => $prod_val) {
+            // The $disablebackorder array is 0 based and is expected to be one for one to $products_options_array at least in sequence, though not
+            //   necessarily in number.  If the current options are not disabled, then allow it to become the new default.
+            if (empty($disablebackorder[$sba_counter])) {
+              $selected_attribute = $prod_val['id'];
+              $move2next = false;
+              break; // Don't try to process any further items in array.
+            }
+            $sba_counter++;
+          }
+
+          // try to find another solution that is currently available, if none then set to the first one as an "possibility"?
+          if ($move2next) {
+            $selected_attribute = $products_options_array[0]['id'];
+            $move2next = false;
+          }
+        }
         
           //var_dump($products_options_array); //Debug Line
           $options_html_id[] = 'drp-attrib-' . $products_options_names_fields['products_options_id'];
