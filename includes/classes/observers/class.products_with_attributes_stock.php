@@ -870,7 +870,7 @@ class products_with_attributes_stock extends base {
             // By this point, it is not display only, it is not a default, it is identified as a known variant, it is out of stock and not
             //   permitted to be added to the cart, so disable it.
             $disablebackorder[] = ' disabled="disabled" ';
-          } elseif (zen_get_products_stock($products_opt->fields['products_id']) <= 0) {
+          } elseif (zen_get_products_stock($prod_id) <= 0) {
             // Basically the expectation is that this options_id/options value doesn't have a variant defined and the total quantity of product is <=0
             //   then disable the option as a general rule
             $disablebackorder[] = ' disabled="disabled" ';
