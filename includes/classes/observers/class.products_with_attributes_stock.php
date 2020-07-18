@@ -81,7 +81,9 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE'; // Added by SBA for pre-ZC 1.5.7
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_SALEMAKER_DISPLAY_PRICE_PERCENTAGE';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE';
-    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED';
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED'; // Added by SBA for pre-ZC 1.5.7
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_RADIO_SELECTED'; // Added for ZC 1.5.7
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_CHECKBOX_SELECTED'; // Added for ZC 1.5.7
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT';
     $attachNotifier[] = 'NOTIFY_HEADER_END_ACCOUNT_HISTORY_INFO';
@@ -675,12 +677,14 @@ class products_with_attributes_stock extends base {
   
    /*
     * NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED
+    * ZC 1.5.x: $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED');
+    * ZC 1.5.7: Called something else, one for radio, one for checkboxes
+    * Disable code has been moved up in processing
     */
   function updateNotifyAttributesModuleAttribSelected(&$callingClass, $notifier, $paramsArray){
-    global /*$products_options_names, */$products_options, $selected_attribute, /*$moveSelectedAttribute,*/ $disablebackorder;
+    global /*$products_options_names, */$products_options, $selected_attribute/*, $moveSelectedAttribute,*//* $disablebackorder*/;
     
 //       if ($this->_isSBA && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
-    $disablebackorder = null;
     if (!$this->_isSBA || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' && $this->products_options_names_fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $this->_products_options_names_count == 1 && $this->products_options_names_fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $this->_products_options_names_count > 1)) {
       return;
     }
@@ -699,11 +703,73 @@ class products_with_attributes_stock extends base {
         $selected_attribute = false;
         $this->_moveSelectedAttribute = true;
       }
-      $disablebackorder = ' disabled="disabled" ';
     }
     // END "Stock by Attributes" SBA
      
   }
+
+  /**
+   *  ZC 1.5.7:
+   *  $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_RADIO_SELECTED', $products_options->fields, $data_properties);
+   *
+   **/
+  function updateNotifyAttributesModuleRadioSelected(&$callingClass, $notifier, $products_options_fields, &$data_properties) {
+    global /*$products_options_names, $products_options, */$selected_attribute/*, $moveSelectedAttribute,*//* $disablebackorder, $field_disabled*/;
+    
+    if (!$this->_isSBA || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' && $this->products_options_names_fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $this->_products_options_names_count == 1 && $this->products_options_names_fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $this->_products_options_names_count > 1)) {
+      return;
+    }
+
+    //move default selected attribute if attribute is out of stock and check out is not allowed
+    if ($this->_moveSelectedAttribute == true && (STOCK_ALLOW_CHECKOUT == 'false' && $products_options_fields['pasqty'] > 0)) {
+      $selected_attribute = true;
+      $this->_moveSelectedAttribute = false;
+    }
+    //disable radio and disable default selected
+    if (STOCK_ALLOW_CHECKOUT == 'false' && ( ((empty($products_options_fields['pasqty']) || $products_options_fields['pasqty'] <= 0) && !empty($products_options_fields['pasid']) )
+    || ((empty($products_options_fields['products_quantity']) || $products_options_fields['products_quantity'] <= 0) && empty($products_options_fields['pasid'])) )
+    ) {//|| $products_options_READONLY->fields['attributes_display_only'] == 1
+      if ($selected_attribute == true) {
+        $selected_attribute = false;
+        $this->_moveSelectedAttribute = true;
+      }
+    }
+    // END "Stock by Attributes" SBA
+     
+  }
+
+
+  /**
+   *
+   * $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_CHECKBOX_SELECTED', $products_options->fields, $data_properties);
+   **/
+  function updateNotifyAttributesModuleCheckboxSelected(&$callingClass, $notifier, $products_options_fields, &$data_properties) {
+    
+//       if ($this->_isSBA && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
+    if (!$this->_isSBA || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' && $this->products_options_names_fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $this->_products_options_names_count/*$products_options_names->RecordCount()*/ == 1 && $this->products_options_names_fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $this->_products_options_names_count/*$products_options_names->RecordCount()*/ > 1)) {
+      return;
+    }
+    global $selected_attribute;
+    
+    //move default selected attribute if attribute is out of stock and check out is not allowed
+    if ($this->_moveSelectedAttribute == true && (STOCK_ALLOW_CHECKOUT == 'false' && $products_options_fields['pasqty'] > 0)) {
+      $selected_attribute = true;
+      $this->_moveSelectedAttribute = false;
+    }
+
+    //disable radio and disable default selected
+    if ((STOCK_ALLOW_CHECKOUT == 'false' && (empty($products_options_fields['pasqty']) || $products_options_fields['pasqty'] <= 0) && !empty($products_options_fields['pasid']) )
+    || ( STOCK_ALLOW_CHECKOUT == 'false' && (empty($products_options_fields['products_quantity']) || $products_options_fields['products_quantity'] <= 0) && empty($products_options_fields['pasid']) )
+    ) {//|| $products_options_READONLY->fields['attributes_display_only'] == 1
+      if ($selected_attribute == true) {
+        $selected_attribute = false;
+        $this->_moveSelectedAttribute = true;
+      }
+    }
+    // END "Stock by Attributes" SBA
+     
+  }
+
 
   /*
    * 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
