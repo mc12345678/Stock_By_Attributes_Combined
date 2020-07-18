@@ -88,6 +88,7 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT';
     $attachNotifier[] = 'NOTIFY_HEADER_END_ACCOUNT_HISTORY_INFO';
     $attachNotifier[] = 'NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION';
+    $attachNotifier[] = 'NOTIFY_HEADER_END_CHECKOUT_SUCCESS';
     $attachNotifier[] = 'NOTIFY_HEADER_END_SHOPPING_CART';
     $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_SHIPPING';
     $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_CONFIRMATION';
@@ -1405,6 +1406,15 @@ class products_with_attributes_stock extends base {
     }
   }
 
+  // NOTIFY_HEADER_END_CHECKOUT_SUCCESS
+  function updateNotifyHeaderEndCheckoutSuccess(&$callingClass, $notifier, $paramsArray) {
+    global $order, $customid;
+    
+    if (isset($order) && is_object($order)) {
+      $this->updateNotifyHeaderEndCheckoutConfirmation($callingClass, $notifier, $paramsArray);
+    }
+  }
+
   // NOTIFY_HEADER_END_SHOPPING_CART
     /**
      * @param $callingClass
@@ -1823,7 +1833,7 @@ class products_with_attributes_stock extends base {
     /**
      * ZC 1.5.1: $zco_notifier->notify('NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION');
      **/
-    if ($notifier == 'NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION') {
+    if ($notifier == 'NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION' || $notifier == 'NOTIFY_HEADER_END_CHECKOUT_SUCCESS') {
       $this->updateNotifyHeaderEndCheckoutConfirmation($callingClass, $notifier, $paramsArray);
     }
     
