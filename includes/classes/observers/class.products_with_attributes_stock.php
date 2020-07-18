@@ -594,61 +594,83 @@ class products_with_attributes_stock extends base {
 
    /*
     * NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE
+    * SBA added: $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE');
+    * As of ZC 1.5.7:
+    * $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE', $products_options->fields, $products_options_array, $products_options_display_price, $data_properties);
     */
-  function updateNotifyAttributesModuleOriginalPrice(&$callingClass, $notifier, $paramsArray){
-    global /*$db, */$products_options, $products_options_names, $currencies, $new_attributes_price, $product_info, $products_options_display_price, $PWA_STOCK_QTY;
-    
+  function updateNotifyAttributesModuleOriginalPrice(&$callingClass, $notifier, $products_options_fields, &$products_options_array, &$products_options_display_price, &$data_properties) {
+
     // If not even an SBA selection, then don't do anything with it.
     if (!$this->_isSBA) {
       return;
     }
-    
-    if (
-          (
-            in_array($products_options_names->fields['products_options_type'], array(PRODUCTS_OPTIONS_TYPE_SELECT_SBA, PRODUCTS_OPTIONS_TYPE_RADIO, PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_FILE, PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_SELECT)) 
-            || (
-                (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' 
-                  && $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA
-                ) 
-                || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' 
-                || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) 
-                || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1)
-               )
-            )
-        ) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
-      // START "Stock by Attributes" SBA added original price for display, and some formatting
-      $originalpricedisplaytext = null;
 
-      if (!empty($_SESSION['pwas_class2']->zgapf)) {
+    if (!$this->for_attributes) {
+      return;
+    }
+
+    global /*$db, $products_options, $products_options_names,*/ $currencies, $new_attributes_price, $product_info, $PWA_STOCK_QTY;
+    if (is_null($products_options_display_price)) {
+      global $products_options_display_price;
+    }
+    if (empty($products_options_fields)) {
+      $products_options_fields = $GLOBALS['products_options']->fields;
+      $products_options_array = null; // @TODO: Set this properly for further use if needed.  Not needed in this section for time being.
+    }
+    
+    
+    // attribute types to which this applies
+    $group_price_modified = array(
+      PRODUCTS_OPTIONS_TYPE_RADIO,
+      PRODUCTS_OPTIONS_TYPE_CHECKBOX,
+    );
+    
+    $products_options_type = 0;
+    
+    if (isset($GLOBALS['inputFieldId']) && isset($this->attributeDetailsArrayForJson[$GLOBALS['inputFieldId']]['products_options_type'])) {
+      $products_options_type = $this->attributeDetailsArrayForJson[$GLOBALS['inputFieldId']]['products_options_type'];
+    }
+    
+    if (empty($this->attributeDetailsArrayForJson)) {
+      $products_options_type = $this->products_options_names_fields['products_options_type'];
+    }
+    
+    
+    // Perhaps only certain features need to be bypassed, but for now all mc12345678
+    // START "Stock by Attributes" SBA added original price for display, and some formatting
+    $originalpricedisplaytext = '';
+
+    if (!empty($_SESSION['pwas_class2']->zgapf)) {
         // Use the latest function for determining the attribute's final price
         //   This requires/uses 4 parameters to internally determine the price of the attribute
-        global $products_price_is_priced_by_attributes;
-        $attributes_price_final = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
-      } else {
+      global $products_price_is_priced_by_attributes;
+      $attributes_price_final = zen_get_attributes_price_final($products_options_fields['products_attributes_id'], 1, '', 'false', $products_price_is_priced_by_attributes);
+    } else {
         // This is the old method of performing attribute price determination which
         //   has been found to be prone to discrepancies when sales, specials 
         //   and/or priced-by-attributes are involved
-        $attributes_price_final = zen_get_attributes_price_final($products_options->fields['products_attributes_id'], 1, '', 'false');
-        $attributes_price_final = zen_get_discount_calc((int)$_GET['products_id'], true, $attributes_price_final);
-      }
-//      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($attributes_price_final == $new_attributes_price || ($attributes_price_final == -$new_attributes_price && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
-      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($products_options->fields['attributes_display_only'] && $products_options->fields['attributes_default'] && !$products_options->fields['products_options_sort_order']) && ($new_attributes_price != $products_options->fields['options_values_price']) && (($attributes_price_final == $new_attributes_price) || (($attributes_price_final == -$new_attributes_price) && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
-        //Original price struck through
-        if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_RADIO || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
-          //use this if a PRODUCTS_OPTIONS_TYPE_RADIO or PRODUCTS_OPTIONS_TYPE_CHECKBOX
-          //class="normalprice" can be used in a CSS file to control the text properties, not compatable with selection lists
-          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="normalprice">' . $products_options->fields['price_prefix'] . $currencies->display_price($products_options->fields['options_values_price'], zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
-        } else {
-          //need to remove the <span> tag for selection lists and text boxes
-          $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . $products_options->fields['price_prefix'] . $currencies->display_price(abs($products_options->fields['options_values_price']), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
-        }
-      }
-
-      if ($this->try_customid && PWA_DISPLAY_CUSTOMID == 'rightall') {
-        $products_options_display_price .= $originalpricedisplaytext . $this->customid;
-      }
-      // END "Stock by Attributes" SBA
+      $attributes_price_final = zen_get_attributes_price_final($products_options_fields['products_attributes_id'], 1, '', 'false');
+      $attributes_price_final = zen_get_discount_calc((int)$_GET['products_id'], true, $attributes_price_final);
     }
+//      if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($attributes_price_final == $new_attributes_price || ($attributes_price_final == -$new_attributes_price && ((int)($products_options->fields['price_prefix'] . "1") * $products_options->fields['options_values_price']) < 0)) ) {
+    if (STOCK_SHOW_ORIGINAL_PRICE_STRUCK == 'true' && !($products_options_fields['attributes_display_only'] && $products_options_fields['attributes_default'] && !$products_options_fields['products_options_sort_order']) && ($new_attributes_price != $products_options_fields['options_values_price']) && (($attributes_price_final == $new_attributes_price) || (($attributes_price_final == -$new_attributes_price) && ((int)($products_options_fields['price_prefix'] . "1") * $products_options_fields['options_values_price']) < 0)) ) {
+      //Original price struck through
+      if (in_array($products_options_type, $group_price_modified)) {
+        //use this if a PRODUCTS_OPTIONS_TYPE_RADIO or PRODUCTS_OPTIONS_TYPE_CHECKBOX
+        //class="normalprice" can be used in a CSS file to control the text properties, not compatable with selection lists
+//        $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="normalprice">' . $products_options_fields['price_prefix'] . $currencies->display_price($attributes_price_final, zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+        $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="normalprice">' . $products_options_fields['price_prefix'] . $currencies->display_price($products_options_fields['options_values_price'], zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+      } else {
+        //need to remove the <span> tag for selection lists and text boxes
+//        $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . $products_options_fields['price_prefix'] . $currencies->display_price(abs($attributes_price_final), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+        $originalpricedisplaytext = ATTRIBUTES_PRICE_DELIMITER_PREFIX . $products_options_fields['price_prefix'] . $currencies->display_price(abs($products_options_fields['options_values_price']), zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+      }
+    }
+
+    if ($this->try_customid && PWA_DISPLAY_CUSTOMID == 'rightall') {
+      $products_options_display_price .= $originalpricedisplaytext . $this->customid;
+    }
+    // END "Stock by Attributes" SBA
   }
   
    /*
