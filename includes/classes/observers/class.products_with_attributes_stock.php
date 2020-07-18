@@ -76,7 +76,8 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ORDER_DURING_CREATE_ADDED_PRODUCT_LINE_ITEM';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTION';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP';
-    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE';
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE'; // Added by SBA for pre-ZC 1.5.7
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_SALEMAKER_DISPLAY_PRICE_PERCENTAGE';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ORIGINAL_PRICE';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_ATTRIB_SELECTED';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
@@ -551,15 +552,41 @@ class products_with_attributes_stock extends base {
 
   /*
    * NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE
+   * ZC 1.5.x:  $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE');
+   * ZC 1.5.7:  $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_SALEMAKER_DISPLAY_PRICE_PERCENTAGE', $products_options->fields, $product_info->fields, $products_options_display_price, $data_properties);
    */
-  function updateNotifyAttributesModuleSaleMakerDisplayPricePercentage(&$callingClass, $notifier, $paramsArray){
-    global $products_options_names, $products_options_display_price, $products_options, $currencies, $new_attributes_price, $product_info;
+  function updateNotifyAttributesModuleSaleMakerDisplayPricePercentage(&$callingClass, $notifier, $products_options_fields, &$product_info_fields, &$products_options_display_price, &$data_properties){
+    // attribute types to which this applies
+    $group_price_modified = array(
+      PRODUCTS_OPTIONS_TYPE_RADIO,
+      PRODUCTS_OPTIONS_TYPE_CHECKBOX,
+    );
     
-    if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_RADIO || $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_CHECKBOX) {
-      //use this if a PRODUCTS_OPTIONS_TYPE_RADIO or PRODUCTS_OPTIONS_TYPE_CHECKBOX
-      //class="productSpecialPrice" can be used in a CSS file to control the text properties, not compatable with selection lists
-      $products_options_display_price = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="productSpecialPrice">' . $products_options->fields['price_prefix'] . $currencies->display_price($new_attributes_price, zen_get_tax_rate($product_info->fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
+    // Perform an early escape if there is nothing to be done here.
+    if (!in_array($this->products_options_names_fields['products_options_type'], $group_price_modified)) {
+      return;
     }
+
+    global $currencies;
+    
+    // Backwards compatibility with attributes.php file
+    if (is_null($products_options_display_price)) {
+      global $products_options_display_price;
+    }
+    
+    // Backwards compatibility with attributes.php file
+    if (empty($products_options_fields)) {
+      $products_options_fields = $GLOBALS['products_options']->fields;
+    }
+    
+    // Backwards compatibility with attributes.php file
+    if (is_null($product_info_fields)) {
+      $product_info_fields = $GLOBALS['product_info']->fields;
+    }
+    
+    //use this if a PRODUCTS_OPTIONS_TYPE_RADIO or PRODUCTS_OPTIONS_TYPE_CHECKBOX
+    //class="productSpecialPrice" can be used in a CSS file to control the text properties, not compatable with selection lists
+    $products_options_display_price = ATTRIBUTES_PRICE_DELIMITER_PREFIX . '<span class="productSpecialPrice">' . $products_options_fields['price_prefix'] . $currencies->display_price($GLOBALS['new_attributes_price'], zen_get_tax_rate($product_info_fields['products_tax_class_id'])) . '</span>' . ATTRIBUTES_PRICE_DELIMITER_SUFFIX;
 
   }
 
@@ -1567,7 +1594,7 @@ class products_with_attributes_stock extends base {
    */
   function update(&$callingClass, $notifier, $paramsArray) {
   //global $db;
-    if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE') {
+    if ($notifier == 'NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE' || $notifier == 'NOTIFY_ATTRIBUTES_MODULE_SALEMAKER_DISPLAY_PRICE_PERCENTAGE') {
       $this->updateNotifyAttributesModuleSaleMakerDisplayPricePercentage($callingClass, $notifier, $paramsArray);
     }
   
