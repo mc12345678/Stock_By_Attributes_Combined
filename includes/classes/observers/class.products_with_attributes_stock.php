@@ -362,7 +362,7 @@ class products_with_attributes_stock extends base {
 
       //echo 'ID: ' . $products_options_fields["products_attributes_id"] . ' Stock ID: ' . $products_options_fields['pasid'] . ' QTY: ' . $products_options_fields['pasqty'] . ' Custom ID: ' . $products_options_fields['customid'] . '<br />';//debug line
       //add out of stock text based on qty
-      if ((!isset($products_options_fields['pasqty']) || $products_options_fields['pasqty'] < 1) && STOCK_CHECK == 'true' && isset($products_options_fields['pasid']) && $products_options_fields['pasid'] > 0) {
+      if ((!isset($products_options_fields['pasqty']) || $products_options_fields['pasqty'] <= 0) && STOCK_CHECK == 'true' && isset($products_options_fields['pasid']) && $products_options_fields['pasid'] > 0) {
         //test, only applicable to products with-out the display-only attribute set
         if (empty($products_options_DISPLAYONLY->fields['attributes_display_only'])) {
           $products_options_fields['products_options_values_name'] = $products_options_fields['products_options_values_name'] . PWA_OUT_OF_STOCK;
@@ -417,7 +417,7 @@ class products_with_attributes_stock extends base {
                     $this->try_customid = true;
                   }
                 }
-              } elseif (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true' && (!isset($products_options_fields['pasqty']) || ($products_options_fields['pasqty'] < 1)) && empty($products_options_fields['pasid'])) {
+              } elseif (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true' && (!isset($products_options_fields['pasqty']) || ($products_options_fields['pasqty'] <= 0)) && empty($products_options_fields['pasid'])) {
                 //test, only applicable to products with-out the display-only attribute set
                 if (empty($products_options_DISPLAYONLY->fields['attributes_display_only'])) {
                   //use the qty from the product, unless it is 0, then set to out of stock.
