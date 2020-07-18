@@ -37,6 +37,8 @@ class products_with_attributes_stock extends base {
 
   private $_products_options_names_current;
   
+  private $products_options_names_fields;
+  
 //  private $_attrib_grid;
   
   private $_noread_done = false;
@@ -53,6 +55,9 @@ class products_with_attributes_stock extends base {
   // boolean to identify whether to add the customid or not, primarily for the SBA Select List (Dropdown) Basic type of dropdown
   private $try_customid;
   
+  private $attributeDetailsArrayforJson;
+  
+  private $data_properties;
   
   /*
    * This is the observer for the includes/classes/order.php file to support Stock By Attributes when the order is being processed at the end of the purchase.
@@ -287,14 +292,58 @@ class products_with_attributes_stock extends base {
 
   /*
    * 'NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP'
+   * Added by SBA for ZC 1.5.0 through 1.5.4.
+   * ZC 1.5.5 &
+   * ZC 1.5.6: $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP', $i++, $products_options->fields);
+   * ZC 1.5.7: $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP', $i++, $products_options->fields, $products_options_names->fields, $data_properties, $field_disabled, $attributeDetailsArrayForJson);
    */
-  function updateNotifyAttributesModuleStartOptionsLoop(&$callingClass, $notifier, $i, &$products_options_fields){
-    global $db, /*$options_menu_images, */$products_options_array, $products_options_names,
+  function updateNotifyAttributesModuleStartOptionsLoop(&$callingClass, $notifier, $i, &$products_options_fields, &$products_options_names_fields, &$data_properties, &$field_disabled, &$attributeDetailsArrayforJson){
+    global $db, /*$options_menu_images, */$products_options_array, /*$products_options_names,*/
            $PWA_STOCK_QTY;
+    if (is_null($products_options_names_fields)) {
+      $products_options_names_fields = $GLOBALS['products_options_names']->fields;
+    }
+
+    if (is_null($field_disabled)) {
+      global $disablebackorder;
+      $disablebackorder = '';
+    }
 
     $this->_products_options_names_current++;
     
-    if ($this->_isSBA && (in_array($products_options_names->fields['products_options_type'], array(PRODUCTS_OPTIONS_TYPE_SELECT_SBA, PRODUCTS_OPTIONS_TYPE_RADIO, PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_FILE, PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_SELECT)) || ((PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0' && $products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA) || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1)))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
+    $this->attributeDetailsArrayforJson = $attributeDetailsArrayforJson;
+    
+    $type_array = array(
+      PRODUCTS_OPTIONS_TYPE_SELECT_SBA,
+      PRODUCTS_OPTIONS_TYPE_RADIO,
+      PRODUCTS_OPTIONS_TYPE_CHECKBOX,
+      PRODUCTS_OPTIONS_TYPE_FILE,
+      PRODUCTS_OPTIONS_TYPE_TEXT,
+      PRODUCTS_OPTIONS_TYPE_SELECT,
+    );
+
+    $products_options_type = $products_options_names_fields['products_options_type'];
+
+    $this->for_attributes =  (
+      in_array($products_options_type, $type_array)
+      || (
+        (
+          PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0'
+          && $products_options_type == PRODUCTS_OPTIONS_TYPE_SELECT_SBA
+        )
+        || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1'
+        || (
+          PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2'
+          && $this->_products_options_names_count > 1
+        )
+        || (
+          PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3'
+          && $this->_products_options_names_count == 1
+        )
+      )
+    );
+
+    if ($this->_isSBA && $this->for_attributes) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
       // START "Stock by Attributes"  SBA
       //used to find if an attribute is display-only
       $sqlDO = "select pa.attributes_display_only
@@ -315,20 +364,30 @@ class products_with_attributes_stock extends base {
           // $i in includes/modules/YOUR_TEMPLATE/attributes.php is post incremented ($i++) meaning it is sent here with the 
           //   current value, but upon return will be incremented by 1.  Therefore within this function it should be considered as 
           //   the value that attributes.php was seeing just before the notifier.
-          $products_options_array[$i] = array_merge($products_options_array[$i], array('id' =>
-              $products_options_fields['products_options_values_id'],
-              'text' => $products_options_fields['products_options_values_name'])); // 2017-07-13 mc12345678 added array_merge to preserve other modifications that may have been made for this array instead of replacing them in their entirety and possibly losing the other data.
+          $products_options_array[$i] = array_merge(
+            $products_options_array[$i],
+            array(
+              'id' => $products_options_fields['products_options_values_id'],
+              'text' => $products_options_fields['products_options_values_name'],
+            )
+          ); // 2017-07-13 mc12345678 added array_merge to preserve other modifications that may have been made for this array instead of replacing them in their entirety and possibly losing the other data.
         }
       }
 
       $show_custom_id_flag = isset($products_options_fields['customid'])
-          && zen_not_null($products_options_fields['customid'])
-          && (
-              !defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID')
-              || (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1')
-              || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2'
-              || (ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '3' && $products_options_names->RecordCount() > 1)
-             );
+        && zen_not_null($products_options_fields['customid'])
+        && (
+          !defined('ATTRIBUTES_SBA_DISPLAY_CUSTOMID')
+          || (
+            STOCK_SBA_DISPLAY_CUSTOMID == 'true'
+            && ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '1'
+          )
+          || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2'
+          || (
+            ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '3'
+            && $products_options_names_count > 1
+          )
+        );
       //Add qty to atributes based on STOCK_SHOW_ATTRIB_LEVEL_STOCK setting
       //Only add to Radio, Checkbox, and selection lists
       //PRODUCTS_OPTIONS_TYPE_RADIO PRODUCTS_OPTIONS_TYPE_CHECKBOX
@@ -338,10 +397,10 @@ class products_with_attributes_stock extends base {
       $PWA_STOCK_QTY = ''; //initialize variable
       $this->customid = '';
       $this->try_customid = false;
-      if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_TEXT) {
-        if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_FILE) {
-          if ($products_options_names->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_READONLY) {
-            /*if ($products_options_names->fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA)*/ {
+      if ($products_options_type != PRODUCTS_OPTIONS_TYPE_TEXT) {
+        if ($products_options_type != PRODUCTS_OPTIONS_TYPE_FILE) {
+          if ($products_options_type != PRODUCTS_OPTIONS_TYPE_READONLY) {
+            /*if ($products_options_type == PRODUCTS_OPTIONS_TYPE_SELECT_SBA)*/ {
 
               if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true' && isset($products_options_fields['pasqty']) && $products_options_fields['pasqty'] > 0) {
                 //test, only applicable to products with-out the display-only attribute set
@@ -362,11 +421,14 @@ class products_with_attributes_stock extends base {
                       $PWA_STOCK_QTY = PWA_STOCK_QTY . $products_options_fields['products_quantity'] . ' ';
                     } else {
                       $products_options_fields['products_options_values_name'] = $products_options_fields['products_options_values_name'] . PWA_OUT_OF_STOCK;
-                      $products_options_array[$i] = array_merge($products_options_array[$i], array('id' =>
+                      $products_options_array[$i] = array_merge(
+                        $products_options_array[$i],
+                        array(
+                          'id' =>$products_options_fields['products_options_values_id'],
 /*                      $products_options_array[count($products_options_array)-1] = array('id' =>*/
-                          $products_options_fields['products_options_values_id'],
-                          'text' => $products_options_fields['products_options_values_name'])
-                          );
+                          'text' => $products_options_fields['products_options_values_name'],
+                        )
+                      );
 
                     }
                   }
@@ -429,7 +491,57 @@ class products_with_attributes_stock extends base {
     } // End if _isSBA
 
     $this->_products_options_fields = $products_options_fields;
-
+    $this->products_options_names_fields = $products_options_names_fields;
+    $this->data_properties = $data_properties;
+    
+    if ($this->_isSBA
+      && !(
+        (
+          PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '0'
+          && (
+            $products_options_type != PRODUCTS_OPTIONS_TYPE_SELECT_SBA
+            && $products_options_type != PRODUCTS_OPTIONS_TYPE_RADIO
+          )
+        )
+        || (
+          PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2'
+          && $this->_products_options_names_count == 1
+          && (
+            $products_options_type != PRODUCTS_OPTIONS_TYPE_SELECT_SBA
+            && $products_options_type != PRODUCTS_OPTIONS_TYPE_RADIO
+          )
+        )
+        || (
+          PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3'
+          && $this->_products_options_names_count > 1
+        )
+      )
+    ) {
+      //disable radio buttons and sba select
+      if (
+        (
+          STOCK_ALLOW_CHECKOUT == 'false'
+          && (
+            empty($products_options_fields['pasqty'])
+            || $products_options_fields['pasqty'] <= 0
+          )
+          && !empty($products_options_fields['pasid'])
+        )
+        || (
+          STOCK_ALLOW_CHECKOUT == 'false'
+          && (
+            empty($products_options_fields['products_quantity'])
+            || $products_options_fields['products_quantity'] <= 0
+          )
+          && empty($products_options_fields['pasid'])
+        )
+      ) { //|| $products_options_READONLY->fields['attributes_display_only'] == 1
+        $field_disabled = $disablebackorder = ' disabled="disabled" ';
+      }
+    }
+    
+    $this->field_disabled = $field_disabled;
+    
     if ($this->_products_options_names_current == 1) {
       // global $currencies;
 
