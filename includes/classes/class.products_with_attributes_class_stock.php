@@ -99,12 +99,11 @@ function non_stock_attribute($check_attribute_id/*, $non_stock_id, $non_stock_ty
 
       $non_stock_result = $db->Execute($sql); //, false, false, 0, true);
 
-       $total = $non_stock_result->fields['quantity'];
-        if (!$total) {
-          return false;
-        } else {
-          return true; //'products_attributes_id'
-        }
+  if ($non_stock_result->RecordCount() == 0) {
+    return false;
+  }
+  
+  return ($non_stock_result->fields['quantity'] != 0);
 }
 
 //test for multiple entry of same product in customer's shopping cart
@@ -325,12 +324,11 @@ function cartProductCount($products_id){
       
       }
 //      else{
-      unset($customid);// = null;
+      //unset($customid);// = null;
       //This is used as a fall-back when custom ID is set to be displayed but no attribute is available.
       //Get product model
       // Use ZC default function to obtain the products_model field.
-      $customid = zen_products_lookup($products_id, 'products_model');
-      return $customid;
+      return zen_products_lookup($products_id, 'products_model');
         //return result for display
         //return $customid->fields['products_model'];
 //      }
@@ -1343,17 +1341,8 @@ Of the attributes provided, determine the number of those attributes that are
       $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
       $stock_query = $db->bindVars($stock_query, ':stock_attributes:', $stock_attributes, 'passthru');
       $stock_values = $db->Execute($stock_query); //, false, false, 0, true);
-      // return the stock qty for the attribute that was found.
-      if ($stock_values->RecordCount()) {
-        switch ($datatype) {
-          case 'stock':
-            return $stock_values->fields['products_quantity'];
-            break;
-          case 'ids':
-          default:
-            return array($stock_values->fields['stock_id']);
-        }
-      } else {
+      
+      if ($stock_values->RecordCount() == 0) {
         // Known: product is tracked by SBA, product is reported as 
         //  having one attribute, though if there is one or more 
         //  attributes that can be blank (text/upload file) then this
@@ -1376,6 +1365,17 @@ Of the attributes provided, determine the number of those attributes that are
         // This return "value" also identifies to the front end of the cart whether to mark as out-of-stock or not. A non-zero value will support display of availability of the option.
 
         return false;
+
+      }
+      
+      // return the stock qty for the attribute that was found.
+      switch ($datatype) {
+        case 'stock':
+          return $stock_values->fields['products_quantity'];
+          break;
+        case 'ids':
+        default:
+          return array($stock_values->fields['stock_id']);
       }
     } elseif (count($stock_attributes_list) > 1) {
       // mc12345678 multiple attributes are associated with the product
@@ -1613,12 +1613,26 @@ Of the attributes provided, determine the number of those attributes that are
   }*/
 
   function zen_sba_dd_allowed($products_options_names, $data_type = 'attributes') {
+    // Default "reason" for using this code wasn't provided, which is to handle 
+    //   the data that is default provided ($products_options_names from: 
+    //   includes/modules/YOUR_TEMPLATE/attributes.php
+    if ($data_type != 'attributes') {
+      return false;
+    }
+
+    // If there are no option names then perform skip the testing.
+    if ($products_options_names->RecordCount() == 0) {
+      // There are no option names therefore there is no DD.
+      return false;
+    }
+
 //  if (!is_array($products_options_names)) $products_options_names = array($products_options_names);
 
     // mc12345678 Below is a list of product types that are currently not supported
     //  by dynamic dropdowns and therefore should not be displayed with dropdowns 
     //  until the option type is properly worked around and supported in the dropdowns.
 //    $special = array(PRODUCTS_OPTIONS_TYPE_TEXT, PRODUCTS_OPTIONS_TYPE_FILE, /*PRODUCTS_OPTIONS_TYPE_READONLY,*/ PRODUCTS_OPTIONS_TYPE_CHECKBOX, PRODUCTS_OPTIONS_TYPE_GRID, PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID);
+    
     $special = array();
 
     if (defined('PRODUCTS_OPTIONS_TYPE_TEXT')) {
@@ -1638,28 +1652,18 @@ Of the attributes provided, determine the number of those attributes that are
       $special[] = PRODUCTS_OPTIONS_TYPE_ATTRIBUTE_GRID;
     }
 
-    // This is the default "reason" for using this code, and will handle 
-    //   the data that is default provided ($products_options_names from: 
-    //   includes/modules/YOUR_TEMPLATE/attributes.php
-    if ($data_type == 'attributes') {
-      // $opt_array = array();
-      // If there is at least one option name then perform the testing.
-      if ($products_options_names->RecordCount() > 0) { 
-        if (method_exists($products_options_names, 'rewind')) {
-          $products_options_names->Rewind();
-        } else {
-          $products_options_names->Move(0);
-          $products_options_names->MoveNext();
-        }
-        while (!$products_options_names->EOF) {
-          if (in_array($products_options_names->fields['products_options_type'], $special)) {
-            return false; // mc12345678 Found that current option type is not supported by Dynamic Dropdowns
-          }
-          $products_options_names->MoveNext();
-        }
-      } else {
-        return false;  // There are no option names therefore there is no DD.
+    // $opt_array = array();
+    if (method_exists($products_options_names, 'Rewind')) {
+      $products_options_names->Rewind();
+    } else {
+      $products_options_names->Move(0);
+      $products_options_names->MoveNext();
+    }
+    while (!$products_options_names->EOF) {
+      if (in_array($products_options_names->fields['products_options_type'], $special)) {
+        return false; // mc12345678 Found that current option type is not supported by Dynamic Dropdowns
       }
+      $products_options_names->MoveNext();
     }
 
     return true;  // Default to trying to use the dynamic dropdown option if
@@ -1706,31 +1710,29 @@ Of the attributes provided, determine the number of those attributes that are
     }
     
     // If the product has already been found during this session, then return the
-    //  the result instead of querying the database again unless there is a need
+    //  result instead of querying the database again unless there is a need
     //  to "reset" the query result.  An important point of doing this is when 
     //  dealing with the cart directly so that quantities are updated correctly.
     if (isset($this->_isSBA[(int)$product_id]['status']) && $reset == false) {
       return $this->_isSBA[(int)$product_id]['status'];
     }
     
-    $inSBA_query = $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK);
+    $inSBA_query = defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK);
 
-    if ($inSBA_query /*!$SBA_installed->EOF && $SBA_installed->RecordCount() > 0*/) { // Added to simplify query/code, assuming caching won't/can't be an issue.
-      $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE products_id = :products_id:;';
-      $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
-      $isSBA = $db->Execute($isSBA_query);//, false, false, 0, true);
-    
-      if ($isSBA->RecordCount() > 0) {
-        $this->_isSBA[(int)$product_id]['status'] = true;
-        return true;
-      }
-
-      $this->_isSBA[(int)$product_id]['status'] = false;
-      return false;
+    if (!$inSBA_query) {
+      return $this->_isSBA[(int)$product_id] = false; // Added to simplify query/code, assuming caching won't/can't be an issue.
     }
-
-    $this->_isSBA[(int)$product_id] = false;
-    return false;
+    
+    $isSBA_query = 'SELECT stock_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE products_id = :products_id: LIMIT 1;';
+    $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
+    $isSBA = $db->Execute($isSBA_query);//, false, false, 0, true);
+    
+    $this->_isSBA[(int)$product_id]['status'] = false;
+    if ($isSBA->RecordCount() > 0) {
+      $this->_isSBA[(int)$product_id]['status'] = true;
+    }
+      
+    return $this->_isSBA[(int)$product_id]['status'];
   }  
 
 }
