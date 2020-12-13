@@ -438,7 +438,7 @@ if (zen_not_null($action) && $order_exists == true) {
     </script>
     <script>
       function couponpopupWindow(url) {
-          window.open(url, 'popupWindow', 'toolbar=no,location=no,directories=no,status=no,menu bar=no,scrollbars=yes,resizable=yes,copyhistory=no,width=450,height=280,screenX=150,screenY=150,top=150,left=150')
+          window.open(url, 'popupWindow', 'toolbar=no,location=no,directories=no,status=no,menu bar=no,scrollbars=yes,resizable=yes,copyhistory=no,width=450,height=280,screenX=150,screenY=150,top=150,left=150,noreferrer')
       }
     </script>
       <?php
@@ -569,7 +569,7 @@ if (zen_not_null($action) && $order_exists == true) {
           <div class="col-sm-3 col-lg-4 text-left noprint">
             <?php echo $left_side_buttons; ?>
           </div>
-          <div class="col-sm-6 col-lg-4">
+          <div class="col-sm-6 col-lg-4 noprint">
             <div class="input-group">
               <span class="input-group-btn">
                   <?php echo $prev_button; ?>
@@ -591,7 +591,7 @@ if (zen_not_null($action) && $order_exists == true) {
              <?php echo $right_side_buttons; ?>
           </div>
         </div>
-        <div class="row"><?php echo zen_draw_separator(); ?></div>
+        <div class="row noprint"><?php echo zen_draw_separator(); ?></div>
         <div class="row">
           <div class="col-sm-4">
             <table class="table">
@@ -610,7 +610,7 @@ if (zen_not_null($action) && $order_exists == true) {
   ?>
                 <tr><td>&nbsp;</td><td><?php echo $address_footer_suffix; ?></td></tr>
 <?php } ?>
-              <tr>
+              <tr class="noprint">
                 <td colspan="2"><?php echo zen_draw_separator('pixel_trans.gif', '1', '5'); ?></td>
               </tr>
               <tr>
@@ -680,7 +680,7 @@ if (zen_not_null($action) && $order_exists == true) {
             </table>
           </div>
         </div>
-        <div class="row"><?php echo zen_draw_separator('pixel_trans.gif', '1', '10'); ?></div>
+        <div class="row noprint"><?php echo zen_draw_separator('pixel_trans.gif', '1', '10'); ?></div>
         <div class="row"><strong><?php echo ENTRY_ORDER_ID . $oID; ?></strong></div>
         <div class="row">
           <table>
@@ -695,7 +695,7 @@ if (zen_not_null($action) && $order_exists == true) {
             <?php
             if (zen_not_null($order->info['cc_type']) || zen_not_null($order->info['cc_owner']) || zen_not_null($order->info['cc_number'])) {
               ?>
-              <tr>
+              <tr class="noprint">
                 <td colspan="2"><?php echo zen_draw_separator('pixel_trans.gif', '1', '10'); ?></td>
               </tr>
               <tr>
@@ -729,9 +729,9 @@ if (zen_not_null($action) && $order_exists == true) {
         <?php
         if (isset($module) && (is_object($module) && method_exists($module, 'admin_notification'))) {
           ?>
-          <div class="row"><?php echo zen_draw_separator('pixel_trans.gif', '1', '10'); ?><br><a href="#" id="payinfo" class="noprint">Click for Additional Payment Handling Options</a></div>
+          <div class="row noprint"><?php echo zen_draw_separator('pixel_trans.gif', '1', '10'); ?><br><a href="#" id="payinfo" class="noprint">Click for Additional Payment Handling Options</a></div>
           <div class="row" id="payment-details-section" style="display: none;"><?php echo $module->admin_notification($oID); ?></div>
-          <div class="row"><?php echo zen_draw_separator('pixel_trans.gif', '1', '10'); ?></div>
+          <div class="row noprint"><?php echo zen_draw_separator('pixel_trans.gif', '1', '10'); ?></div>
           <?php
         }
         ?>
@@ -859,7 +859,7 @@ if (zen_not_null($action) && $order_exists == true) {
             require(DIR_WS_MODULES . 'orders_download.php');
             ?>
         </div>
-        <div class="row"><?php echo zen_draw_separator('pixel_trans.gif', '1', '10'); ?></div>
+        <div class="row noprint"><?php echo zen_draw_separator('pixel_trans.gif', '1', '10'); ?></div>
         <div class="row">
           <table class="table-condensed table-striped table-bordered">
             <thead>
