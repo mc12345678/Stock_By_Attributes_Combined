@@ -755,18 +755,18 @@ function zen_js_option_values_list($selectedName, $fieldName)
                 <li role="presentation" class="divider"></li>
                 <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCT, 'action=new_product' . '&cPath=' . zen_get_product_path($products_filter) . '&pID=' . $products_filter . '&product_type=' . zen_get_products_type($products_filter)); ?>"><?php echo IMAGE_EDIT_PRODUCT; ?></a></li>
                 <!-- Start SBA 2 of 2 --><li role="presentation">
-                <?php 
+                <?php
                 // @TODO, Need to make this dependent on the supporting software being installed.
                 $sba_query = 'select distinct products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:';
                 $sba_query = $db->bindVars($sba_query, ':products_id:', $products_filter, 'integer');
                 $sba = $db->Execute($sba_query);
                 if ($sba->RecordCount() > 0 || zen_has_product_attributes($products_filter, 'false')) {
-                  ?><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter); ?>"><?php echo zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA); ?><br />
+                  ?><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter); ?>"><?php echo zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA); ?><br>
                   <?php echo TEXT_SBA_EDIT; ?><?php
                 } else {
                     ?><a role="menuitem"><?php
                     echo TEXT_NO_SBA_EDIT;
-                    ?><br /><?php
+                    ?><br><?php
                     echo TEXT_NO_ATTRIBUTES_DEFINED . $products_filter;
                 }
                 ?>
