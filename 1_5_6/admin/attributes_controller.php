@@ -830,31 +830,38 @@ function zen_js_option_values_list($selectedName, $fieldName) {
             <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
               <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_OPTIONS_NAME_MANAGER) ?>" target="_blank"><?php echo IMAGE_OPTION_NAMES; ?></a></li>
               <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER) ?>" target="_blank"><?php echo IMAGE_OPTION_VALUES; ?></a></li>
-<?php  /* START STOCK BY ATTRIBUTES - SBA */ ?>
+<?php /* START STOCK BY ATTRIBUTES - SBA 1 of 2 */
+              if (defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK)) {
+?>
               <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'NONSSL') ?>" target="_blank"><?php /* mc12345678 Need an appropriate picture/statement for the goto SBA information here. */ echo zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA); ?></a></li>
-<?php  /* END STOCK BY ATTRIBUTES - SBA */ ?>
+<?php         }
+/* END STOCK BY ATTRIBUTES - SBA 1 of 2 */ ?>
               <?php if ($products_filter != '' && $action != 'attribute_features_copy_to_product' && $action != 'attribute_features_copy_to_category' && $action != 'delete_all_attributes_confirm') { ?>
                 <li role="presentation" class="divider"></li>
                 <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCT, 'action=new_product' . '&cPath=' . zen_get_product_path($products_filter) . '&pID=' . $products_filter . '&product_type=' . zen_get_products_type($products_filter)); ?>"><?php echo IMAGE_EDIT_PRODUCT; ?></a></li>
-                <!-- Start SBA --><li role="presentation">
-                <?php 
+                <!-- Start SBA 2 of 2 --><?php
+                if (defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK)) {
+                  ?><li role="presentation">
+                <?php
                 // @TODO, Need to make this dependent on the supporting software being installed.
-                $sba_query = 'select distinct products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:';
-                $sba_query = $db->bindVars($sba_query, ':products_id:', $products_filter, 'integer');
-                $sba = $db->Execute($sba_query);
-                if ($sba->RecordCount() > 0 ) {
-                  echo '<a role="menuitem" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter) . '">' . zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA) . '<br />' . TEXT_SBA_EDIT . '</a>';
-                } else {
-                  if (zen_has_product_attributes($products_filter, 'false')) {
-                    echo '<a role="menuitem" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter) . '">' . zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA) . '<br />' . TEXT_NO_SBA_EDIT . '</a>';
+                  $sba_query = 'select distinct products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:';
+                  $sba_query = $db->bindVars($sba_query, ':products_id:', $products_filter, 'integer');
+                  $sba = $db->Execute($sba_query);
+                  if ($sba->RecordCount() > 0 ) {
+                    echo '<a role="menuitem" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter) . '">' . zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA) . '<br />' . TEXT_SBA_EDIT . '</a>';
                   } else {
-                    echo TEXT_NO_SBA_EDIT;
-                    echo '<br />';
-                    echo TEXT_NO_ATTRIBUTES_DEFINED . $products_filter;
+                    if (zen_has_product_attributes($products_filter, 'false')) {
+                      echo '<a role="menuitem" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter) . '">' . zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA) . '<br />' . TEXT_NO_SBA_EDIT . '</a>';
+                    } else {
+                      echo TEXT_NO_SBA_EDIT;
+                      echo '<br />';
+                      echo TEXT_NO_ATTRIBUTES_DEFINED . $products_filter;
+                    }
                   }
+                  ?>
+                    </li><?php
                 }
-                ?>
-                  </li><!-- End SBA -->
+                ?><!-- End SBA 2 of 2 -->
                 <?php if ($zc_products->get_allow_add_to_cart($products_filter) == "Y") { ?>
                   <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCTS_PRICE_MANAGER, '&products_filter=' . $products_filter . '&current_category_id=' . $current_category_id); ?>"><?php echo IMAGE_PRODUCTS_PRICE_MANAGER; ?></a></li>
                 <?php } ?>
