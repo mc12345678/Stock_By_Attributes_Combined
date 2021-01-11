@@ -263,7 +263,9 @@ class products_with_attributes_stock extends base
  */
     function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, $ReturnedProductID = null) {
         global $db, $sniffer, $languages;
-      
+        if (empty($languages)) {
+          $languages = new language();
+        }
         if (isset($_SESSION['languages_id']) && $_SESSION['languages_id'] > 0) {
           $language_id = (int)$_SESSION['languages_id'];
         } else { 
