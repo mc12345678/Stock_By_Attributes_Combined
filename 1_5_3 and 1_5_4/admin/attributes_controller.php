@@ -513,9 +513,9 @@ if ($_POST['image_delete'] == 1) {
         {
           $attribute_id = zen_db_prepare_input($_POST['delete_attribute_id']);
 
-  /* START STOCK BY ATTRIBUTES */
+  /* START STOCK BY ATTRIBUTES SBA 1 of 7 */
           $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE', array('attribute_id' => $attribute_id), $attribute_id);
-  /* END STOCK BY ATTRIBUTES */
+  /* END STOCK BY ATTRIBUTES SBA 1 of 7 */
 
           $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES . "
                       where products_attributes_id = '" . (int)$attribute_id . "'");
@@ -532,9 +532,9 @@ if ($_POST['image_delete'] == 1) {
         break;
 // delete all attributes
       case 'delete_all_attributes':
-  /* START STOCK BY ATTRIBUTES */
+  /* START STOCK BY ATTRIBUTES SBA 2 of 7 */
         $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL', array('pID' => $_POST['products_filter']));
-/* END STOCK BY ATTRIBUTES */
+/* END STOCK BY ATTRIBUTES SBA 2 of 7 */
 
         zen_delete_products_attributes($_POST['products_filter']);
         $messageStack->add_session(SUCCESS_ATTRIBUTES_DELETED . ' ID#' . $products_filter, 'success');
@@ -548,9 +548,9 @@ if ($_POST['image_delete'] == 1) {
         break;
 
       case 'delete_option_name_values':
-  /* START STOCK BY ATTRIBUTES */
+  /* START STOCK BY ATTRIBUTES SBA 3 of 7 */
         $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES', array('pID' => $_POST['products_filter'], 'options_id' => $_POST['products_options_id_all']));
-/* END STOCK BY ATTRIBUTES */
+/* END STOCK BY ATTRIBUTES SBA 3 of 7 */
 
         $delete_attributes_options_id = $db->Execute("select * from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $_POST['products_filter'] . "' and options_id='" . $_POST['products_options_id_all'] . "'");
         while (!$delete_attributes_options_id->EOF) {
@@ -753,9 +753,9 @@ function popupWindow(url) {
           <tr>
   	        <td height="40" valign="bottom"><a href="<?php echo  zen_href_link(FILENAME_OPTIONS_NAME_MANAGER, '', 'NONSSL') ?>"><?php echo zen_image_button('button_option_names.gif', IMAGE_OPTION_NAMES); ?></a></td>
   	        <td height="40" valign="bottom"><a href="<?php echo  zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, '', 'NONSSL') ?>"><?php echo zen_image_button('button_option_values.gif', IMAGE_OPTION_VALUES); ?></a></td>
-<?php  /* START STOCK BY ATTRIBUTES */ ?>
+<?php  /* START STOCK BY ATTRIBUTES SBA 4 of 7 */ ?>
   	        <td height="40" valign="bottom"><a href="<?php echo  zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'NONSSL') ?>"><?php /* mc12345678 Need an appropriate picture/statement for the goto SBA information here. */ echo zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA); ?></a></td>
-<?php  /* END STOCK BY ATTRIBUTES */ ?>
+<?php  /* END STOCK BY ATTRIBUTES SBA 4 of 7 */ ?>
           </tr>
         </table></td>
       </tr>
@@ -790,13 +790,13 @@ if ($action == 'attributes_preview') {
       <tr>
         <td colspan="2"><table border="1" cellspacing="2" cellpadding="4" align="left">
           <tr>
-            <!-- Start SBA --><td colspan="8" class="main" align="center"><!-- End SBA -->
+            <!-- Start SBA 5 of 7 --><td colspan="8" class="main" align="center"><!-- End SBA 5 of 7 -->
               <?php echo TEXT_PRODUCTS_LISTING . TEXT_PRODUCTS_ID . $products_filter .  TEXT_PRODUCT_IN_CATEGORY_NAME . zen_get_category_name(zen_get_products_category_id($products_filter), (int)$_SESSION['languages_id']) . '<br />' . zen_get_products_name($products_filter); ?>
             </td>
           </tr>
           <tr>
             <td class="smallText" align="center"><?php echo '<a href="' . zen_href_link(FILENAME_CATEGORIES, 'action=new_product' . '&cPath=' . zen_get_product_path($products_filter) . '&pID=' . $products_filter . '&product_type=' . zen_get_products_type($products_filter)) . '">' . zen_image_button('button_edit_product.gif', IMAGE_EDIT_PRODUCT) . '<br />' . TEXT_PRODUCT_EDIT . '</a>'; ?></td>
-            <!-- Start SBA --><td class="smallText" align="center">
+            <!-- Start SBA 6 of 7 --><td class="smallText" align="center">
             <?php 
             $sba_query = 'select distinct products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:';
             $sba_query = $db->bindVars($sba_query, ':products_id:', $products_filter, 'integer');
@@ -815,7 +815,7 @@ if ($action == 'attributes_preview') {
               }
             }
             ?>
-            </td><!-- End SBA -->
+            </td><!-- End SBA 6 of 7 -->
             <td class="smallText" align="center">
               <?php
                 if ($zc_products->get_allow_add_to_cart($products_filter) == "Y") {
@@ -842,7 +842,7 @@ if ($action == 'attributes_preview') {
 ?>
           </tr>
           <tr>
-            <!-- Start SBA --><td class="smallText" align="center" colspan="8"><!-- End SBA --><?php echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_TO_CATEGORIES, '&products_filter=' . $products_filter . '&current_category_id=' . $current_category_id) . '">' . IMAGE_PRODUCTS_TO_CATEGORIES . '</a>'; ?></td>
+            <!-- Start SBA 7 of 7 --><td class="smallText" align="center" colspan="8"><!-- End SBA 7 of 7 --><?php echo '<a href="' . zen_href_link(FILENAME_PRODUCTS_TO_CATEGORIES, '&products_filter=' . $products_filter . '&current_category_id=' . $current_category_id) . '">' . IMAGE_PRODUCTS_TO_CATEGORIES . '</a>'; ?></td>
           </tr>
         </table></td>
       </form></tr>

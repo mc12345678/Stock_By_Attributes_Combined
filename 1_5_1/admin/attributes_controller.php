@@ -513,9 +513,9 @@ if ($_POST['image_delete'] == 1) {
         {
           $attribute_id = zen_db_prepare_input($_POST['delete_attribute_id']);
 
-  /* START STOCK BY ATTRIBUTES 1 of 7 */
+  /* START STOCK BY ATTRIBUTES SBA 1 of 7 */
           $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE', array('attribute_id' => $attribute_id), $attribute_id);
-  /* END STOCK BY ATTRIBUTES 1 of 7 */
+  /* END STOCK BY ATTRIBUTES SBA 1 of 7 */
 
           $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES . "
                       where products_attributes_id = '" . (int)$attribute_id . "'");
@@ -532,9 +532,9 @@ if ($_POST['image_delete'] == 1) {
         break;
 // delete all attributes
       case 'delete_all_attributes':
-  /* START STOCK BY ATTRIBUTES 2 of 7 */
+  /* START STOCK BY ATTRIBUTES SBA 2 of 7 */
         $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL', array('pID' => $_POST['products_filter']));
-/* END STOCK BY ATTRIBUTES 2 of 7 */
+/* END STOCK BY ATTRIBUTES SBA 2 of 7 */
 
         zen_delete_products_attributes($_POST['products_filter']);
         $messageStack->add_session(SUCCESS_ATTRIBUTES_DELETED . ' ID#' . $products_filter, 'success');
@@ -548,9 +548,9 @@ if ($_POST['image_delete'] == 1) {
         break;
 
       case 'delete_option_name_values':
-  /* START STOCK BY ATTRIBUTES 3 of 7 */
+  /* START STOCK BY ATTRIBUTES SBA 3 of 7 */
         $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES', array('pID' => $_POST['products_filter'], 'options_id' => $_POST['products_options_id_all']));
-/* END STOCK BY ATTRIBUTES 3 of 7 */
+/* END STOCK BY ATTRIBUTES SBA 3 of 7 */
 
         $delete_attributes_options_id = $db->Execute("select * from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . $_POST['products_filter'] . "' and options_id='" . $_POST['products_options_id_all'] . "'");
         while (!$delete_attributes_options_id->EOF) {
@@ -753,9 +753,9 @@ function popupWindow(url) {
           <tr>
   	        <td height="40" valign="bottom"><a href="<?php echo  zen_href_link(FILENAME_OPTIONS_NAME_MANAGER, '', 'NONSSL') ?>"><?php echo zen_image_button('button_option_names.gif', IMAGE_OPTION_NAMES); ?></a></td>
   	        <td height="40" valign="bottom"><a href="<?php echo  zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, '', 'NONSSL') ?>"><?php echo zen_image_button('button_option_values.gif', IMAGE_OPTION_VALUES); ?></a></td>
-<?php  /* START STOCK BY ATTRIBUTES 4 of 7 */ ?>
+<?php  /* START STOCK BY ATTRIBUTES SBA 4 of 7 */ ?>
   	        <td height="40" valign="bottom"><a href="<?php echo  zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'NONSSL') ?>"><?php /* mc12345678 Need an appropriate picture/statement for the goto SBA information here. */ echo zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA); ?></a></td>
-<?php  /* END STOCK BY ATTRIBUTES 4 of 7 */ ?>
+<?php  /* END STOCK BY ATTRIBUTES SBA 4 of 7 */ ?>
           </tr>
         </table></td>
       </tr>
