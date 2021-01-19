@@ -1603,6 +1603,9 @@ class products_with_attributes_stock extends base {
       }
 
     } // EOF for ($i = 0, $n = count($productArray); $i < $n; $i++) {
+    if (empty($flagAnyOutOfStock) && ($flagAnyInsideOutOfStock || $flagAnyOutsideOutOfStock)) {
+      $flagAnyOutOfStock = $flagAnyInsideOutOfStock || $flagAnyOutsideOutOfStock;
+    }
     if (!$flagAnyInsideOutOfStock && !$flagAnyOutsideOutOfStock) {
       $flagAnyOutOfStock = '';
     }
