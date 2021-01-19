@@ -165,11 +165,11 @@ switch ($action) {
   case 'add':
     $hidden_form = '';
 
-    if (isset($_GET['products_id']) && (int) $_GET['products_id'] > 0) {
-      $products_id = (int) $_GET['products_id'];
+    if (!empty($_GET['products_id']) && (int)$_GET['products_id'] > 0) {
+      $products_id = (int)$_GET['products_id'];
     }
-    if (isset($_POST['products_id']) && (int) $_POST['products_id'] > 0) {
-      $products_id = (int) $_POST['products_id'];
+    if (!empty($_POST['products_id']) && (int)$_POST['products_id'] > 0) {
+      $products_id = (int)$_POST['products_id'];
     }
 
     if (isset($products_id)) {
