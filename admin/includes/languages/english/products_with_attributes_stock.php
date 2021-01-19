@@ -9,6 +9,8 @@
  * Stock by Attributes 1.5.4 mc12345678 15-08-16
  */
  
+define('HEADING_TITLE', 'Stock By Attributes');
+
 define('PWA_DELETE_VARIANT_CONFIRMATION', 'Are you sure you want to delete this product variant?');
 define('PWA_DELETE_VARIANTS_CONFIRMATION', 'Are you sure you want to delete each variant of this product?');
 
