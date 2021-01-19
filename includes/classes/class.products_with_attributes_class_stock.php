@@ -711,7 +711,7 @@ Of the attributes provided, determine the number of those attributes that are
       $sba_table_ids = array($sba_table_ids);
     }
     
-    if (!isset($sba_table_ids) || !is_array($sba_table_ids) || count($sba_table_ids) < 1 || !zen_not_null($sba_table_ids)) {
+    if (!isset($sba_table_ids) || !is_array($sba_table_ids) || count($sba_table_ids) < 1 || !zen_not_null($sba_table_ids)) { // @ZNN review check for empty, etc....
       return false;
     }
     

@@ -221,12 +221,12 @@ switch ($action) {
       $products_id = (int)$_POST['products_id'];
     }
 
-    if (isset($_GET['attributes']) && $_GET['attributes'] != '') {
+    if (isset($_GET['attributes']) && $_GET['attributes'] != '') { // @TODO: perhaps use zen_not_null?
       $attributes = $_GET['attributes'];
       $hidden_form .= zen_draw_hidden_field('attributes_selected', $_GET['attributes']) . "\n";
     }
 
-    if (isset($_GET['action']) && zen_not_null($_GET['action'])) {
+    if (isset($_GET['action']) && zen_not_null($_GET['action'])) { // While within the existing eval of $_GET['action'], don't have to fully test here.
       $hidden_form .= zen_draw_hidden_field('last_action', $_GET['action']) . "\n";
     }
 
@@ -622,7 +622,7 @@ switch ($action) {
             unset($arrAttributes[$arrAttrKey]);
           }
         }*/
-        sort($arrAttributes);
+        sort($arrAttributes); // @TODO could have used natsort possibly without the previous int cast.
         $strAttributes = implode(",", $arrAttributes);
         $productAttributeCombo = $products_id . '-' . str_replace(',', '-', $strAttributes);
         $saveResult = $stock->insertNewAttribQty($products_id, $productAttributeCombo, $strAttributes, $quantity, $customid, $skuTitle);
