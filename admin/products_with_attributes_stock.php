@@ -26,6 +26,49 @@ if (!function_exists('zen_draw_label')) {
   }
 }
 
+function preg_val_new($attributes, $arr_split)
+{
+  $attributes = preg_replace("/\,{2,}/i", ",", $attributes);
+  $arrTemp = preg_split("/\,/", $attributes);
+  $arrMain = array();
+
+  for ($i = 0, $arrTempCount = count($arrTemp); $i < $arrTempCount; $i++) {
+    //explode array on |
+    $arrTemp[$i] = preg_replace("/\\" . $arr_split . "{2,}/i", $arr_split, $arrTemp[$i]);
+    if (null === $arrTemp[$i]) {
+      continue;
+    }
+
+    $arrTemp1 = preg_split("/\\" . $arr_split . "/", $arrTemp[$i]);
+    if ($arrTemp1 === false) {
+      continue;
+    }
+
+    if (is_array($arrTemp1)) {
+      foreach ($arrTemp1 as $k2 => $v2) {
+        if (!zen_not_null($v2)) { // $v2 is supposed to be a string, therefore good here.
+          unset($arrTemp1[$k2]);
+        }
+      }
+    }
+    if (!zen_not_null($arrTemp1)) {
+      unset($arrTemp1);
+    }
+    if (isset($arrTemp1) && zen_not_null($arrTemp1)) {
+      $arrMain[] = $arrTemp1 = array_values($arrTemp1);
+    }
+  }
+
+  foreach ($arrMain as $key => $value) {
+    if (zen_not_null($arrMain[$key])) {
+      continue;
+    }
+    unset($arrMain[$key]);
+  }
+  $arrMain = array_values($arrMain);
+  return $arrMain;
+}
+
 //new object from class
 //$stock = new products_with_attributes_stock;
 $stock = $products_with_attributes_stock_class;
