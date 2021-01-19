@@ -174,22 +174,21 @@ switch ($action) {
 
     if (isset($products_id)) {
 
-      if (zen_products_id_valid($products_id)) {
-
-        $product_name = zen_get_products_name($products_id);
-        $product_attributes = $stock->get_products_attributes($products_id, $language_id);
-
-        $hidden_form .= zen_draw_hidden_field('products_id', $products_id) . "\n";
-
-        if (isset($_GET['action']) && zen_not_null($_GET['action'])) {
-          $hidden_form .= zen_draw_hidden_field('last_action', $_GET['action']) . "\n";
-        }
-
-        if (isset($_GET['search_order_by']) && zen_not_null($_GET['search_order_by'])) {
-          $hidden_form .= zen_draw_hidden_field('search_order_by', $_GET['search_order_by']) . "\n";
-        }
-      } else {
+      if (!zen_products_id_valid($products_id)) {
         zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action')), $request_type));
+      }
+
+      $product_name = zen_get_products_name($products_id);
+      $product_attributes = $stock->get_products_attributes($products_id, $language_id);
+
+      $hidden_form .= zen_draw_hidden_field('products_id', $products_id) . "\n";
+
+      if (isset($_GET['action']) && zen_not_null($_GET['action'])) {
+        $hidden_form .= zen_draw_hidden_field('last_action', $_GET['action']) . "\n";
+      }
+
+      if (isset($_GET['search_order_by']) && zen_not_null($_GET['search_order_by'])) {
+        $hidden_form .= zen_draw_hidden_field('search_order_by', $_GET['search_order_by']) . "\n";
       }
     } else {
 
