@@ -419,13 +419,17 @@ switch ($action) {
      */
     if ((isset($_POST['add_edit']) && ($_POST['add_edit'] == 'add')) || (isset($_GET['add_edit']) && ($_GET['add_edit'] == 'add'))) { //s_mack:noconfirm
       $attributes = ltrim($attributes, ','); //remove extra comma separators
+      $seperator = array('|', ';',);
 
       if (preg_match("/\|/", $attributes) && preg_match("/\;/", $attributes)) {
         $saveResult = null;
         $messageStack->add_session(PWA_MIX_ERROR_ALL_COMBO, 'failure');
-      } elseif (preg_match("/\|/", $attributes)) {
+      } elseif (preg_match("/\\" . $seperator[0] . "/", $attributes)) {
         // All attributes individually added.
         //explode array on ,
+        $arrMain = preg_val_new($attributes, $seperator[0]);
+
+/*
         $attributes = preg_replace("/\,{2,}/i", ",", $attributes);
         $arrTemp = preg_split("/\,/", $attributes);
         $arrMain = array();
@@ -433,14 +437,22 @@ switch ($action) {
 
         for ($i = 0, $arrTempCount = count($arrTemp); $i < $arrTempCount; $i++) {
           //explode array on |
-          $arrTemp[$i] = preg_replace("/\|{2,}/i", "|", $arrTemp[$i]);
-          $arrTemp1 = preg_split("/\|/", $arrTemp[$i]);
+          $arrTemp[$i] = preg_replace("/\\" . $seperator[0]. "{2,}/i", $seperator[0], $arrTemp[$i]);
+          if (null === $arrTemp[$i]) {
+              continue;
+          }
+
+          $arrTemp1 = preg_split("/\\" . $seperator[0]. "/", $arrTemp[$i]);
+          if ($arrTemp1 === false) {
+              continue;
+          }
+
           $arrMain[] = $arrTemp1;
 
           foreach ($arrMain as $key => $value) {
             if (is_array($value)) {
               foreach ($value as $k2 => $v2) {
-                if (!zen_not_null($v2)) {
+                if (!zen_not_null($v2)) { // $v2 is supposed to be a string, therefore good here.
                   unset($arrMain[$key][$k2]);
                 }
               }
@@ -448,7 +460,7 @@ switch ($action) {
                 unset($arrMain[$key]);
               }
             } else {
-              if (!zen_not_null($value)) {
+              if (!zen_not_null($value)) { // $value is supposed to be a string, therefore good here.
                 unset($arrMain[$key]);
               }
             }
@@ -458,13 +470,13 @@ switch ($action) {
           }
 
           $arrMain = array_values($arrMain);
-
+*/
 /*          if ($intCount) {
             $intCount = $intCount * count($arrTemp1);
           } else {
             $intCount = count($arrTemp1);
           }*/
-        }
+//        }
         $intVars = count($arrMain);
         $arrNew = array();
 
@@ -487,8 +499,10 @@ switch ($action) {
             $saveResult = $stock->insertNewAttribQty($products_id, $productAttributeCombo, $strAttributes, $quantity); //can not include the $customid since it must be unique
           }
         }
-      } elseif (preg_match("/\;/", $attributes)) {
+      } elseif (preg_match("/\\" . $seperator[1] . "/", $attributes)) {
         // Attributes combined with others.
+        $arrMain = preg_val_new($attributes, $seperator[1]);
+/*
         //explode array on ,
         $attributes = preg_replace("/,{2,}/i", ",", $attributes);
         $arrTemp = preg_split("/\,/", $attributes);
@@ -504,7 +518,7 @@ switch ($action) {
           foreach ($arrMain as $key => $value) {
             if (is_array($value)) {
               foreach ($value as $k2 => $v2) {
-                if (!zen_not_null($v2)) {
+                if (!zen_not_null($v2)) { // $v2 is supposed to be a string, therefore good here.
                   unset($arrMain[$key][$k2]);
                 }
               }
@@ -512,7 +526,7 @@ switch ($action) {
                 unset($arrMain[$key]);
               }
             } else {
-              if (!zen_not_null($value)) {
+              if (!zen_not_null($value)) { // $value is supposed to be a string, therefore good here.
                 unset($arrMain[$key]);
               }
             }
@@ -522,13 +536,13 @@ switch ($action) {
           }
 
           $arrMain = array_values($arrMain);
-          
+*/
 /*          if ($intCount) {
             $intCount = $intCount * count($arrTemp1);
           } else {
             $intCount = count($arrTemp1);
           }*/
-        }
+//        }
         $intVars = count($arrMain);
         $arrNew = array();
 
