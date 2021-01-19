@@ -238,16 +238,16 @@ switch ($action) {
       $hidden_form .= zen_draw_hidden_field('search_order_by', $_GET['search_order_by']) . "\n";
     }
 
-    if (isset($products_id) && isset($attributes)) {
-      $attributes = explode(',', $attributes);
-      foreach ($attributes as $attribute_id) {
-        $hidden_form .= zen_draw_hidden_field('attributes[]', $attribute_id) . "\n";
-        $attributes_list[] = $stock->get_attributes_name($attribute_id, $language_id);
-      }
-      $hidden_form .= zen_draw_hidden_field('products_id', $products_id) . "\n";
-    } else {
+    if (!isset($products_id) || !isset($attributes)) {
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, zen_get_all_get_params(array('action')), $request_type));
     }
+
+    $attributes = explode(',', $attributes);
+    foreach ($attributes as $attribute_id) {
+      $hidden_form .= zen_draw_hidden_field('attributes[]', $attribute_id) . "\n";
+      $attributes_list[] = $stock->get_attributes_name($attribute_id, $language_id);
+    }
+    $hidden_form .= zen_draw_hidden_field('products_id', $products_id) . "\n";
     break;
 
   case 'confirm':
