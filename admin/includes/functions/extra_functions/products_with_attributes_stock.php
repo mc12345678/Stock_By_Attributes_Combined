@@ -30,7 +30,7 @@ function return_attribute_combinations($arrMain, $intVars, $currentLoop = array(
       for ($i = 0; $i<$intVars;$i++) {
         $arrNew2[] = $arrMain[$i][$currentLoop[$i]];  // This is a place where an evaluation could be made to do something unique with a single attribute that is to be assigned to a sba variant as this assigment is for one of the attributes to be combined for one record. If the goal would be not to add anything having this one attribute, then could call continue 2 to escape this for loop and move on to the next outer for loop.  If just want to not add the one attribute to the combination then place the above assignment so that it is bypassed when not to be added. 
       }
-      if (zen_not_null($arrNew2)) { // This is a place where an evaluation could be made to do something unique with a sba variant as this assigment is one of all attributes combined for one record.  //Still something about this test doesn't seem quite right, but it's the concept that is important, as long as there is something to evaluate/assign that is not nothing, then do the assignment.
+      if (!empty($arrNew2)) { // This is a place where an evaluation could be made to do something unique with a sba variant as this assigment is one of all attributes combined for one record.  //Still something about this test doesn't seem quite right, but it's the concept that is important, as long as there is something to evaluate/assign that is not nothing, then do the assignment.
         $arrNew[] = $arrNew2;
       }
     } else {

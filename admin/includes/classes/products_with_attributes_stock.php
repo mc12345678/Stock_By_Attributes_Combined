@@ -1215,7 +1215,7 @@ function nullDataEntry($fieldtoNULL) {
       }// If array
       
 //      $customid = $db->Execute($customid_query);
-      if ($customid->RecordCount() > 0 && $customid->fields['products_model']) {
+    if ($customid->RecordCount() > 0 && (zen_not_null($customid->fields['products_model']) || in_array($customid->fields['products_model'], array('NULL', 'null', 0, ), true))) {
       
         //Test to see if a custom ID exists
         //if there are custom IDs with the attribute, then return them.

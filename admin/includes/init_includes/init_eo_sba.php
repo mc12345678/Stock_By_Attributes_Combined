@@ -243,7 +243,7 @@ if(!function_exists('zen_html_quotes')) {
                     
                         $exists = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, $retval['attributes'], 'order', 'ids');
 
-                        if (!zen_not_null($exists)) {
+                        if (empty($exists)) { // Converted from !zen_not_null
 //                          unset($_POST['update_products'][$orders_products_id]);
                             $_POST['update_products'][$orders_products_id]['attr'] = $old_attrs;
 /*

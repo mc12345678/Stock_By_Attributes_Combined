@@ -394,7 +394,7 @@ class products_with_attributes_stock_admin extends base {
 
           while (!$orders_products_sba_customid->EOF) {
             // provide the "list" of customid's such that only the unique populated customid's are provided (zen_not_null) and not previously accounted
-            if (zen_not_null($orders_products_sba_customid->fields['customid'])) {
+            if (zen_not_null($orders_products_sba_customid->fields['customid']) || in_array($orders_products_sba_customid->fields['customid'], array('null', 'NULL', 0, ), true)) {
                 if (!(in_array($orders_products_sba_customid->fields['customid'], $customid))) {
                   $customid[] = $orders_products_sba_customid->fields['customid'];
                   $custom_multi = 'multi';

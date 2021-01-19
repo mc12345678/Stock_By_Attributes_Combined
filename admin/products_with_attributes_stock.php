@@ -53,7 +53,7 @@ if (!$language_id) {
 if (zen_not_null($action)) {
   if (!isset($products_filter)) $products_filter = 0;
 
-  $_GET['products_filter'] = $products_filter = (isset($_GET['products_filter']) ? (int)$_GET['products_filter'] : (int)$products_filter);
+  $_GET['products_filter'] = $products_filter = (isset($_GET['products_filter']) && zen_not_null($_GET['products_filter']) ? (int)$_GET['products_filter'] : (int)$products_filter);
   $_GET['attributes_id'] = (isset($_GET['attributes_id']) ? (int)$_GET['attributes_id'] : 0);
 
   $_GET['current_category_id'] = $current_category_id = (isset($_GET['current_category_id']) ? (int)$_GET['current_category_id'] : (int)$current_category_id);
@@ -78,7 +78,7 @@ if (zen_not_null($action)) {
     zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'products_filter=' . $products_filter . '&current_category_id=' . $current_category_id));
   }*/
 
-  if (!zen_not_null($products_filter)) {
+  if (empty($products_filter)) {
     if (empty($current_category_id)) {
       $reset_categories_id = zen_get_category_tree('', '', '0', '', '', true);
       $current_category_id = $reset_categories_id[0]['id'];
