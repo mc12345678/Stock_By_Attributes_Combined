@@ -1113,7 +1113,7 @@ function nullDataEntry($fieldtoNULL) {
     if (!$this->zen_product_is_sba($products_id)) {
       $no_attribute_stock_query = 'SELECT products_model
                                    FROM ' . TABLE_PRODUCTS . '
-                                   WHERE products_id = :products_id:';
+                                   WHERE products_id = :products_id: LIMIT 1';
       $no_attribute_stock_query = $db->bindVars($no_attribute_stock_query, ':products_id:', $products_id, 'integer');
       $customid = $db->Execute($no_attribute_stock_query, false, false, 0, true);
       
@@ -1135,7 +1135,7 @@ function nullDataEntry($fieldtoNULL) {
       // Perhaps a notification message should be shown on the admin if this condition is met.
       $no_attribute_stock_query = 'SELECT products_model 
                                    FROM ' . TABLE_PRODUCTS . ' 
-                                   WHERE products_id = :products_id:';
+                                   WHERE products_id = :products_id: LIMIT 1';
       $no_attribute_stock_query = $db->bindVars($no_attribute_stock_query, ':products_id:', $products_id, 'integer');
       $customid = $db->Execute($no_attribute_stock_query, false, false, 0, true);
       return $customid->fields['products_model'];
@@ -1248,7 +1248,7 @@ function nullDataEntry($fieldtoNULL) {
         //Get product model
         $customid_model_query = 'select products_model
                         from '.TABLE_PRODUCTS.'
-                        where products_id = :products_id:';
+                        where products_id = :products_id: LIMIT 1';
         $customid_model_query = $db->bindVars($customid_model_query, ':products_id:', $products_id, 'integer');                
         
         $customid = $db->Execute($customid_model_query);
