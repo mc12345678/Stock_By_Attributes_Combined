@@ -75,7 +75,7 @@ $stock = $products_with_attributes_stock_class;
 
   $language_id = (isset($_SESSION['languages_id']) ? (int)$_SESSION['languages_id'] : 0);
 //set language
-if (!$language_id) {
+if (empty($language_id)) {
 
   $languages = zen_get_languages();
   $languages_array = array();
@@ -124,7 +124,7 @@ if (zen_not_null($action)) {
   if (empty($products_filter)) {
     if (empty($current_category_id)) {
       $reset_categories_id = zen_get_category_tree('', '', '0', '', '', true);
-      $current_category_id = $reset_categories_id[0]['id'];
+      $current_category_id = (int)$reset_categories_id[0]['id'];
     }
 
     $sql =     "select ptc.*
@@ -132,11 +132,11 @@ if (zen_not_null($action)) {
       left join " . TABLE_PRODUCTS_DESCRIPTION . " pd
       on ptc.products_id = pd.products_id
       and pd.language_id = " . (int)$_SESSION['languages_id'] . "
-      where ptc.categories_id=" . $current_category_id . "
+      where ptc.categories_id=" . (int)$current_category_id . "
       order by pd.products_name";
       $new_product_query = $db->Execute($sql);
 
-    $products_filter = isset($new_product_query->fields['products_id']) ? $new_product_query->fields['products_id'] : 0;
+    $products_filter = !empty($new_product_query->fields['products_id']) ? $new_product_query->fields['products_id'] : 0;
 
   // set categories and products if not set
     if (empty($reset_categories_id)) {
