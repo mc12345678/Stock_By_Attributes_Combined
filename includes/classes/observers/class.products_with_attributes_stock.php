@@ -120,7 +120,17 @@ class products_with_attributes_stock extends base {
     // Check if SBA tracked, if not, then no need to process further.
     if (!$_SESSION['pwas_class2']->zen_product_is_sba($products_id)) return false;
 
+    // Try to get the current setting of this value that defaults to true in PHP 7.4+
+    $exception_ignore = ini_get('zend.exception_ignore_args');
+
+    if (!empty($exception_ignore)) {
+      $ignore_old = ini_set('zend.exception_ignore_args', 'false');
+    }
     $backtrace = debug_backtrace();
+    if (isset($ignore_old)) {
+      ini_set('zend.exception_ignore_args', $ignore_old);
+    }
+
     $current_level = -1;
     $args = array();
     $attributes = array();
