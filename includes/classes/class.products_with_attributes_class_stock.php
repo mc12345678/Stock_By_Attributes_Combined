@@ -1289,12 +1289,15 @@ Of the attributes provided, determine the number of those attributes that are
       $new_attrib_list = $attribute_list;
       foreach ($new_attrib_list as $keyhere => $products_attribute_id) {
         $attrib_ids_list = $this->zen_get_sba_attribute_ids($products_id, array($keyhere => $products_attribute_id), $from);
-        if (zen_not_null($attrib_ids_list) && is_array($attrib_ids_list)) {
-          foreach($attrib_ids_list as $key_attrib_id => $val_attrib_id) {
-            if ($this->non_stock_attribute($val_attrib_id)) {
-              unset($new_attrib_list[$keyhere]);
-            }
+        if (!(zen_not_null($attrib_ids_list) && is_array($attrib_ids_list))) {
+          continue;
+        }
+
+        foreach($attrib_ids_list as $key_attrib_id => $val_attrib_id) {
+          if (!$this->non_stock_attribute($val_attrib_id)) {
+            continue;
           }
+          unset($new_attrib_list[$keyhere]);
         }
       }
       $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $new_attrib_list, $from);
@@ -1311,12 +1314,14 @@ Of the attributes provided, determine the number of those attributes that are
 //        $new_attrib_list = $attribute_list;
         foreach ($new_attrib_list as $keyhere => $products_attribute_id) {
           $attrib_ids_list = $this->zen_get_sba_attribute_ids($products_id, array($keyhere => $products_attribute_id), $from);
-          if (zen_not_null($attrib_ids_list) && is_array($attrib_ids_list)) {
-            foreach($attrib_ids_list as $key_attrib_id => $val_attrib_id) {
-              if ($this->non_stock_attribute($val_attrib_id)) {
-                unset($new_attrib_list[$keyhere]);
-              }
+          if (!(zen_not_null($attrib_ids_list) && is_array($attrib_ids_list))) {
+            continue;
+          }
+          foreach($attrib_ids_list as $key_attrib_id => $val_attrib_id) {
+            if (!$this->non_stock_attribute($val_attrib_id)) {
+              continue;
             }
+            unset($new_attrib_list[$keyhere]);
           }
         }
 /*        $stock_attributes_list = $this->zen_get_sba_attribute_ids($products_id, $new_attrib_list, $from);
