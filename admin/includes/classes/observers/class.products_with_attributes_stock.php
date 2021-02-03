@@ -35,6 +35,8 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ATTRIBUTE';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_ALL';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_DELETE_OPTION_NAME_VALUES';
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_ADDITIONAL_ACTIONS_DROPDOWN_UPPER';
+    $attachNotifier[] = 'NOTIFY_ATTRIBUTE_CONTROLLER_ADDITIONAL_ACTIONS_DROPDOWN_SUBMENU';
     $attachNotifier[] = 'NOTIFY_ADMIN_PRODUCT_COPY_TO_ATTRIBUTES';
 //    $attachNotifier[] = 'NOTIFY_MODULES_COPY_TO_CONFIRM_ATTRIBUTES';
     $attachNotifier[] = 'OPTIONS_NAME_MANAGER_DELETE_OPTION';
@@ -233,6 +235,62 @@ class products_with_attributes_stock_admin extends base {
       $delete_attributes_options_id->MoveNext();
     }
 
+  }
+
+
+   /*
+    *
+    *
+    * ZC 1.5.7: $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_ADDITIONAL_ACTIONS_DROPDOWN_UPPER', $zc_products, $action, $products_filter, $current_category_id);
+    */
+  function updateNotifyAttributeControllerAdditionalActionsDropdownUpper(&$callingClass, $notifier, $zc_products, &$action, &$products_filter, &$current_category_id) {
+?>
+    <li role="presentation">
+      <a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'NONSSL') ?>" target="_blank">
+        <i class="fa fa-share-square" aria-hidden="true"></i>
+        <?php echo TEXT_ATTRIBUTES_CONTROLLER_SBA_ALL_STOCK; ?>
+      </a>
+    </li>
+<?php
+  }
+
+  // ZC 1.5.7: $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_ADDITIONAL_ACTIONS_DROPDOWN_SUBMENU', $zc_products, $action, $products_filter, $current_category_id);
+  function notify_attribute_controller_additional_actions_dropdown_submenu(&$callingClass, $notifier, $zc_products, &$action, &$products_filter, &$current_category_id)
+  {
+    global $db, $sniffer;
+
+    if (!defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') || !$sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK)) {
+      return;
+    }
+
+    ?><li role="presentation"
+    <?php
+    $sba_query = 'SELECT products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE products_id = :products_id: LIMIT 1';
+    $sba_query = $db->bindVars($sba_query, ':products_id:', $products_filter, 'integer');
+    $sba = $db->Execute($sba_query);
+    ?><?php
+    if (($sba->RecordCount() == 0 && !zen_has_product_attributes($products_filter, 'false'))) {
+      ?> class="disabled">
+        <a role="menuitem"><i class="fa fa-flip-vertical fa-ban" aria-hidden="true"></i>
+          <?php echo TEXT_NO_ATTRIBUTES_DEFINED . $products_filter;
+    } else {
+      ?>><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter); ?>">
+      <?php
+      if ($sba->RecordCount() > 0) {
+        ?>
+        <i class="fa fa-edit" aria-hidden="true"></i>
+        <?php
+        echo TEXT_ATTRIBUTES_CONTROLLER_SBA_EDIT;
+      } else {
+        ?>
+        <i class="fa fa-plus" aria-hidden="true"></i>
+        <?php
+        echo TEXT_ATTRIBUTES_CONTROLLER_NO_SBA_EDIT;
+      }
+    }
+    ?></a>
+    </li>
+    <?php
   }
 
   // NOTIFY_MODULES_COPY_TO_CONFIRM_ATTRIBUTES
