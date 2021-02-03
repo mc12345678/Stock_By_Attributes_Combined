@@ -740,9 +740,9 @@ class products_with_attributes_stock_admin extends base {
       
                 if (isset($stockids) && $stockids === false) {
                     /* There is no stock associated with this sequence so ignore it. */
-                } elseif (isset($stockids) && (!zen_not_null($stockids) || is_array($stockids) && count($stockids) == 0)) {
+                } elseif (isset($stockids) && !zen_not_null($stockids)) {
                     /*  The ids came back as null or as an empty array. Nothing to be done. */
-                } elseif (isset($stockids) && (zen_not_null($stockids) || (is_array($stockids) && count($stockids) > 0))) {
+                } elseif (isset($stockids) && zen_not_null($stockids)) {
                     foreach ($stockids as $stock_id) {
                     // @todo: address in PWAS table whether particular variant should be altered with stock quantities.
                         $get_quantity_query = 'SELECT quantity from ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id=' . zen_get_prid($order->fields['products_id']) . ' and stock_id=' . (int)$stock_id;
