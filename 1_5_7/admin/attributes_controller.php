@@ -1,11 +1,9 @@
 <?php
 /**
- * @copyright Copyright 2003-2020 Zen Cart Development Team
+ * @copyright Copyright 2003-2021 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: DrByte 2020 Dec 23 Modified in v1.5.7c $
- *
- * Stock by Attributes 1.5.4 15-10-12
+ * @version $Id: DrByte 2021 Jan 11 Modified in v1.5.7c $
  */
 require('includes/application_top.php');
 
@@ -748,41 +746,15 @@ function zen_js_option_values_list($selectedName, $fieldName)
             <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
               <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_OPTIONS_NAME_MANAGER) ?>" target="_blank"><?php echo IMAGE_OPTION_NAMES; ?></a></li>
               <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER) ?>" target="_blank"><?php echo IMAGE_OPTION_VALUES; ?></a></li>
-<?php /* START STOCK BY ATTRIBUTES - SBA  1 of 2 */
-              if (defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK)) {
-?>
-              <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'NONSSL') ?>" target="_blank"><?php /* mc12345678 Need an appropriate picture/statement for the goto SBA information here. */ echo zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA); ?></a></li>
-<?php         }
-/* END STOCK BY ATTRIBUTES - SBA 1 of 2 */ ?>
+              <?php
+              $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_ADDITIONAL_ACTIONS_DROPDOWN_UPPER', $zc_products, $action, $products_filter, $current_category_id);
+              ?>
               <?php if ($products_filter != '' && $action != 'attribute_features_copy_to_product' && $action != 'attribute_features_copy_to_category' && $action != 'delete_all_attributes_confirm') { ?>
                 <li role="presentation" class="divider"></li>
                 <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCT, 'action=new_product' . '&cPath=' . zen_get_product_path($products_filter) . '&pID=' . $products_filter . '&product_type=' . zen_get_products_type($products_filter)); ?>"><?php echo IMAGE_EDIT_PRODUCT; ?></a></li>
-                <!-- Start SBA 2 of 2 --><?php
-                if (defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK)) {
-                  ?><li role="presentation">
                 <?php
-                // @TODO, Need to make this dependent on the supporting software being installed.
-                  $sba_query = 'select distinct products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' where products_id = :products_id:';
-                  $sba_query = $db->bindVars($sba_query, ':products_id:', $products_filter, 'integer');
-                  $sba = $db->Execute($sba_query);
-                  if ($sba->RecordCount() > 0 || zen_has_product_attributes($products_filter, 'false')) {
-                    ?><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'seachPID=' . $products_filter); ?>"><?php echo zen_image_button('button_sba_link.gif', IMAGE_OPTION_SBA); ?><br>
-                    <?php
-                    $display_text = TEXT_NO_SBA_EDIT;
-                    if ($sba->RecordCount() > 0) {
-                      $display_text = TEXT_SBA_EDIT;
-                    }
-                    echo $display_text;
-                  } else {
-                      ?><a role="menuitem"><?php
-                      echo TEXT_NO_SBA_EDIT;
-                      ?><br><?php
-                      echo TEXT_NO_ATTRIBUTES_DEFINED . $products_filter;
-                  }
-                  ?>
-                    </a></li><?php
-                }
-                ?><!-- End SBA 2 of 2 -->
+                $zco_notifier->notify('NOTIFY_ATTRIBUTE_CONTROLLER_ADDITIONAL_ACTIONS_DROPDOWN_SUBMENU', $zc_products, $action, $products_filter, $current_category_id);
+                ?>
                 <?php if ($zc_products->get_allow_add_to_cart($products_filter) == "Y") { ?>
                   <li role="presentation"><a role="menuitem" href="<?php echo zen_href_link(FILENAME_PRODUCTS_PRICE_MANAGER, '&products_filter=' . $products_filter . '&current_category_id=' . $current_category_id); ?>"><?php echo IMAGE_PRODUCTS_PRICE_MANAGER; ?></a></li>
                 <?php } ?>
@@ -814,7 +786,7 @@ function zen_js_option_values_list($selectedName, $fieldName)
           echo zen_draw_label(HEADING_TITLE_SEARCH_DETAIL, 'search') . ' ' . zen_draw_input_field('search', '', 'id="search"') . zen_hide_session_id();
           if (isset($_GET['search']) && zen_not_null($_GET['search'])) {
             $keywords = zen_db_input(zen_db_prepare_input($_GET['search']));
-            echo '<br/ >' . TEXT_INFO_SEARCH_DETAIL_FILTER . $keywords;
+            echo '<br>' . TEXT_INFO_SEARCH_DETAIL_FILTER . $keywords;
           }
           echo '</form>';
           ?>
@@ -831,7 +803,7 @@ function zen_js_option_values_list($selectedName, $fieldName)
           <div class="col-xs-6 col-sm-4 text-danger"><strong><?php echo TEXT_DELETE_ALL_ATTRIBUTES . $products_filter . '<br />' . zen_get_products_name($products_filter); ?></strong></div>
           <div class="col-xs-6 col-sm-8">
             <button type="submit" class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i> <?php echo IMAGE_DELETE; ?></button>
-            <?php echo '<a href="' . zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, 'products_filter=' . $products_filter . '&current_category_id=' . $current_category_id . (isset($_GET['page']) ? '&page=' . $_GET['page'] : '')) . '" class="btn btn-default" role=""button>' . IMAGE_CANCEL . '</a>'; ?>
+            <?php echo '<a href="' . zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, 'products_filter=' . $products_filter . '&current_category_id=' . $current_category_id . (isset($_GET['page']) ? '&page=' . $_GET['page'] : '')) . '" class="btn btn-default" role="button">' . IMAGE_CANCEL . '</a>'; ?>
           </div>
           <?php echo '</form>'; ?>
         </div>
