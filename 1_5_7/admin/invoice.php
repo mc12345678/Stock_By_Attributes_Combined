@@ -219,7 +219,7 @@ if ($order->billing['street_address'] != $order->delivery['street_address']) {
                       <li>
                           <?php
                           if ($show_attrib_images && !empty($attribute_image)) {
-                              echo zen_image(DIR_WS_CATALOG.DIR_WS_IMAGES . $attribute_image, $attribute_name, (int)$attr_img_width);
+                              echo zen_image(DIR_WS_CATALOG.DIR_WS_IMAGES . $attribute_image, zen_output_string($attribute_name), (int)$attr_img_width);
                           }
                           ?>
                         <small>
