@@ -68,6 +68,7 @@ class products_with_attributes_stock extends base {
     
     $attachNotifier = array();
     $attachNotifier[] = 'ZEN_GET_PRODUCTS_STOCK';
+    $attachNotifier[] = 'NOTIFY_ORDER_INSTANTIATE';
     $attachNotifier[] = 'NOTIFY_ORDER_AFTER_QUERY';
     $attachNotifier[] = 'NOTIFY_ORDER_CART_ADD_PRODUCT_LIST';
     $attachNotifier[] = 'NOTIFY_ORDER_CART_ADD_ATTRIBUTE_LIST';
@@ -108,15 +109,40 @@ class products_with_attributes_stock extends base {
     );
   
   */
-  function updateZenGetProductsStock(&$callingClass, $notifier, $products_id, &$products_quantity, &$quantity_handled) {
+  function updateZenGetProductsStock(&$callingClass, $notifier, $products_id_info, &$products_quantity, &$quantity_handled) {
 
     // Check if SBA has been initiated, if not then errors will be thrown by some of
     //   the remaining code.  Exit gracefully from this code to not have it process anything.
     if (empty($_SESSION['pwas_class2'])) return;
 
     // There is no appropriate product to handle.
-    if (isset($products_id) && (int)$products_id <= 0) return false;
+    if (!isset($products_id_info) || (int)$products_id_info <= 0) return false;
 
+    // Allow processing of $products_id_info as if $products_id was provided
+    if (!is_array($products_id_info)) {
+      $products_id = $products_id_info;
+      unset($products_id_info);
+    }
+    
+    if (!empty($products_id_info)) {
+      // Process $products_id to retrieve stored data.
+      foreach ($products_id as $key => $value) {
+        switch (true) {
+          case ($key == 'products_id'):
+          case ($key == 'product_id'):
+            $products_id = $value;
+            break;
+          case ($key == 'attributes'):
+            $attributes = $value;
+            break;
+          case ($key == 'dupTest'):
+            $dupTest = $value;
+          default:
+            
+        }
+      }
+    }
+    
     // Check if SBA tracked, if not, then no need to process further.
     if (!$_SESSION['pwas_class2']->zen_product_is_sba($products_id)) return false;
 
@@ -133,7 +159,9 @@ class products_with_attributes_stock extends base {
 
     $current_level = -1;
     $args = array();
-    $attributes = array();
+    if (empty($attributes)) {
+      $attributes = array();
+    }
 
     // Note that if the $products_id is formatted using the hashed attributes and there are no text attributes then the
     //  full attribute designation could be determined "applicable" to this product by comparing all of the possible hashes
@@ -972,7 +1000,19 @@ class products_with_attributes_stock extends base {
       }
     }*/
   }
-   
+
+  /**
+   * Function that captures order class construction information
+   * 'NOTIFY_ORDER_INSTANTIATE'
+   **/
+  function updateNotifyOrderInstantiate(&$orderClass, $notifier, $paramsArray, &$order_id) {
+    if (isset($_GET['main_page']) && zen_not_null($_GET['main_page']) && $_GET['main_page'] == FILENAME_CHECKOUT_CONFIRMATION) {
+      if (empty($this->from)) {
+        $this->from = 'order';
+      }
+    }
+  }
+  
   /*
    * Function that populates order class product data if order has been finalized.
    */
