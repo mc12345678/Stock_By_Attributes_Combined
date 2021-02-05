@@ -1708,11 +1708,17 @@ class products_with_attributes_stock extends base {
     $this->from = 'order';
   }
   
-  function setCheckStockParams($from) {
-    if ($from == 'order') {
+  // @todo handle $products_id when $i is not available as part of $order
+  function setCheckStockParams($from, $products_id = null) {
+    if ($from != 'order') {
+      return;
+    }
+    
       $tmp_attrib = array();
     
       // If there is no order created then there is nothing to be done at this point.
+      //   That said, the $order likely could be created; however, appears would be
+      //   duplicating code that is used elsewhere that if changed there would need changing here...
       if (!isset($GLOBALS['order'])) return;
 
       // Duplicate the order information here for use/reading.
@@ -1722,7 +1728,10 @@ class products_with_attributes_stock extends base {
       if (empty($order->products)) return;
       
       // Expect that the product "counter" is the variable i and is in the global space.
-      if (!isset($GLOBALS['i'])) return;
+      // However, at this point where $order is known, if the $products_id is present then
+      //   can cycle through all products, collect all of the associated data and return that "grouping"
+      //   to further be processed for the end goal.
+      if (!isset($GLOBALS['i']) && is_null($products_id)) return;
 
       $i = $GLOBALS['i'];
 
@@ -1739,7 +1748,7 @@ class products_with_attributes_stock extends base {
 
       // Set the internal attributes to the temporary array that was generated.
       $this->attributes = $tmp_attrib;
-    }
+    
   }
   
   /*
