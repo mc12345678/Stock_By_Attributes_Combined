@@ -1280,7 +1280,7 @@ if (empty($_SESSION['customer_id']) || !(!empty($customer_check->fields['custome
     }
     if (STOCK_SHOW_ATTRIB_LEVEL_STOCK == 'true') {
       //Search for quantity in the SBA table... 
-      $numbadd = zen_get_products_stock($_GET['products_id'], $ovids);
+      $numbadd = zen_get_products_stock(array('products_id' => $_GET['products_id'], 'attributes' => $ovids));
       if ($numbadd == 0) {
         $numbadd = '0';
       }
@@ -1308,7 +1308,7 @@ if (empty($_SESSION['customer_id']) || !(!empty($customer_check->fields['custome
         foreach ($comb as $ids => $idvalsadd) {
           $idvals[] = $idvalsadd;
         }
-        $numadd = zen_get_products_stock($_GET['products_id'], $idvals);
+        $numadd = zen_get_products_stock(array('products_id' => $_GET['products_id'], 'attributes' => $idvals));
         if ($numadd == 0) {
           $numadd = '0';
         }
