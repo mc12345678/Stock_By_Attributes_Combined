@@ -249,10 +249,10 @@ if ($action == 'new_product_meta_tags') {
           $contents[] = array('text' => '<br />' . TEXT_COPY_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_attributes', 'copy_attributes_yes', true) . ' ' . TEXT_COPY_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_attributes', 'copy_attributes_no') . ' ' . TEXT_COPY_ATTRIBUTES_NO);
 // future          $contents[] = array('align' => 'center', 'text' => '<br />' . ATTRIBUTES_NAMES_HELPER . '<br />' . zen_draw_separator('pixel_trans.gif', '1', '10'));
           $contents[] = array('text' => '<br />' . zen_image(DIR_WS_IMAGES . 'pixel_black.gif','','100%','3'));
-          // BOF Added for Stock By Attributes SBA - mc12345678 1 of 1
-          $zco_notifier->notify('NOTIFY_ADMIN_PRODUCT_COPY_TO_ATTRIBUTES', $pInfo, $contents);
-          // EOF Added for Stock By Attributes SBA - mc12345678 1 of 1
         }
+        // BOF Added for Stock By Attributes SBA - mc12345678 1 of 1 - relocated 2021-02-07 for https://github.com/zencart/zencart/issues/4199
+        $zco_notifier->notify('NOTIFY_ADMIN_PRODUCT_COPY_TO_ATTRIBUTES', $pInfo, $contents);
+        // EOF Added for Stock By Attributes SBA - mc12345678 1 of 1
 
         // only ask if product has discounts
         if (zen_has_product_discounts($pInfo->products_id) == 'true') {
