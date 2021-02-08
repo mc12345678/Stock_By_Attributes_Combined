@@ -172,20 +172,26 @@ class products_with_attributes_stock_admin extends base {
       include DIR_WS_LANGUAGES . 'english' . '/modules/product_sba.php';
     }
     
-    if ($products_with_attributes_stock_class->zen_product_is_sba($pInfo->products_id)){
-      $last_content = array();
-      // Remove last item from the $contents array (assumes that the divider line has been added, value of 1 represents how many to remove)
-      for ($i = 0; $i < 1; $i++) {
-        $last_content[] = array_pop($contents);
-      }
-      //$last_content = $contents[count($contents) - 2];
-      //$contents[count($contents) - 2] = array('text' => '<br />' . TEXT_COPY_SBA_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_yes', true) . ' ' . TEXT_COPY_SBA_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_no') . ' ' . TEXT_COPY_SBA_ATTRIBUTES_NO);
-      //$contents[] = $last_content;
-      $contents[] = array('text' => '<br />' . TEXT_COPY_SBA_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_yes', true) . ' ' . TEXT_COPY_SBA_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_no') . ' ' . TEXT_COPY_SBA_ATTRIBUTES_NO);
-      // Re-add the removed $contents item(s).
-      while (!empty($last_content)) {
-        $contents[] = array_pop($last_content);
-      }
+    if (!$products_with_attributes_stock_class->zen_product_is_sba($pInfo->products_id)){
+      return;
+    }
+
+    if (!zen_has_product_attributes($pInfo->products_id, 'false')) {
+      return;
+    }
+
+    $last_content = array();
+    // Remove last item from the $contents array (assumes that the divider line has been added, value of 1 represents how many to remove)
+    for ($i = 0; $i < 1; $i++) {
+      $last_content[] = array_pop($contents);
+    }
+    //$last_content = $contents[count($contents) - 2];
+    //$contents[count($contents) - 2] = array('text' => '<br />' . TEXT_COPY_SBA_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_yes', true) . ' ' . TEXT_COPY_SBA_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_no') . ' ' . TEXT_COPY_SBA_ATTRIBUTES_NO);
+    //$contents[] = $last_content;
+    $contents[] = array('text' => '<br />' . TEXT_COPY_SBA_ATTRIBUTES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_yes', true) . ' ' . TEXT_COPY_SBA_ATTRIBUTES_YES . '<br />' . zen_draw_radio_field('copy_sba_attributes', 'copy_sba_attributes_no') . ' ' . TEXT_COPY_SBA_ATTRIBUTES_NO);
+    // Re-add the removed $contents item(s).
+    while (!empty($last_content)) {
+      $contents[] = array_pop($last_content);
     }
   }
   
