@@ -68,6 +68,7 @@ class products_with_attributes_stock extends base {
     
     $attachNotifier = array();
     $attachNotifier[] = 'ZEN_GET_PRODUCTS_STOCK';
+    $attachNotifier[] = 'ZEN_CHECK_STOCK_MESSAGE';
     $attachNotifier[] = 'NOTIFY_ORDER_INSTANTIATE';
     $attachNotifier[] = 'NOTIFY_ORDER_AFTER_QUERY';
     $attachNotifier[] = 'NOTIFY_ORDER_CART_ADD_PRODUCT_LIST';
@@ -156,7 +157,7 @@ class products_with_attributes_stock extends base {
       }
 
       if (!empty($this->from)) {
-        $this->setCheckStockParams($this->from);
+        $this->setCheckStockParams($this->from, $products_id);
 
         $attributes = !isset($attributes) ? $this->attributes : $attributes;
       }
@@ -168,15 +169,25 @@ class products_with_attributes_stock extends base {
     if (!$_SESSION['pwas_class2']->zen_product_is_sba($products_id)) return false;
 
     // Try to get the current setting of this value that defaults to true in PHP 7.4+
-    if (!isset($attributes)) {
+    if (empty($is_array)) {
+      // Technically don't need to evaluate the call(s) to zen_get_products_stock
+      //   because if the code needs to evaluate the attributes then it is code
+      //   associated with this module and is "easily" editable to pass the
+      //   data with the proper makeup.  Information from the core code
+      //   should be made available enough to retrieve without modification.
       $exception_ignore = ini_get('zend.exception_ignore_args');
-
+  //    }
       if (!empty($exception_ignore)) {
         $ignore_old = ini_set('zend.exception_ignore_args', 'false'); // zend.exception_ignore_args
       }
       $backtrace = debug_backtrace();
       if (isset($ignore_old)) {
-        ini_set('zend.exception_ignore_args', $ignore_old);
+        if ($ignore_old !== false) {
+          ini_set('zend.exception_ignore_args', $ignore_old);
+//          trigger_error('callingClass: ' . print_r($callingClass, true), E_USER_WARNING);
+///        } else {
+//          trigger_error('zend.exception_ignore_args === false', E_USER_WARNING);
+        }
       }
 
       $current_level = -1;
@@ -199,7 +210,7 @@ class products_with_attributes_stock extends base {
           $attributes = isset($args['zen_get_products_stock'][1]) ? $args['zen_get_products_stock'][1] : null;
           $dupTest = isset($args['zen_get_products_stock'][2]) ? $args['zen_get_products_stock'][2] : null;
           if (!empty($this->from)) {
-            $this->setCheckStockParams($this->from);
+            $this->setCheckStockParams($this->from, $products_id);
         
             $attributes = !isset($attributes) ? $this->attributes : $attributes;
           }
@@ -238,16 +249,16 @@ class products_with_attributes_stock extends base {
       //   code to process further.  So, keep an eye out on changes made to the function zen_get_products_stock.
       //   Changes made after the return for handling will likely need to be incorporated here.
       if (!empty($is_array)) {
-        $stock_query = "select products_quantity
-                from " . TABLE_PRODUCTS . "
-                where products_id = " . (int)$products_id . " LIMIT 1";
+        $stock_query = "SELECT products_quantity
+                FROM " . TABLE_PRODUCTS . "
+                WHERE products_id = " . (int)$products_id . " LIMIT 1";
 
         $stock_values = $db->Execute($stock_query);
+        $products_quantity = $stock_values->fields['products_quantity'];
         // Leave the value alone if it is non-falsey otherwise ensure that is used.
         if (empty($quantity_handled)) {
           $quantity_handled = true;
         }
-        $products_quantity = $stock_values->fields['products_quantity'];
       }
 
       return false;
@@ -268,6 +279,56 @@ class products_with_attributes_stock extends base {
 
 //    $products_quantity = null;
 //    $quantity_handled = true;
+  }
+  
+  /**
+   *
+   *    $GLOBALS['zco_notifier']->notify(
+            'ZEN_CHECK_STOCK_MESSAGE', 
+            array(
+                $products_id, 
+                $products_quantity
+            ), 
+            $out_of_stock_message
+        );
+   *
+   **/
+  function updateZenCheckStockMessage(&$callingClass, $notifier, $products_array, &$out_of_stock_message) {
+    // Check if SBA has been initiated, if not then errors will be thrown by some of
+    //   the remaining code.  Exit gracefully from this code to not have it process anything.
+    if (empty($_SESSION['pwas_class2'])) return;
+
+    // Make it easier/faster to retrieve the items from the array and
+    //  preserve the keys of the array.
+    $products_array = array_reverse($products_array, true);
+
+    $products_id = array_pop($products_array);
+    $products_quantity = array_pop($products_array);
+
+    if (!isset($products_id)
+      || !is_array($products_id) && (int)$products_id <= 0
+      || is_array($products_id)
+        && (!isset($products_id['products_id'])
+            || (int)$products_id['products_id'] <= 0
+          )
+    ) {
+      return false;
+    }
+
+    // Check if SBA tracked, if not, then no need to process further.
+    if (!$_SESSION['pwas_class2']->zen_product_is_sba($products_id)) return false;
+
+    // Here would be a good place to call some other function to identify how to
+    //  handle this "product" (variant).  Is it possible to be oversold?
+    //  Should there be some sort of "back order" message?
+    //  What is represented here is a message/condition where the returned
+    //   quantity of product indicates some sort of "oversell" condition.
+    //   Do not yet know the result of sending back an empty message
+    //   though can see that there will still be text there as a
+    //.  surrounding class... So even if attempted to force execution of
+    //   this code by always causing a negative value, then would always
+    //   have some "remnant" with which to deal.
+
   }
   
   /**
@@ -1562,6 +1623,7 @@ class products_with_attributes_stock extends base {
           */
           if ($SBAqtyAvailable - $products[$i]['quantity'] < 0 || (($totalQtyAvailable - $_SESSION['cart']->in_cart_mixed($productArray[$i]['id']) < 0) && (STOCK_MARK_ALLOW_MIX_TOTAL_ALL === 'false' ? STOCK_ALLOW_CHECKOUT !== 'true' : true))) {
             $productArray[$i]['flagStockCheck'] = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
+            // @Todo: provide function to display alternate messaging for "out-of-stock" product.
             $flagAnyInsideOutOfStock = true;
 //            $flagAnyOutOfStock = true;
           }
@@ -1782,13 +1844,13 @@ class products_with_attributes_stock extends base {
 
       $attributes = array();
       if (isset($GLOBALS['i'])) {
-      $i = $GLOBALS['i'];
+        $i = $GLOBALS['i'];
 
-      // if the product doesn't have any sub-characteristics or there are no attributes then no specific SBA stock to consider.
-      if (empty($order->products[$i]) && empty($order->products[$i]['attributes'])) return;
-      
-      // Obtain the attributes from the specific product.
-      $attributes = $order->products[$i]['attributes'];
+        // if the product doesn't have any sub-characteristics or there are no attributes then no specific SBA stock to consider.
+        if (empty($order->products[$i]) && empty($order->products[$i]['attributes'])) return;
+
+        // Obtain the attributes from the specific product.
+        $attributes = $order->products[$i]['attributes'];
       }
       
       // Build the catalog side attributes from the attribute data of the order class.
