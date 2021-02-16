@@ -889,7 +889,7 @@ switch ($action) {
 
   default:
 
-    $products_filter = $_GET['products_filter'] = (int)$_POST['products_filter'];
+    $products_filter = $_GET['products_filter'] = isset($_POST['products_filter']) ? (int)$_POST['products_filter'] : '';
     // Show a list of the products
     break;
 }
