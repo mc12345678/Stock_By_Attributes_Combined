@@ -271,6 +271,9 @@ class products_with_attributes_stock extends base
             );
 
             foreach ($class_load as $langClass) {
+              if (!is_file($langClass)) {
+                continue;
+              }
               require $langClass;
               if (class_exists('language')) {
                 break;
