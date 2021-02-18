@@ -264,23 +264,7 @@ class products_with_attributes_stock extends base
     function displayFilteredRows($SearchBoxOnly = null, $NumberRecordsShown = null, $ReturnedProductID = null) {
         global $db, $sniffer, $languages;
         if (empty($languages)) {
-          if (!class_exists('language')) {
-            $class_load = array(
-              DIR_WS_CLASSES . 'language.php',
-              DIR_FS_CATALOG . DIR_WS_CLASSES . 'language.php',
-            );
-
-            foreach ($class_load as $langClass) {
-              if (!is_file($langClass)) {
-                continue;
-              }
-              require $langClass;
-              if (class_exists('language')) {
-                break;
-              }
-            }
-          }
-          $languages = new language();
+          $languages = zen_get_languages();
         }
         if (isset($_SESSION['languages_id']) && $_SESSION['languages_id'] > 0) {
           $language_id = (int)$_SESSION['languages_id'];
