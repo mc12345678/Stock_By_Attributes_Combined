@@ -1700,7 +1700,7 @@ Of the attributes provided, determine the number of those attributes that are
       return $this->_isSBA[(int)$product_id]['status'];
     }
     
-    $inSBA_query = $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK);
+    $inSBA_query = defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK') && $sniffer->table_exists(TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK);
 
     if (!$inSBA_query) {
       return $this->_isSBA[(int)$product_id] = false;
