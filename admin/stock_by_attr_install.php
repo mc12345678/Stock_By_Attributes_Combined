@@ -1999,7 +1999,7 @@ function checkSBAtable($table = null, $field = null, $display = true) {
   }
 
   //if there are any fields than we assume the table already exists
-  return $setTrue; //$check->fields['COLUMN_NAME'];
+  return !empty($check->fields['COLUMN_NAME']); //$setTrue; //$check->fields['COLUMN_NAME'];
 }
 
 //test for proper placement of NEW files
