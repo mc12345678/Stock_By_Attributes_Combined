@@ -403,12 +403,12 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       }
 
       foreach($_POST['attribs'][$prid] as $option_id => $value_id) {
-        if (substr($option_id, 0, strlen(TEXT_PREFIX)) == TEXT_PREFIX) {
+        if (defined('TEXT_PREFIX') && substr($option_id, 0, strlen(TEXT_PREFIX)) == TEXT_PREFIX) {
           $option_ref[substr($option_id, strlen(TEXT_PREFIX))] = $option_id;
           $option_id = substr($option_id, strlen(TEXT_PREFIX));
-        } elseif (substr($option_id, 0, strlen(FILE_PREFIX)) == FILE_PREFIX) {
-          $option_ref[substr($option_id, strlen(FILE_PREFIX))] = $option_id;
-          $option_id = substr($option_id, strlen(FILE_PREFIX));
+        } elseif (defined('UPLOAD_PREFIX') && substr($option_id, 0, strlen(UPLOAD_PREFIX)) == UPLOAD_PREFIX) {
+          $option_ref[substr($option_id, strlen(UPLOAD_PREFIX))] = $option_id;
+          $option_id = substr($option_id, strlen(UPLOAD_PREFIX));
         } else {
           $option_ref[$option_id] = $option_id;
         }
