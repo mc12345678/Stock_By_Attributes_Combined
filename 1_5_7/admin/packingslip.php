@@ -149,10 +149,10 @@ if ($order->billing['street_address'] != $order->delivery['street_address']) {
         <?php
         for ($i = 0, $n = sizeof($order->products); $i < $n; $i++) {
             $product_name = $order->products[$i]['name'];
-            //"Stock by Attributes" support image swapping to display sba - 1 of 3
+            //"Stock by Attributes" support image swapping to display sba - 1 of 1
             if (empty($prod_img)) $prod_img = '';
             $zco_notifier->notify('NOTIFY_PACKINGSLIP_INLOOP', array('i'=>$i, 'prod_img'=>$prod_img), $prod_img);
-            // END "Stock by Attributes" sba - 1 of 3
+            // END "Stock by Attributes" sba - 1 of 1
             ?>
             <tr class="dataTableRow">
                 <?php if ($show_product_images) { ?>
@@ -174,9 +174,6 @@ if ($order->billing['street_address'] != $order->delivery['street_address']) {
                             for ($j = 0, $k = sizeof($order->products[$i]['attributes']); $j < $k; $j++) {
                                 $attribute_name = $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
                                 $attribute_image = zen_get_attributes_image($order->products[$i]['id'], $order->products[$i]['attributes'][$j]['option_id'], $order->products[$i]['attributes'][$j]['value_id']);
-                                //"Stock by Attributes" add custom ID to display sba - 2 of 3
-                                $attribute_name .= (isset($order->products[$i]['customid']['type']) && $order->products[$i]['customid']['type'] == 'multi' && zen_not_null($order->products[$i]['attributes'][$j]['customid']['value']) ? ' (' . $order->products[$i]['attributes'][$j]['customid']['value'] . ') ' : '');
-                                // END "Stock by Attributes" sba - 2 of 3
                                 ?>
                                 <li>
                                     <?php
@@ -193,9 +190,6 @@ if ($order->billing['street_address'] != $order->delivery['street_address']) {
                                 </li>
                                 <?php
                             }
-                            //"Stock by Attributes" add custom ID to display sba - 3 of 3
-                            echo (isset($order->products[$i]['customid']['type']) && $order->products[$i]['customid']['type'] == 'single' && zen_not_null($order->products[$i]['customid']['value']) ? '<br />(' . $order->products[$i]['customid']['value'] . ') ' : '');
-                            // END "Stock by Attributes" sba - 3 of 3
                             ?>
                         </ul>
                         <?php
