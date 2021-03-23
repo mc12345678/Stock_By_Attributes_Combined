@@ -2665,7 +2665,17 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
        <a title="Shortcut to the Stock By Attributtes Catalog" href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, '', 'NONSSL') . '">SBA Catalog Link</a>
       <br class="clearBoth" /><hr />
 
-    ' . zen_draw_form("SBAinstall", FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP, "id=\"SBAinstall\"", "get") . '
+    ';
+      if (isset($_GET['cmd'])) {
+        $tempcmd = $_GET['cmd'];
+      }
+      $_GET['cmd'] = FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP;
+      echo zen_draw_form('SBAinstall', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK_SETUP, '', 'get', 'id="SBAinstall"');
+      unset($_GET['cmd']);
+      if (isset($tempcmd)) {
+        $_GET['cmd'] = $tempcmd;
+      }
+      echo '
 
      Select:
 
