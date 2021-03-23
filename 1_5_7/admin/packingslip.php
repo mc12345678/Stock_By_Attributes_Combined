@@ -3,10 +3,10 @@
  * @copyright Copyright 2003-2020 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: DrByte 2020 Oct 05 Modified in v1.5.7 $
+ * @version $Id: DrByte 2020 Oct 28 Modified in v1.5.7a $
  * 
- * Stock by Attributes 1.5.4 20-07-03 mc12345678
-*/
+ * Stock by Attributes 2021-04-14 mc12345678
+ */
 require('includes/application_top.php');
 
 $show_product_images = true;
@@ -149,15 +149,15 @@ if ($order->billing['street_address'] != $order->delivery['street_address']) {
         <?php
         for ($i = 0, $n = sizeof($order->products); $i < $n; $i++) {
             $product_name = $order->products[$i]['name'];
-            //"Stock by Attributes" support image swapping to display sba - 1 of 3
+            //"Stock by Attributes" support image swapping to display sba - 1 of 1
             if (empty($prod_img)) $prod_img = '';
             $zco_notifier->notify('NOTIFY_PACKINGSLIP_INLOOP', array('i'=>$i, 'prod_img'=>$prod_img), $prod_img);
-            // END "Stock by Attributes" sba - 1 of 3
+            // END "Stock by Attributes" sba - 1 of 1
             ?>
             <tr class="dataTableRow">
                 <?php if ($show_product_images) { ?>
                 <td class="dataTableContent">
-                    <?php echo zen_image(DIR_WS_CATALOG . DIR_WS_IMAGES . zen_get_products_image($order->products[$i]['id']), $product_name, (int)$img_width); ?>
+                    <?php echo zen_image(DIR_WS_CATALOG . DIR_WS_IMAGES . zen_get_products_image($order->products[$i]['id']), zen_output_string($product_name), (int)$img_width); ?>
                 </td>
                 <?php } ?>
 
@@ -174,15 +174,12 @@ if ($order->billing['street_address'] != $order->delivery['street_address']) {
                             for ($j = 0, $k = sizeof($order->products[$i]['attributes']); $j < $k; $j++) {
                                 $attribute_name = $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
                                 $attribute_image = zen_get_attributes_image($order->products[$i]['id'], $order->products[$i]['attributes'][$j]['option_id'], $order->products[$i]['attributes'][$j]['value_id']);
-                                //"Stock by Attributes" add custom ID to display sba - 2 of 3
-                                $attribute_name .= (isset($order->products[$i]['customid']['type']) && $order->products[$i]['customid']['type'] == 'multi' && zen_not_null($order->products[$i]['attributes'][$j]['customid']['value']) ? ' (' . $order->products[$i]['attributes'][$j]['customid']['value'] . ') ' : '');
-                                // END "Stock by Attributes" sba - 2 of 3
                                 ?>
                                 <li>
                                     <?php
 
                                     if ($show_attrib_images && !empty($attribute_image)) {
-                                        echo zen_image(DIR_WS_CATALOG.DIR_WS_IMAGES . $attribute_image, $attribute_name, (int)$attr_img_width);
+                                        echo zen_image(DIR_WS_CATALOG.DIR_WS_IMAGES . $attribute_image, zen_output_string($attribute_name), (int)$attr_img_width);
                                     }
                                     ?>
                                     <small>
@@ -193,9 +190,6 @@ if ($order->billing['street_address'] != $order->delivery['street_address']) {
                                 </li>
                                 <?php
                             }
-                            //"Stock by Attributes" add custom ID to display sba - 3 of 3
-                            echo (isset($order->products[$i]['customid']['type']) && $order->products[$i]['customid']['type'] == 'single' && zen_not_null($order->products[$i]['customid']['value']) ? '<br />(' . $order->products[$i]['customid']['value'] . ') ' : '');
-                            // END "Stock by Attributes" sba - 3 of 3
                             ?>
                         </ul>
                         <?php
