@@ -43,6 +43,8 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'OPTIONS_NAME_MANAGER_UPDATE_OPTIONS_VALUES_DELETE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME';
+//    $attachNotifier[] = 'NOTIFY_ORDER_INSTANTIATE';
+//    $attachNotifier[] = 'NOTIFY_ORDER_QUERY_ADD_PRODUCT';
     $attachNotifier[] = 'ORDER_QUERY_ADMIN_COMPLETE';
     $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT_STOCK_DECREMENT'; // Need to code for
     $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT';
@@ -415,6 +417,64 @@ class products_with_attributes_stock_admin extends base {
     unset($stock_ids);
   }
 
+  // NOTIFY_ORDER_INSTANTIATE
+  function notify_order_instantiate(&$callingClass, $notifier, $emptyArray, &$order_id) {
+    global $current_page_base;
+    if (!in_array(basename($GLOBALS['PHP_SELF'], '.php'), array(FILENAME_INVOICE))) {
+      return;
+    }
+    if (is_null($order_id)) {
+      return;
+    }
+    // Trigger the need to gather information about the customid.
+    $this->addCustomIdToAttributes = true;
+    
+    // Intention is to load the language file one time while using/processing this notifier in support of later use.
+    include_once DIR_WS_LANGUAGES . $_SESSION['language'] . '/' . 'products_with_attributes_stock.php';    
+  }
+  
+  // NOTIFY_ORDER_QUERY_ADD_PRODUCT
+  function notify_order_query_add_product(&$callingClass, $notifier, $productsI, &$index) {
+    global $products_with_attributes_stock_class;
+    
+    // Early escape if not supposed to add customid to the attributes name (admin/invoice.php is the current target).
+    if (empty($this->addCustomIdToAttributes)) {
+      return;
+    }
+    
+    // Early escape if there are no attributes on this product.
+    if (empty($productsI['attributes'])) {
+      return;
+    }
+    
+    // Early escape if not displaying customid.
+    if (!(defined('STOCK_SBA_DISPLAY_CUSTOMID') && STOCK_SBA_DISPLAY_CUSTOMID == 'true')) {
+      return;
+    }
+    
+    // This operation currently appears to only collect the individual customid from the variant list and not the customid for a variant having multiple attributes.
+    foreach ($productsI['attributes'] as $subindex => $values) {
+      $attributes = array();
+      //create array for use in zen_get_customid
+      $attributes[] = $productsI['attributes'][$subindex]['value_id'];//value_id option_id
+      //get custom ID
+      $customid = ' ' . $products_with_attributes_stock_class->zen_get_customid($productsI['id'], $attributes) . ' ';
+      //only display custom ID if exists
+      if (empty($customid)) {
+        continue;
+      }
+      
+      //add name prefix (this is set in the admin language file)
+      $customid = PWA_CUSTOMID_NAME . $customid;
+
+      $callingClass->products[$index]['attributes'][$subindex]['value'] .= /*$attribute_name .=*/ ' (' . $customid . ') ';
+    }
+    
+    // Would appear that to "add" the customid to the last attribute supporting a single customid for all options, that either would
+    //  accumulate all of the attributes in an array and then at the last attribute when all are together to add the customid to that last 
+    //  attribute, or to "double" work the determination possibly and add at the end or to some other variable after all have been processed.
+  }
+  
   // ORDER_QUERY_ADMIN_COMPLETE
   function updateOrderQueryAdminComplete(&$orderClass, $notifier, $paramsArray) {
     global $db;
@@ -423,16 +483,20 @@ class products_with_attributes_stock_admin extends base {
     
     //$orders_products_sba = $db->Execute("select orders_products_attributes_stock_id, orders_products_attributes_id, orders_products_id, stock_id, stock_attribute, customid, products_prid from " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK . " where orders_id = " . (int)$order_id );
     
-    $orders_products = $db->Execute("select orders_products_id, products_id
+    /*$orders_products = $db->Execute("select orders_products_id, products_id
                                      from " . TABLE_ORDERS_PRODUCTS . "
                                      where orders_id = " . (int)$order_id . "
                                      order by orders_products_id");
-    $index = 0;
+    */
+    ////$index = 0;
     //$subindex = 0;
+    $appendCustomId = defined('STOCK_SBA_DISPLAY_CUSTOMID') && STOCK_SBA_DISPLAY_CUSTOMID === 'true' && 
+      in_array(basename($GLOBALS['PHP_SELF'], '.php'), array(FILENAME_ORDERS_INVOICE, FILENAME_ORDERS_PACKINGSLIP, FILENAME_ORDERS));
     
-    while (!$orders_products->EOF) {                                     
+    foreach ($orderClass->products as $index => &$product) {
+    //while (!$orders_products->EOF) {                                     
     // Loop through each product in the order
-      $product = $orderClass->products[$index];
+      //$product = $orderClass->products[$index];
       $customid_txt = '';
       $custom_multi = 'none';
 
@@ -448,66 +512,97 @@ class products_with_attributes_stock_admin extends base {
                              ON (opas.orders_products_attributes_id = opa.orders_products_attributes_id)
                            WHERE  
                              opas.orders_id = " . (int)$order_id . " 
-                             AND opas.orders_products_id = " . (int)$orders_products->fields['orders_products_id'] . " 
+                             AND opas.orders_products_id = " . (int)/*$orders_products->fields['orders_products_id']*/ $product['id'] . " 
                            ORDER BY opas.orders_products_attributes_stock_id");
       
         // If the product was tracked by SBA then perform desired work.
-        if ($orders_products_sba_customid->RecordCount() > 0) {
+        if ($orders_products_sba_customid->RecordCount() == 0) {
+          continue;
+        }
 
-          $customid = array();
+        $customid = array();
 
-          while (!$orders_products_sba_customid->EOF) {
-            // provide the "list" of customid's such that only the unique populated customid's are provided (zen_not_null) and not previously accounted
-            if (zen_not_null($orders_products_sba_customid->fields['customid']) || in_array($orders_products_sba_customid->fields['customid'], array('null', 'NULL', 0, ), true)) {
-                if (!(in_array($orders_products_sba_customid->fields['customid'], $customid))) {
-                  $customid[] = $orders_products_sba_customid->fields['customid'];
-                  $custom_multi = 'multi';
-                }
-            } 
-            // I don't like this next method to find the attributes, but am having difficulty doing anything else because of the way that attributes are
-            //  "tagged" to the product.  There is no "guaranteed" location other than trying to find the option/value pair and equate it back to the
-            //  order data. :/
-              
-            // Goal of this routine is to provide the individual customid for the specific attribute to be able to capture each individual customid for the
-            //   attribute and to then also be able to capture the "total" customid for the product.
-            foreach ($orderClass->products[$index]['attributes'] as $key => $value) {
-              if ($value['option_id'] == $orders_products_sba_customid->fields['products_options_id']
-                  && $value['value_id'] == $orders_products_sba_customid->fields['products_options_values_id']) {
-                $orderClass->products[$index]['attributes'][$key]['customid'] = $orders_products_sba_customid->fields['customid'];
-                break;
+        while (!$orders_products_sba_customid->EOF) {
+          // provide the "list" of customid's such that only the unique populated customid's are provided (zen_not_null) and not previously accounted
+          if (zen_not_null($orders_products_sba_customid->fields['customid']) || in_array($orders_products_sba_customid->fields['customid'], array('null', 'NULL', 0, ), true)) {
+              if (!(in_array($orders_products_sba_customid->fields['customid'], $customid))) {
+                $customid[] = $orders_products_sba_customid->fields['customid'];
+                $custom_multi = 'multi';
               }
+          } 
+          // I don't like this next method to find the attributes, but am having difficulty doing anything else because of the way that attributes are
+          //  "tagged" to the product.  There is no "guaranteed" location other than trying to find the option/value pair and equate it back to the
+          //  order data. :/
+              
+          // Goal of this routine is to provide the individual customid for the specific attribute to be able to capture each individual customid for the
+          //   attribute and to then also be able to capture the "total" customid for the product.
+          foreach ($orderClass->products[$index]['attributes'] as $key => $value) {
+            if ($value['option_id'] == $orders_products_sba_customid->fields['products_options_id']
+                && $value['value_id'] == $orders_products_sba_customid->fields['products_options_values_id']) {
+              $product['attributes'][$key]['customid'] = $orders_products_sba_customid->fields['customid'];
+              break;
             }
-
-            $orders_products_sba_customid->MoveNext();
           }
-          unset($orders_products_sba_customid);
-          
-          if (!empty($customid)) {
-            // Combine the various customids to apply to the ordered product information.
-            // Default method is to combine with a comma between each value when multiple exist.
-            //   If every customid that is and is not present is to be concatenated then above need to add all to the array
-            //    not just those that have data.
-            $customid_txt = implode(", ", $customid);
-            if (count($customid) == 1) {
-              $custom_multi = 'single';
+
+          $orders_products_sba_customid->MoveNext();
+        }
+        unset($orders_products_sba_customid);
+        
+        // Move to next product if no customid associated with the product.
+        if (empty($customid)) {
+          continue;
+        }
+        // Combine the various customids to apply to the ordered product information.
+        // Default method is to combine with a comma between each value when multiple exist.
+        //   If every customid that is and is not present is to be concatenated then above need to add all to the array
+        //    not just those that have data.
+        $customid_txt = implode(", ", $customid);
+        if (count($customid) == 1) {
+          $custom_multi = 'single';
+        }
+        // not adding customid to the attributes option name:option value combination or model, respectively.
+        if (empty($appendCustomId)) {
+          continue;
+        }
+        
+        if ($custom_multi == 'multi') {
+          // Performs similar to: echo (isset($order->products[$i]['customid']['type']) && $order->products[$i]['customid']['type'] == 'multi' && zen_not_null($order->products[$i]['attributes'][$j]['customid']) ? ' (' . $order->products[$i]['attributes'][$j]['customid'] . ') ' : '');
+          // Adds the custom id to in front of the option name. This location is chosen to prevent issues with default Zen Cart installs
+          //  in the three places considered: invoice, packing list and orders screen.  Other immediately available variables in this area
+          //  are used for other purposes and would cause problems (appending to the attribute's 'value' would affect file information.
+          foreach ($product['attributes'] as $key => &$value) {
+            if (zen_not_null($value['customid'])) {
+              $value['option'] = ' (' . $value['customid'] . ') ' . $value['option'];
             }
-          } // EOF if !empty
-        } // EOF if orders_products_sba_customid->RecordCount() > 0
+          }
+          unset($value);
+        } 
+        if ($custom_multi == 'single' && zen_not_null($customid_txt)) {
+          // Adds the custom id text to the model designation. Unfortunately in a default installation, there are two model display sections,
+          //  one for small (xs) screens (which places the model designation and therefore the customid within parentheses) and one for 
+          //  non-xs screens which allows the customid to be added to the model with "little" unusual appearance.
+          // Performs similar to: echo (isset($order->products[$i]['customid']['type']) && $order->products[$i]['customid']['type'] == 'single' && zen_not_null($order->products[$i]['customid']['value']) ? ' (' . $order->products[$i]['customid']['value'] . ') ' : '');
+          $product['model'] .= ' (' . $customid_txt . ') ';
+        }
+        //}
+        //} // EOF if !empty
+        //} // EOF if orders_products_sba_customid->RecordCount() > 0
       } // EOF array check if attributes are involved.
 
-      $orderClass->products[$index]['customid'] = array('type' => $custom_multi, 
-                                                        'value' => $customid_txt,
-                                                        );
+      $product['customid'] = array('type' => $custom_multi, 
+                                   'value' => $customid_txt,
+                                  );
 
-      unset($product);
+      //unset($product);
 
-      $index++;
-      $orders_products->MoveNext();
-    } // EOF while loop on products
+      //$index++;
+      //$orders_products->MoveNext();
+    } // EOF foreach loop on products
+    unset($product);
     unset($customid);
     unset($index);
     unset($order_id);
-    unset($orders_products);
+    //unset($orders_products);
   }
   
 //    $zco_notifier->notify ('EDIT_ORDERS_ADD_PRODUCT_STOCK_DECREMENT', array ( 'order_id' => $order_id, 'product' => $product ), $doStockDecrement);
