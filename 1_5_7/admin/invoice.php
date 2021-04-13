@@ -3,9 +3,8 @@
  * @copyright Copyright 2003-2020 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license https://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: DrByte 2020 May 20 Modified in v1.5.7 $
- * 
- * Stock by Attributes 1.5.4 2020-07-03 mc12345678 @ mc12345678.com
+ * @version $Id: DrByte 2020 Oct 28 Modified in v1.5.7a $
+ * Modified for Stock_By_Attributes 2021 Apr 13 for v1.5.7c
  */
 require('includes/application_top.php');
 
@@ -181,7 +180,7 @@ if ($order->billing['street_address'] != $order->delivery['street_address']) {
             <tr class="dataTableRow">
               <?php if ($show_product_images) { ?>
               <td class="dataTableContent">
-                  <?php echo zen_image(DIR_WS_CATALOG . DIR_WS_IMAGES . zen_get_products_image($order->products[$i]['id']), $product_name, (int)$img_width); ?>
+                  <?php echo zen_image(DIR_WS_CATALOG . DIR_WS_IMAGES . zen_get_products_image($order->products[$i]['id']), zen_output_string($product_name), (int)$img_width); ?>
               </td>
               <?php } ?>
 
@@ -211,7 +210,7 @@ if ($order->billing['street_address'] != $order->delivery['street_address']) {
                               $customid = PWA_CUSTOMID_NAME . $customid;
                             }
                             if ($custom_id != '') {
-                              $attribute_name .= ' (' . $customid . ') '
+                              $attribute_name .= ' (' . $customid . ') ';
                             }
                           }
                           // EOF "Stock by Attributes" add custom ID to display sba - Change 2 of 2
