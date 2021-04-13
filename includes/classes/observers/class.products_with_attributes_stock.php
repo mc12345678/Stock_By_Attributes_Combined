@@ -1687,7 +1687,7 @@ class products_with_attributes_stock extends base {
       $i = $GLOBALS['i'];
 
       // if the product doesn't have any sub-characteristics or there are no attributes then no specific SBA stock to consider.
-      if (empty($order->products[$i]) && empty($order->products[$i]['attributes'])) return;
+      if (empty($order->products[$i]) || empty($order->products[$i]['attributes'])) return;
       
       // Obtain the attributes from the specific product.
       $attributes = $order->products[$i]['attributes'];
