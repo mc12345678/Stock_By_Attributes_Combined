@@ -187,7 +187,9 @@ class products_with_attributes_stock extends base {
     //   some reason in ZC 1.5.5, the call was omitted/skipped.
     $products_quantity =
         $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', (isset($dupTest) && $dupTest == 'true' ? 'dupTest' : 'stock'));
-    $quantity_handled = true;
+    if (empty($quantity_handled)) {
+      $quantity_handled = true;
+    }
     return false;
 
 
