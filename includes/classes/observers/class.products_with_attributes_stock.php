@@ -1724,43 +1724,43 @@ class products_with_attributes_stock extends base {
       return;
     }
 
-      $tmp_attrib = array();
-    
-      // If there is no order created then there is nothing to be done at this point.
-      if (!isset($GLOBALS['order'])) {
-        if (!class_exists('order')) {
-          require DIR_WS_CLASSES . 'order.php';
-        }
-        $GLOBALS['order'] = new order();
+    $tmp_attrib = array();
+
+    // If there is no order created then there is nothing to be done at this point.
+    if (!isset($GLOBALS['order'])) {
+      if (!class_exists('order')) {
+        require DIR_WS_CLASSES . 'order.php';
       }
+      $GLOBALS['order'] = new order();
+    }
 
-      // Duplicate the order information here for use/reading.
-      $order = $GLOBALS['order'];
+    // Duplicate the order information here for use/reading.
+    $order = $GLOBALS['order'];
 
-      // If there are no products in the order, then there is no stock to address.
-      if (empty($order->products)) return;
-      
-      // Expect that the product "counter" is the variable i and is in the global space.
-      if (!isset($GLOBALS['i'])) return;
+    // If there are no products in the order, then there is no stock to address.
+    if (empty($order->products)) return;
 
-      $attributes = array();
-      if (isset($GLOBALS['i'])) {
-        $i = $GLOBALS['i'];
+    // Expect that the product "counter" is the variable i and is in the global space.
+    if (!isset($GLOBALS['i'])) return;
 
-        // if the product doesn't have any sub-characteristics or there are no attributes then no specific SBA stock to consider.
-        if (empty($order->products[$i]) || empty($order->products[$i]['attributes'])) return;
+    $attributes = array();
+    if (isset($GLOBALS['i'])) {
+      $i = $GLOBALS['i'];
 
-        // Obtain the attributes from the specific product.
-        $attributes = $order->products[$i]['attributes'];
-      }
-      
-      // Build the catalog side attributes from the attribute data of the order class.
-      foreach ($attributes as $attrib) {
-        $tmp_attrib[$attrib['option_id']] = $attrib['value_id'];
-      }
+      // if the product doesn't have any sub-characteristics or there are no attributes then no specific SBA stock to consider.
+      if (empty($order->products[$i]) || empty($order->products[$i]['attributes'])) return;
 
-      // Set the internal attributes to the temporary array that was generated.
-      $this->attributes = $tmp_attrib;
+      // Obtain the attributes from the specific product.
+      $attributes = $order->products[$i]['attributes'];
+    }
+
+    // Build the catalog side attributes from the attribute data of the order class.
+    foreach ($attributes as $attrib) {
+      $tmp_attrib[$attrib['option_id']] = $attrib['value_id'];
+    }
+
+    // Set the internal attributes to the temporary array that was generated.
+    $this->attributes = $tmp_attrib;
 
   }
   
