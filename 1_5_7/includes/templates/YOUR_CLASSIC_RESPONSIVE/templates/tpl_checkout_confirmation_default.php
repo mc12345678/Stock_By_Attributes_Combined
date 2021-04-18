@@ -11,7 +11,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: picaflor-azul Fri Jan 8 00:33:36 2016 -0500 New in v1.5.5 $
  * 
- * Updated for Stock by Attributes 1.5.3.1
+ * Updated for Stock by Attributes 2021-04-18
  */
 ?>
 <div class="centerColumn" id="checkoutConfirmDefault">
@@ -136,11 +136,16 @@
     echo '<ul class="cartAttribsList">';
       for ($j=0, $n2=sizeof($order->products[$i]['attributes']); $j<$n2; $j++) {
 ?>
-      <li><?php echo $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
-      // START "Stock by Attributes" mc12345678 2 of 2
-      if ($order->products[$i]['customid']['type'] == 'multi' && zen_not_null($order->products[$i]['attributes'][$j]['customid'])) { echo ' - ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['customid'])); 
-      // END "Stock by Attributes" 2 of 2
-      }?></li>
+      <li>
+          <?php
+          echo $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
+          // START "Stock by Attributes" mc12345678 2 of 2
+          if ($order->products[$i]['customid']['type'] == 'multi' && zen_not_null($order->products[$i]['attributes'][$j]['customid'])) {
+            echo ' - ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['customid']));
+          }
+          // END "Stock by Attributes" 2 of 2
+          ?>
+      </li>
 <?php
       } // end loop
       echo '</ul>';

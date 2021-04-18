@@ -5,13 +5,12 @@
  * Loaded automatically by index.php?main_page=checkout_confirmation.<br />
  * Displays final checkout details, cart, payment and shipping info details.
  *
- * @package templateSystem
- * @copyright Copyright 2003-2016 Zen Cart Development Team
+ * @copyright Copyright 2003-2020 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: Author: DrByte  Fri Jan 8 00:33:36 2016 -0500 Modified in v1.5.5 $
+ * @version $Id: DrByte 2020 Oct 19 Modified in v1.5.7a $
  * 
- * Updated for Stock by Attributes 1.5.3.1
+ * Updated for Stock by Attributes 2021-04-18
  */
 ?>
 <div class="centerColumn" id="checkoutConfirmDefault">
@@ -137,11 +136,16 @@
     echo '<ul class="cartAttribsList">';
       for ($j=0, $n2=sizeof($order->products[$i]['attributes']); $j<$n2; $j++) {
 ?>
-      <li><?php echo $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
-      // START "Stock by Attributes" mc12345678 2 of 2
-      if ($order->products[$i]['customid']['type'] == 'multi' && zen_not_null($order->products[$i]['attributes'][$j]['customid'])) { echo ' - ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['customid'])); 
-      // END "Stock by Attributes" 2 of 2
-      }?></li>
+      <li>
+          <?php
+          echo $order->products[$i]['attributes'][$j]['option'] . ': ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value']));
+          // START "Stock by Attributes" mc12345678 2 of 2
+          if ($order->products[$i]['customid']['type'] == 'multi' && zen_not_null($order->products[$i]['attributes'][$j]['customid'])) {
+            echo ' - ' . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['customid'])); 
+          }
+          // END "Stock by Attributes" 2 of 2
+          ?>
+      </li>
 <?php
       } // end loop
       echo '</ul>';
