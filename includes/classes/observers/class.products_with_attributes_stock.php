@@ -1502,54 +1502,60 @@ class products_with_attributes_stock extends base {
       $options_order_by= ' order by popt.products_options_name';
     }
 
-    for ($i = 0, $n = is_array($productArray) ? count($productArray) : 0 ; $i < $n; $i++) {
-      if (is_array($productArray[$i]) && (isset($productArray[$i]['attributes']) || array_key_exists('attributes', $productArray[$i])) && is_array($productArray[$i]['attributes']) && !empty($productArray[$i]['attributes']) && $_SESSION['pwas_class2']->zen_product_is_sba($productArray[$i]['id'])) {
-        $productArray[$i]['attributeImage'] = array();
-
-        if (STOCK_CHECK == 'true') {
-          $SBAqtyAvailable = zen_get_products_stock($productArray[$i]['id'], $products[$i]['attributes']); // Quantity of product available with the selected attribute(s).
-          $totalQtyAvailable = zen_get_products_stock($productArray[$i]['id']); // Total quantity of product available if all attribute optioned product were added to the cart.
-
-          // Clear flag stock condition for SBA product to be controlled by SBA below
-          $productArray[$i]['flagStockCheck'] = '';
-
-          /*
-          STOCK_MARK_ALLOW_MIX_TOTAL_ALL = 'true' or 'false' such that true marks all product, false just the one.
-          Two options either mark all variants as out of stock or only the quantity that exceeds the variant quantity when:
-            the stock is allowed to sell beyond the available quantity (STOCK_ALLOW_CHECKOUT === 'true'),
-            the product is set to have Product Qty Min/Unit Mix set to true, AND
-            the variant quantity in the cart exceeds total stock quantity of the product.
-          */
-          if ($SBAqtyAvailable - $products[$i]['quantity'] < 0 || (($totalQtyAvailable - $_SESSION['cart']->in_cart_mixed($productArray[$i]['id']) < 0) && (STOCK_MARK_ALLOW_MIX_TOTAL_ALL === 'false' ? STOCK_ALLOW_CHECKOUT !== 'true' : true))) {
-            $productArray[$i]['flagStockCheck'] = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
-            $flagAnyInsideOutOfStock = true;
-//            $flagAnyOutOfStock = true;
-          }
-          $productArray[$i]['stockAvailable'] = $SBAqtyAvailable;
-        } // EOF if (STOCK_CHECK == 'true')
-        
-        // Ensure that additional stock fields are added at least for SBA product.  If needs to be for all product, then 
-        //  This information should be moved outside of the above if statement.  Did not carry over: $products_options_type
-        //  nor $productsQty = 0; $productsQty = 0 was previously used to identify "duplicates" and is not needed.
-        //  $products_options_type is not yet used for anything else, but was perhaps to address something specific in future
-        //  coding.  It will remain off of here for now.
-        $custom_multi_query = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($productArray[$i]['id'], $productArray[$i]['attributes'], 'products');
-        $custom_type = 'single';
-
-        if (!isset($custom_multi_query) || $custom_multi_query === NULL || $custom_multi_query === false) {
-          $custom_type = 'none';
-        } elseif (is_array($custom_multi_query) && count($custom_multi_query) > 1) {
-          $custom_type = 'multi';
-          foreach ($productArray[$i]['attributes'] as $key => $value) {
-            $customid_new = $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $value);
-            $productArray[$i]['attributes'][$key]['customid'] = ((STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $customid_new : null);
-          }
+    foreach ((is_array($productArray) ? $productArray : array()) as $i => $product) {
+      if (!(is_array($productArray[$i]) && (isset($productArray[$i]['attributes']) || array_key_exists('attributes', $productArray[$i])) && is_array($productArray[$i]['attributes']) && !empty($productArray[$i]['attributes']) && $_SESSION['pwas_class2']->zen_product_is_sba($productArray[$i]['id']))) {
+        if (!empty($productArray[$i]['flagStockCheck'])) {
+          $flagAnyOutsideOutOfStock = true;
         }
-        $productArray[$i]['customid']['type'] = $custom_type;
-        $productArray[$i]['customid']['value'] = (STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $products[$i]['attributes']) : null;
+        continue;
+      }
+
+      $productArray[$i]['attributeImage'] = array();
+
+      if (STOCK_CHECK == 'true') {
+        $SBAqtyAvailable = zen_get_products_stock($productArray[$i]['id'], $products[$i]['attributes']); // Quantity of product available with the selected attribute(s).
+        $totalQtyAvailable = zen_get_products_stock($productArray[$i]['id']); // Total quantity of product available if all attribute optioned product were added to the cart.
+
+        // Clear flag stock condition for SBA product to be controlled by SBA below
+        $productArray[$i]['flagStockCheck'] = '';
+
+        /*
+        STOCK_MARK_ALLOW_MIX_TOTAL_ALL = 'true' or 'false' such that true marks all product, false just the one.
+        Two options either mark all variants as out of stock or only the quantity that exceeds the variant quantity when:
+          the stock is allowed to sell beyond the available quantity (STOCK_ALLOW_CHECKOUT === 'true'),
+          the product is set to have Product Qty Min/Unit Mix set to true, AND
+          the variant quantity in the cart exceeds total stock quantity of the product.
+        */
+        if ($SBAqtyAvailable - $products[$i]['quantity'] < 0 || (($totalQtyAvailable - $_SESSION['cart']->in_cart_mixed($productArray[$i]['id']) < 0) && (STOCK_MARK_ALLOW_MIX_TOTAL_ALL === 'false' ? STOCK_ALLOW_CHECKOUT !== 'true' : true))) {
+          $productArray[$i]['flagStockCheck'] = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
+          $flagAnyInsideOutOfStock = true;
+//            $flagAnyOutOfStock = true;
+        }
+        $productArray[$i]['stockAvailable'] = $SBAqtyAvailable;
+      } // EOF if (STOCK_CHECK == 'true')
+        
+      // Ensure that additional stock fields are added at least for SBA product.  If needs to be for all product, then 
+      //  This information should be moved outside of the above if statement.  Did not carry over: $products_options_type
+      //  nor $productsQty = 0; $productsQty = 0 was previously used to identify "duplicates" and is not needed.
+      //  $products_options_type is not yet used for anything else, but was perhaps to address something specific in future
+      //  coding.  It will remain off of here for now.
+      $custom_multi_query = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($productArray[$i]['id'], $productArray[$i]['attributes'], 'products');
+      $custom_type = 'single';
+
+      if (!isset($custom_multi_query) || $custom_multi_query === NULL || $custom_multi_query === false) {
+        $custom_type = 'none';
+      } elseif (is_array($custom_multi_query) && count($custom_multi_query) > 1) {
+        $custom_type = 'multi';
+        foreach ($productArray[$i]['attributes'] as $key => $value) {
+          $customid_new = $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $value);
+          $productArray[$i]['attributes'][$key]['customid'] = ((STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $customid_new : null);
+        }
+      }
+      $productArray[$i]['customid']['type'] = $custom_type;
+      $productArray[$i]['customid']['value'] = (STOCK_SBA_DISPLAY_CUSTOMID == 'true') ? $_SESSION['pwas_class2']->zen_get_customid($productArray[$i]['id'], $products[$i]['attributes']) : null;
 //        $productArray[$i]['stockAvailable'] = null;
-        $upper_limit = STOCK_REORDER_LEVEL;
-        $productArray[$i]['lowproductstock'] = ($productArray[$i]['stockAvailable'] < $upper_limit) ? true : false;
+      $upper_limit = STOCK_REORDER_LEVEL;
+      $productArray[$i]['lowproductstock'] = ($productArray[$i]['stockAvailable'] < $upper_limit) ? true : false;
         
   // Need to collect all of the option ids that are associated with the
   // product, then sort them by the normal sort order in reverse.
@@ -1579,60 +1585,60 @@ class products_with_attributes_stock extends base {
 
          */
 
-        if (!isset($this->_isSBA[(int)$productArray[$i]['id']]['sql' . (int)$i])) {
-          //get the option/attribute list
-          $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
-                                popt.products_options_type, popt.products_options_length, popt.products_options_comment,
-                                popt.products_options_size,
-                                popt.products_options_images_per_row,
-                                popt.products_options_images_style,
-                                popt.products_options_rows
-                from        " . TABLE_PRODUCTS_OPTIONS . " popt
-                left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
-                where patrib.products_id= :products_id:
-                and popt.language_id = :languages_id: " .
-              $options_order_by;
+      if (!isset($this->_isSBA[(int)$productArray[$i]['id']]['sql' . (int)$i])) {
+        //get the option/attribute list
+        $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
+                              popt.products_options_type, popt.products_options_length, popt.products_options_comment,
+                              popt.products_options_size,
+                              popt.products_options_images_per_row,
+                              popt.products_options_images_style,
+                              popt.products_options_rows
+              from        " . TABLE_PRODUCTS_OPTIONS . " popt
+              left join " . TABLE_PRODUCTS_ATTRIBUTES . " patrib ON (patrib.options_id = popt.products_options_id)
+              where patrib.products_id= :products_id:
+              and popt.language_id = :languages_id: " .
+            $options_order_by;
 
-          $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
-          $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
-          $products_options_names = $db->Execute($sql);
-          $this->_isSBA[(int)$productArray[$i]['id']]['sql' . $i] = $products_options_names;
+        $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
+        $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
+        $products_options_names = $db->Execute($sql);
+        $this->_isSBA[(int)$productArray[$i]['id']]['sql' . $i] = $products_options_names;
+      } else {
+        $products_options_names = $this->_isSBA[(int)$productArray[$i]['id']]['sql'. $i];
+
+        if (method_exists($products_options_names, 'rewind')) {
+          $products_options_names->Rewind();
         } else {
-          $products_options_names = $this->_isSBA[(int)$productArray[$i]['id']]['sql'. $i];
-
-          if (method_exists($products_options_names, 'rewind')) {
-            $products_options_names->Rewind();
-          } else {
-            $products_options_names->Move(0);
-            $products_options_names->MoveNext();
-          }
-        }
-
-        while (!$products_options_names->EOF) {
-          $sql = "select distinct pa.attributes_image,
-                  pa.products_options_sort_order,
-                  pa.options_values_price
-                  from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
-                  where     pa.products_id = :products_id:
-                  and       pa.options_id = :options_id:
-                  and       pa.options_values_id = :options_values_id:" .
-              $order_by;
-
-          $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
-          $sql = $db->bindVars($sql, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
-          $sql = $db->bindVars($sql, ':options_values_id:', $productArray[$i]['attributes'][$products_options_names->fields['products_options_id']]['options_values_id'], 'integer');
-
-          $attribute_image = $db->Execute($sql);
-
-          if (!$attribute_image->EOF && $attribute_image->RecordCount() > 0 && zen_not_null($attribute_image->fields['attributes_image'])) {
-            $productArray[$i]['attributeImage'][] = $attribute_image->fields['attributes_image'];
-          }
+          $products_options_names->Move(0);
           $products_options_names->MoveNext();
         }
-        if (!empty($productArray[$i]['attributeImage'])) {
-          $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][count($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
+      }
+
+      while (!$products_options_names->EOF) {
+        $sql = "select distinct pa.attributes_image,
+                pa.products_options_sort_order,
+                pa.options_values_price
+                from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
+                where     pa.products_id = :products_id:
+                and       pa.options_id = :options_id:
+                and       pa.options_values_id = :options_values_id:" .
+            $order_by;
+
+        $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
+        $sql = $db->bindVars($sql, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
+        $sql = $db->bindVars($sql, ':options_values_id:', $productArray[$i]['attributes'][$products_options_names->fields['products_options_id']]['options_values_id'], 'integer');
+
+        $attribute_image = $db->Execute($sql);
+
+        if (!$attribute_image->EOF && $attribute_image->RecordCount() > 0 && zen_not_null($attribute_image->fields['attributes_image'])) {
+          $productArray[$i]['attributeImage'][] = $attribute_image->fields['attributes_image'];
         }
-        unset($productArray[$i]['attributeImage']);
+        $products_options_names->MoveNext();
+      }
+      if (!empty($productArray[$i]['attributeImage'])) {
+        $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][count($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
+      }
+      unset($productArray[$i]['attributeImage']);
 
   /*      foreach ($productArray[$i]['attributes'] as $opt_id=>$opt_array) {
           $sql = "select distinct pa.attributes_image
@@ -1655,11 +1661,9 @@ class products_with_attributes_stock extends base {
           $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][count($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
         }
         unset($productArray[$i]['attributeImage']); */
-      } else if ($productArray[$i]['flagStockCheck']) {
-            $flagAnyOutsideOutOfStock = true;
-      }
 
-    } // EOF for ($i = 0, $n = count($productArray); $i < $n; $i++) {
+    } // EOF foreach ($productArray as $i => $product) {
+
     if (empty($flagAnyOutOfStock) && ($flagAnyInsideOutOfStock || $flagAnyOutsideOutOfStock)) {
       $flagAnyOutOfStock = $flagAnyInsideOutOfStock || $flagAnyOutsideOutOfStock;
     }
