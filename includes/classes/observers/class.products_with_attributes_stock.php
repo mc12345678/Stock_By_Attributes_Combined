@@ -1615,26 +1615,28 @@ class products_with_attributes_stock extends base {
         }
       }
 
+      $sql = "select distinct pa.attributes_image,
+              pa.products_options_sort_order,
+              pa.options_values_price
+              from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
+              where     pa.products_id = :products_id:
+              and       pa.options_id = :options_id:
+              and       pa.options_values_id = :options_values_id:" .
+          $order_by;
+
       while (!$products_options_names->EOF) {
-        $sql = "select distinct pa.attributes_image,
-                pa.products_options_sort_order,
-                pa.options_values_price
-                from      " . TABLE_PRODUCTS_ATTRIBUTES . " pa
-                where     pa.products_id = :products_id:
-                and       pa.options_id = :options_id:
-                and       pa.options_values_id = :options_values_id:" .
-            $order_by;
 
-        $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
-        $sql = $db->bindVars($sql, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
-        $sql = $db->bindVars($sql, ':options_values_id:', $productArray[$i]['attributes'][$products_options_names->fields['products_options_id']]['options_values_id'], 'integer');
+        $sql2 = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
+        $sql2 = $db->bindVars($sql2, ':options_id:', $products_options_names->fields['products_options_id'], 'integer');
+        $sql2 = $db->bindVars($sql2, ':options_values_id:', $productArray[$i]['attributes'][$products_options_names->fields['products_options_id']]['options_values_id'], 'integer');
 
-        $attribute_image = $db->Execute($sql);
+        $attribute_image = $db->Execute($sql2);
 
         if (!$attribute_image->EOF && $attribute_image->RecordCount() > 0 && zen_not_null($attribute_image->fields['attributes_image'])) {
           $productArray[$i]['attributeImage'][] = $attribute_image->fields['attributes_image'];
         }
         $products_options_names->MoveNext();
+        unset($sql2);
       }
       if (!empty($productArray[$i]['attributeImage'])) {
         $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][count($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
