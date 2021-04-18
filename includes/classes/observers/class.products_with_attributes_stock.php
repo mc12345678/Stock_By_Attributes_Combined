@@ -1730,6 +1730,8 @@ class products_with_attributes_stock extends base {
     $tmp_attrib = array();
 
     // If there is no order created then there is nothing to be done at this point.
+    //   That said, the $order likely could be created; however, appears would be
+    //   duplicating code that is used elsewhere that if changed there would need changing here...
     if (!isset($GLOBALS['order'])) {
       if (!class_exists('order')) {
         require DIR_WS_CLASSES . 'order.php';
