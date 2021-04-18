@@ -10,7 +10,7 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: DrByte 2020 May 07 Modified in v1.5.7 $
  * 
- * Updated for Stock by Attributes 1.5.3.1
+ * Updated for Stock by Attributes 2021-04-17
  */
 ?>
 <div class="centerColumn" id="accountHistInfo">
@@ -40,12 +40,12 @@
   ?>
     <tr>
         <td class="accountQuantityDisplay"><?php echo  $order->products[$i]['qty'] . QUANTITY_SUFFIX; ?></td>
-        <td class="accountProductDisplay"><?php echo  $order->products[$i]['name'] . ' ' . $customid[$i]; // MOD for "Stock by Attributes" 1 of 1
+        <td class="accountProductDisplay"><?php echo  $order->products[$i]['name'] . ' ' . $customid[$i]; // MOD for "Stock by Attributes" SBA 1 of 2
 
     if ( (isset($order->products[$i]['attributes'])) && (sizeof($order->products[$i]['attributes']) > 0) ) {
       echo '<ul class="orderAttribsList">';
       for ($j=0, $n2=sizeof($order->products[$i]['attributes']); $j<$n2; $j++) {
-        echo '<li>' . $order->products[$i]['attributes'][$j]['option'] . TEXT_OPTION_DIVIDER . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value'])) . '</li>';
+        echo '<li>' . $order->products[$i]['attributes'][$j]['option'] . TEXT_OPTION_DIVIDER . nl2br(zen_output_string_protected($order->products[$i]['attributes'][$j]['value'])) . nl2br(zen_output_string_protected(PHP_EOL . $order->products[$i]['attributes'][$j]['customid'])) . '</li>'; // Stock by Attributes SBA 2 of 2
       }
         echo '</ul>';
     }

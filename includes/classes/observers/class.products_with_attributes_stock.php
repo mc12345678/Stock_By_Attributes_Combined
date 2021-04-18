@@ -1390,18 +1390,58 @@ class products_with_attributes_stock extends base {
       $customid = array();
     }
     
-    for ($i = 0, $n = count($order->products); $i < $n; $i++) {
+    foreach ($order->products as $i => &$productsI) {
       $customid[$i] = '';
       
+      if (!isset($productsI['customid']) || !is_array($productsI['customid']) || count($productsI['customid']) == 0) {
+        continue;
+      }
+
       if (STOCK_SBA_DISPLAY_CUSTOMID == 'true') {
-        $customid[$i] .= (zen_not_null($order->products[$i]['customid']['value']) 
-                ? '<br />(' . $order->products[$i]['customid']['value'] . ') ' 
+        $customid[$i] .= (zen_not_null($productsI['customid']['value']) && $productsI['model'] != $productsI['customid']['value'] 
+                ? '<br />(' . $productsI['customid']['value'] . ') '
                 : $order->products[$i]['customid']['value']);
       }
-      $customid[$i] .= (zen_not_null($order->products[$i]['model'])
-            ? '<br />(' . $order->products[$i]['model'] . ')'
+      // Add products_model designation regardless the desire to show customid
+      $customid[$i] .= (zen_not_null($productsI['model'])
+            ? '<br />(' . $productsI['model'] . ')'
             : '');
+
+      // if there is information to be shown from either, then append it with a prefixing space.
+      if (zen_not_null($customid[$i])) {
+//        $order->products[$i]['name'] .= ' ' . $customid[$i];
+      }
+
+      // If there is no desire for the customid, then don't need the remaining content below.
+      if (STOCK_SBA_DISPLAY_CUSTOMID == 'false') {
+        continue;
+      }
+
+      // Below only impacts/addresses product that have a customid marked as multi so that the individual customid info
+      // Can be displayed adjacent to the associated attribute.
+      if ($productsI['customid']['type'] !== 'multi') {
+        continue;
+      }
+
+      // If there are no attributes, then the foreach below it should not be performed.
+      if (!isset($productsI['attributes']) || !is_array($productsI['attributes'])) {
+        continue;
+      }
+
+      foreach ($productsI['attributes'] as $attrkey => &$attrval) {
+        // Skip "adding" the customid if it doesn't exist or if it does it basically has no text.
+        if (!isset($attrval['customid']) || !zen_not_null($attrval['customid'])) {
+          $attrval['customid'] = '';
+          continue;
+        }
+
+        $attrval['customid'] = '(' . $attrval['customid'] . ')';
+//        $attrval['option'] = $attrval['customid'] . ' ' . $attrval['option']; // Place customid before the option name
+//        $attrval['value'] .= PHP_EOL . $attrval['customid']; // Place the customid after the attribute value.
+      }
+      unset($attrval); // Prevent overwriting old data because modifying a referenced value.
     }
+    unset($productsI); // Prevent overwriting old data because modifying a referenced value.
   }
 
   /*
