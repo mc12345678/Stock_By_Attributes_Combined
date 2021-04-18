@@ -1397,10 +1397,11 @@ class products_with_attributes_stock extends base {
         continue;
       }
 
+      // Add what is specifically the customid if it is desired.
       if (STOCK_SBA_DISPLAY_CUSTOMID == 'true') {
         $customid[$i] .= (zen_not_null($productsI['customid']['value']) && $productsI['model'] != $productsI['customid']['value'] 
                 ? '<br />(' . $productsI['customid']['value'] . ') '
-                : $order->products[$i]['customid']['value']);
+                : '');
       }
       // Add products_model designation regardless the desire to show customid
       $customid[$i] .= (zen_not_null($productsI['model'])
