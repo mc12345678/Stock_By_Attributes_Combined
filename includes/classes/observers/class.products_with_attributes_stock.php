@@ -1382,6 +1382,7 @@ class products_with_attributes_stock extends base {
   } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
 
   /*
+   * @TODO: Move to separate file for independent implementation and/or use as desired.
    * $zco_notifier->notify('NOTIFY_HEADER_END_ACCOUNT_HISTORY_INFO');
    */
   function updateNotifyHeaderEndAccountHistoryInfo(&$callingClass, $notifier, $paramsArray) {
