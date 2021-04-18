@@ -1720,11 +1720,19 @@ class products_with_attributes_stock extends base {
   }
   
   function setCheckStockParams($from) {
-    if ($from == 'order') {
+    if ($from != 'order') {
+      return;
+    }
+
       $tmp_attrib = array();
     
       // If there is no order created then there is nothing to be done at this point.
-      if (!isset($GLOBALS['order'])) return;
+      if (!isset($GLOBALS['order'])) {
+        if (!class_exists('order')) {
+          require DIR_WS_CLASSES . 'order.php';
+        }
+        $GLOBALS['order'] = new order();
+      }
 
       // Duplicate the order information here for use/reading.
       $order = $GLOBALS['order'];
@@ -1735,13 +1743,16 @@ class products_with_attributes_stock extends base {
       // Expect that the product "counter" is the variable i and is in the global space.
       if (!isset($GLOBALS['i'])) return;
 
-      $i = $GLOBALS['i'];
+      $attributes = array();
+      if (isset($GLOBALS['i'])) {
+        $i = $GLOBALS['i'];
 
-      // if the product doesn't have any sub-characteristics or there are no attributes then no specific SBA stock to consider.
-      if (empty($order->products[$i]) || empty($order->products[$i]['attributes'])) return;
-      
-      // Obtain the attributes from the specific product.
-      $attributes = $order->products[$i]['attributes'];
+        // if the product doesn't have any sub-characteristics or there are no attributes then no specific SBA stock to consider.
+        if (empty($order->products[$i]) || empty($order->products[$i]['attributes'])) return;
+
+        // Obtain the attributes from the specific product.
+        $attributes = $order->products[$i]['attributes'];
+      }
       
       // Build the catalog side attributes from the attribute data of the order class.
       foreach ($attributes as $attrib) {
@@ -1750,7 +1761,7 @@ class products_with_attributes_stock extends base {
 
       // Set the internal attributes to the temporary array that was generated.
       $this->attributes = $tmp_attrib;
-    }
+
   }
   
   /*
