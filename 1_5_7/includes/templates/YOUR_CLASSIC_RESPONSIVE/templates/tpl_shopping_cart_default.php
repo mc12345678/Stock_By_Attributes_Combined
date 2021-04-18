@@ -8,9 +8,9 @@
  * @copyright Copyright 2003-2020 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: DrByte 2020 May 16 Modified in v1.5.7 $
+ * @version $Id: DrByte 2020 Oct 19 Modified in v1.5.7a $
  * 
- * Updated for Stock by Attributes 1.5.3 18-10-22
+ * Updated for Stock by Attributes 2021-04-17
  */
 ?>
 <?php 
@@ -121,7 +121,7 @@
 <br class="clearBoth" />
 <?php
 // START "Stock by Attributes" 2 of 3
-if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && isset($product['customid']['value']) ){
+if (STOCK_SBA_DISPLAY_CUSTOMID == 'true' && isset($product['customid']['value']) && zen_not_null($product['customid']['value'])) {
   echo '<div class="cartAttribsList">';
   echo PWA_CUSTOMID_NAME . $product['customid']['value'];
   echo '</div>';
@@ -132,13 +132,19 @@ if( STOCK_SBA_DISPLAY_CUSTOMID == 'true' && isset($product['customid']['value'])
     echo '<div class="cartAttribsList">';
     echo '<ul>';
     foreach ($product['attributes'] as $option => $value) {
-    // Start "Stock by Attributes" 3 of 3
 ?>
 
-<li><?php echo $value['products_options_name'] . TEXT_OPTION_DIVIDER . nl2br($value['products_options_values_name']);
-      if (isset($product['customid']['type']) && $product['customid']['type'] == 'multi' && isset($value['customid']) && zen_not_null($value['customid'])) { 
-        echo ' - ' . nl2br(zen_output_string_protected($value['customid'])); 
-      } /* End "Stock by Attributes 3 of 3*/ ?></li>
+<li>
+    <?php
+    echo $value['products_options_name'] . TEXT_OPTION_DIVIDER . nl2br($value['products_options_values_name']);
+    // Start "Stock by Attributes" 3 of 3
+    if (isset($product['customid']['type']) && $product['customid']['type'] == 'multi' && isset($value['customid']) && zen_not_null($value['customid'])) {
+      echo ' - ' . nl2br(zen_output_string_protected($value['customid']));
+    }
+    /* End "Stock by Attributes 3 of 3*/
+    ?>
+</li>
+
 <?php
     }
   echo '</ul>';
