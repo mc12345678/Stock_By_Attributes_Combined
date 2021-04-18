@@ -870,7 +870,7 @@ class products_with_attributes_stock extends base {
           }
 
           // Identify if the given option name/option value combination is defined as a specific variant for this specific selection.
-          //   This only really works for single optin name product or if each option name/option value is split out. For combined attributes, this
+          //   This only really works for single option name product or if each option name/option value is split out. For combined attributes, this
           //   does not properly identify the presence/existence of the variant.  That aspect probably needs to be controlled from the front end of
           //   the store via javascript/jQuery and/or upon selection of the combination without the extra screen modification.
           $isDefined = !empty($_SESSION['pwas_class2']->zen_get_sba_attribute_info($prod_id, array($products_opt->fields['options_id'] => $products_opt->fields['options_values_id']) /*$products_options_array*/, 'product', 'ids'));
