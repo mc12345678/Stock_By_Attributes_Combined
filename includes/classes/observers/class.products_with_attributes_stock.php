@@ -1427,7 +1427,7 @@ class products_with_attributes_stock extends base {
 
       // if there is information to be shown from either, then append it with a prefixing space.
       if (zen_not_null($customid[$i])) {
-//        $order->products[$i]['name'] .= ' ' . $customid[$i];
+        $order->products[$i]['name'] .= ' ' . $customid[$i];
       }
 
       // If there is no desire for the customid, then don't need the remaining content below.
@@ -1457,7 +1457,7 @@ class products_with_attributes_stock extends base {
 
         $attrval['customid'] = '(' . $attrval['customid'] . ')';
 //        $attrval['option'] = $attrval['customid'] . ' ' . $attrval['option']; // Place customid before the option name
-//        $attrval['value'] .= PHP_EOL . $attrval['customid']; // Place the customid after the attribute value.
+        $attrval['value'] .= PHP_EOL . $attrval['customid']; // Place the customid after the attribute value.
       }
       unset($attrval); // Prevent overwriting old data because modifying a referenced value.
     }
