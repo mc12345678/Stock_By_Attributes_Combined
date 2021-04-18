@@ -1387,6 +1387,21 @@ class products_with_attributes_stock extends base {
    */
   function updateNotifyHeaderEndAccountHistoryInfo(&$callingClass, $notifier, $paramsArray) {
     global $order, $customid;
+
+    $this->catalogCustomID($order, $customid);
+  }
+
+  /*
+   * $zco_notifier->notify('NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION');
+   * NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION
+   */
+  function updateNotifyHeaderEndCheckoutConfirmation(&$callingClass, $notifier, $paramsArray) {
+    global $order, $customid;
+
+    $this->catalogCustomID($order, $customid);
+  }
+
+  function catalogCustomID(&$order, &$customid) {
     if (!isset($customid) || !is_array($customid)) {
       $customid = array();
     }
@@ -1400,6 +1415,7 @@ class products_with_attributes_stock extends base {
 
       // Add what is specifically the customid if it is desired.
       if (STOCK_SBA_DISPLAY_CUSTOMID == 'true') {
+        // assign the customid to this array if it is different than the model.
         $customid[$i] .= (zen_not_null($productsI['customid']['value']) && $productsI['model'] != $productsI['customid']['value'] 
                 ? '<br />(' . $productsI['customid']['value'] . ') '
                 : '');
@@ -1430,9 +1446,11 @@ class products_with_attributes_stock extends base {
         continue;
       }
 
+      // Loop through each attribute to add some form of customid to the attributes array, either blank or additional text.
       foreach ($productsI['attributes'] as $attrkey => &$attrval) {
         // Skip "adding" the customid if it doesn't exist or if it does it basically has no text.
         if (!isset($attrval['customid']) || !zen_not_null($attrval['customid'])) {
+          // Ensures that variable is initiated to minimize need to check for presence of the key.
           $attrval['customid'] = '';
           continue;
         }
@@ -1444,24 +1462,6 @@ class products_with_attributes_stock extends base {
       unset($attrval); // Prevent overwriting old data because modifying a referenced value.
     }
     unset($productsI); // Prevent overwriting old data because modifying a referenced value.
-  }
-
-  /*
-   * $zco_notifier->notify('NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION');
-   * NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION
-   */
-  function updateNotifyHeaderEndCheckoutConfirmation(&$callingClass, $notifier, $paramsArray) {
-    global $order, $customid;
-    
-    if (!isset($customid) || !is_array($customid)) {
-      $customid = array();
-    }
-    
-    foreach ($order->products as $i => $productsI) {
-      if(isset($productsI['customid']['value'])) {
-        $customid[$i] = '<br />(' . $productsI['customid']['value'] . ')';
-      }
-    }
   }
 
   // NOTIFY_HEADER_END_CHECKOUT_SUCCESS
