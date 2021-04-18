@@ -1466,7 +1466,7 @@ class products_with_attributes_stock extends base {
 
   // NOTIFY_HEADER_END_CHECKOUT_SUCCESS
   function updateNotifyHeaderEndCheckoutSuccess(&$callingClass, $notifier, $paramsArray) {
-    global $order, $customid;
+    global $order;
     
     if (isset($order) && is_object($order)) {
       $this->updateNotifyHeaderEndCheckoutConfirmation($callingClass, $notifier, $paramsArray);
