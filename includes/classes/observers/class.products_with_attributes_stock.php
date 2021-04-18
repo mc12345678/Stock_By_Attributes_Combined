@@ -331,14 +331,18 @@ class products_with_attributes_stock extends base {
     
     $this->attributeDetailsArrayforJson = $attributeDetailsArrayforJson;
     
-    $type_array = array(
-      PRODUCTS_OPTIONS_TYPE_SELECT_SBA,
+    $type_array = array();
+    if (defined('PRODUCTS_OPTIONS_TYPE_SELECT_SBA')) {
+      $type_array = array(PRODUCTS_OPTIONS_TYPE_SELECT_SBA);
+    }
+
+    $type_array = array_merge($type_array, array(
       PRODUCTS_OPTIONS_TYPE_RADIO,
       PRODUCTS_OPTIONS_TYPE_CHECKBOX,
       PRODUCTS_OPTIONS_TYPE_FILE,
       PRODUCTS_OPTIONS_TYPE_TEXT,
       PRODUCTS_OPTIONS_TYPE_SELECT,
-    );
+    ));
 
     $products_options_type = $products_options_names_fields['products_options_type'];
 
