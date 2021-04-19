@@ -12,7 +12,7 @@
  * Stock by Attributes 2021-04-19 mc12345678
  */
 
-class pwas_imageswap extends base {
+class zcObserverPwasImageswap extends base {
   function __construct() {
     
     $attachNotifier = array();
