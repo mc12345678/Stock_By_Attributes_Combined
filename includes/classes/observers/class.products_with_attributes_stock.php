@@ -1613,12 +1613,12 @@ class products_with_attributes_stock extends base {
   }
 
   // NOTIFY_HEADER_END_SHOPPING_CART
-    /**
-     * @param $callingClass
-     * @param $notifier
-     * @param $paramsArray
-     */
-    function updateNotifyHeaderEndShoppingCart(&$callingClass, $notifier, $paramsArray) {
+  /**
+   * @param $callingClass
+   * @param $notifier
+   * @param $paramsArray
+   */
+  function updateNotifyHeaderEndShoppingCart(&$callingClass, $notifier, $paramsArray) {
     global $productArray, $flagAnyOutOfStock, $db;
 
     $flagAnyInsideOutOfStock = false;
