@@ -37,11 +37,9 @@ if (!isset($_SESSION['admin_id'])) zen_redirect(zen_href_link(FILENAME_LOGIN));
 
 
 //get the user selected action
+$action = null;
 if( isset($_GET['selectSBAinstall']) ){
   $action = addslashes(trim($_GET['selectSBAinstall']));
-}
-else{
-  $action = null;
 }
 
 ?>
@@ -1672,6 +1670,8 @@ function installOptionalSQL1(){
   if((isset($db->error_number) && $db->error_number) || (isset($db->error) && $db->error)){
     $msg = ' Error Message: ' . $db->error_message;
     $failed = true;
+    array_push($resultMmessage, 'Optional SQL file did not complete. ' . $msg);
+    return;
   }
   zen_record_admin_activity('Inserted SBA optional SQL 1 via the install file.', 'warning');
   array_push($resultMmessage, 'Optional SQL file complete. ' . $msg);
@@ -1973,12 +1973,23 @@ function checkSBAtable($table = null, $field = null, $display = true) {
 
   global $db, $resultMmessage;
   $result = null;
-  static $setTrue = false;
+  static $setTrue = array();
+  if (is_null($table)) {
+    return false;
+  }
 
   $check = $db->Execute("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
               WHERE TABLE_SCHEMA = '".DB_DATABASE."'
               AND TABLE_NAME = '". $table . "'
               AND COLUMN_NAME like '%".$field."%'");
+
+  if ($check->RecordCount() == 0) {
+    if (!isset($setTrue[$table]) && $display == true) {
+      array_push($resultMmessage, "<br />&bull; <b>Table $table does not exist.</b> ");
+    }
+    $setTrue[$table] = array();
+    return false;
+  }
 
   while (!$check->EOF) {
     if (empty($check->fields['COLUMN_NAME'])) {
@@ -1986,6 +1997,7 @@ function checkSBAtable($table = null, $field = null, $display = true) {
       continue;
     }
 
+    $setTrue[$table][$check->fields['COLUMN_NAME']] = true;
     $result .= $check->fields['COLUMN_NAME'] . ' | ';
 
     $check->MoveNext();
@@ -1993,9 +2005,9 @@ function checkSBAtable($table = null, $field = null, $display = true) {
 
   //limits the number of time this gets displayed, since it is call many times
   //This $resultMmessage is for general information only
-  if($setTrue == false and $result and $display == true){
+  if(empty($setTrue[$table]) and $result and $display == true){
      array_push($resultMmessage, "<br />&bull; <b>$table Table Fields:</b> " . $result);
-     $setTrue = true;
+     $setTrue[$table] = true;
   }
 
   //if there are any fields than we assume the table already exists
