@@ -102,7 +102,7 @@ class products_with_attributes_stock_admin extends base {
   function updateNotifierAdminZenDeleteProductsAttributes (&$callingClass, $notifier, $paramsArray, & $delete_product_id){
     global $db;
     /* START STOCK BY ATTRIBUTES */
-    $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = '" . (int)$delete_product_id . "'");
+    $db->Execute("delete IGNORE from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " where products_id = '" . (int)$delete_product_id . "'");
     /* END STOCK BY ATTRIBUTES */
 
   }
