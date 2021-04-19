@@ -68,6 +68,7 @@ class products_with_attributes_stock extends base {
     
     $attachNotifier = array();
     $attachNotifier[] = 'ZEN_GET_PRODUCTS_STOCK';
+    $attachNotifier[] = 'ZEN_CHECK_STOCK_MESSAGE';
     $attachNotifier[] = 'NOTIFY_ORDER_AFTER_QUERY';
     $attachNotifier[] = 'NOTIFY_ORDER_CART_ADD_PRODUCT_LIST';
     $attachNotifier[] = 'NOTIFY_ORDER_CART_ADD_ATTRIBUTE_LIST';
@@ -108,83 +109,160 @@ class products_with_attributes_stock extends base {
     );
   
   */
-  function updateZenGetProductsStock(&$callingClass, $notifier, $products_id, &$products_quantity, &$quantity_handled) {
+  function updateZenGetProductsStock(&$callingClass, $notifier, $products_id_info, &$products_quantity, &$quantity_handled) {
+    global $db;
 
     // Check if SBA has been initiated, if not then errors will be thrown by some of
     //   the remaining code.  Exit gracefully from this code to not have it process anything.
     if (empty($_SESSION['pwas_class2'])) return;
 
     // There is no appropriate product to handle.
-    if (isset($products_id) && (int)$products_id <= 0) return false;
+    if (!isset($products_id_info)
+      || !is_array($products_id_info) && (int)$products_id_info <= 0
+      || is_array($products_id_info)
+        && (!isset($products_id_info['products_id'])
+            || (int)$products_id_info['products_id'] <= 0
+          )
+    ) {
+      return false;
+    }
+
+    // Allow processing of $products_id_info as if $products_id was provided
+    if (!is_array($products_id_info)) {
+      $products_id = $products_id_info;
+      unset($products_id_info);
+    }
+
+    // Basically this is the else of the above and indicates that there is
+    //  something to process.
+    if (!empty($products_id_info)) {
+      // Process $products_id to retrieve stored data.
+      $prod_is_array = true;
+      $attributes = array();
+      $dupTest = null;
+      foreach ($products_id_info as $key => $value) {
+        switch (true) {
+          case ($key == 'products_id'):
+            $products_id = $value;
+            break;
+          case ($key == 'attributes'):
+            $attributes = $value;
+            break;
+          case ($key == 'dupTest'):
+            $dupTest = $value;
+            break;
+          default:
+        }
+      }
+
+      if (!empty($this->from)) {
+        $this->setCheckStockParams($this->from, $products_id);
+
+        $attributes = !isset($attributes) ? $this->attributes : $attributes;
+      }
+
+      unset($products_id_info);
+    }
 
     // Check if SBA tracked, if not, then no need to process further.
     if (!$_SESSION['pwas_class2']->zen_product_is_sba($products_id)) return false;
 
     // Try to get the current setting of this value that defaults to true in PHP 7.4+
-    $exception_ignore = ini_get('zend.exception_ignore_args');
+    if (empty($prod_is_array)) {
+      // Technically don't need to evaluate the call(s) to zen_get_products_stock
+      //   because if the code needs to evaluate the attributes then it is code
+      //   associated with this module and is "easily" editable to pass the
+      //   data with the proper makeup.  Information from the core code
+      //   should be made available enough to retrieve without modification.
+      $exception_ignore = ini_get('zend.exception_ignore_args');
 
-    if (!empty($exception_ignore)) {
-      $ignore_old = ini_set('zend.exception_ignore_args', 'false');
-    }
-    $backtrace = debug_backtrace();
-    if (isset($ignore_old)) {
-      ini_set('zend.exception_ignore_args', $ignore_old);
-    }
-
-    $current_level = -1;
-    $args = array();
-    $attributes = array();
-
-    // Note that if the $products_id is formatted using the hashed attributes and there are no text attributes then the
-    //  full attribute designation could be determined "applicable" to this product by comparing all of the possible hashes
-    //  against the provided selection to determine what selections had been made without pulling the individual attribute selection.
-    //  though it does offer the opportunity to identify if the products_id is properly generated through comparison and would
-    //  identify if the cart session or the page html had been modified.
-    
-    
-    foreach ($backtrace as $level => $data) {
-      if ($data['function'] === 'zen_get_products_stock') {
-        $current_level = $level;
-        $args['zen_get_products_stock'] = $data['args'];
-        $attributes = isset($args['zen_get_products_stock'][1]) ? $args['zen_get_products_stock'][1] : null;
-        $dupTest = isset($args['zen_get_products_stock'][2]) ? $args['zen_get_products_stock'][2] : null;
-        if (!empty($this->from)) {
-          $this->setCheckStockParams($this->from);
-        
-          $attributes = !isset($attributes) ? $this->attributes : $attributes;
+      if (!empty($exception_ignore)) {
+        $ignore_old = ini_set('zend.exception_ignore_args', 'false'); // zend.exception_ignore_args
+      }
+      $backtrace = debug_backtrace();
+      if (isset($ignore_old)) {
+        if ($ignore_old !== false) {
+          ini_set('zend.exception_ignore_args', $ignore_old);
         }
+      }
+
+      $current_level = -1;
+      $args = array();
+      $attributes = array();
+
+      // Note that if the $products_id is formatted using the hashed attributes and there are no text attributes then the
+      //  full attribute designation could be determined "applicable" to this product by comparing all of the possible hashes
+      //  against the provided selection to determine what selections had been made without pulling the individual attribute selection.
+      //  though it does offer the opportunity to identify if the products_id is properly generated through comparison and would
+      //  identify if the cart session or the page html had been modified.
 
 
-        continue;
-      } // EOF IF zen_get_products_stock
+      foreach ($backtrace as $level => $data) {
+        if ($data['function'] === 'zen_get_products_stock') {
+          $current_level = $level;
+          $args['zen_get_products_stock'] = $data['args'];
+          $attributes = isset($args['zen_get_products_stock'][1]) ? $args['zen_get_products_stock'][1] : null;
+          $dupTest = isset($args['zen_get_products_stock'][2]) ? $args['zen_get_products_stock'][2] : null;
+          if (!empty($this->from)) {
+            $this->setCheckStockParams($this->from, $products_id);
 
-      if ($data['function'] === 'zen_check_stock' && $current_level != -1 && $level > $current_level) {
-        $current_level = $level;
-        $args['zen_check_stock'] = $data['args'];
-        $attributes = isset($args['zen_check_stock'][2]) ? $args['zen_check_stock'][2] : null;
-        $from = isset($this->from) ? $this->from : (isset($args['zen_check_stock'][3]) ? $args['zen_check_stock'][3] : 'products');
-        if (!empty($this->from) /*&& $data['function'] === 'zen_check_stock' && $current_level != -1*/ /*&& $level == $current_level+1*/) {
-          $this->setCheckStockParams($this->from);
-        
-          $attributes = $this->attributes;
-        }
-      } // EOF IF zen_check_stock && $current_level != -1 && $level > $current_level
-    } // EOF foreach backtrace
+            $attributes = !isset($attributes) ? $this->attributes : $attributes;
+          }
+
+
+          continue;
+        } // EOF IF zen_get_products_stock
+
+        if ($data['function'] === 'zen_check_stock' && $current_level != -1 && $level > $current_level) {
+          $current_level = $level;
+          $args['zen_check_stock'] = $data['args'];
+          $attributes = isset($args['zen_check_stock'][2]) ? $args['zen_check_stock'][2] : null;
+          $from = isset($this->from) ? $this->from : (isset($args['zen_check_stock'][3]) ? $args['zen_check_stock'][3] : 'products');
+          if (!empty($this->from) /*&& $data['function'] === 'zen_check_stock' && $current_level != -1*/ /*&& $level == $current_level+1*/) {
+            $this->setCheckStockParams($this->from);
+
+            $attributes = $this->attributes;
+          }
+        } // EOF IF zen_check_stock && $current_level != -1 && $level > $current_level
+      } // EOF foreach backtrace
     
-    // Somehow ended up in this function but applicable sub-routines were not detected
-    if ($current_level === -1) {
-      return false;
+      // Somehow ended up in this function but applicable sub-routines were not detected
+      if ($current_level === -1) {
+        return false;
+      }
     }
     
     // Product were passed but $attributes were not.  
     if (empty($attributes) || !is_array($attributes)) {
       //For products without associated attributes, get product level stock quantity
 //  DON'T HANDLE
+
+      // Because the original data format was modified, have to respond back with recognizable information
+      //   Unfortunately because $products_id is not sent as malleable, all calculations have to be performed
+      //   in here instead of say returning a modified $products_id or otherwise making it possible for the base
+      //   code to process further.  So, keep an eye out on changes made to the function zen_get_products_stock.
+      //   Changes made after the return for handling will likely need to be incorporated here.
+      if (!empty($prod_is_array)) {
+        $stock_query = "SELECT products_quantity
+                FROM " . TABLE_PRODUCTS . "
+                WHERE products_id = " . (int)$products_id . " LIMIT 1";
+
+        $stock_values = $db->Execute($stock_query);
+        $products_quantity = $stock_values->fields['products_quantity'];
+        // Leave the value alone if it is non-falsey otherwise ensure that is used.
+        if (empty($quantity_handled)) {
+          $quantity_handled = true;
+        }
+      }
+
       return false;
     }
     
     // below function/call was written in ZC 1.5.1, 1.5.3, and 1.5.4 to support broadly addressing attributes and for
     //   some reason in ZC 1.5.5, the call was omitted/skipped.
+    // @todo: considering that $this->setCheckStockParams may result in
+    //    an array of attribute arrays, may need to adjust the below to
+    //    capture an accurate return value. Perhaps more to see.
     $products_quantity =
         $_SESSION['pwas_class2']->zen_get_sba_attribute_info($products_id, $attributes, 'products', (isset($dupTest) && $dupTest == 'true' ? 'dupTest' : 'stock'));
     if (empty($quantity_handled)) {
@@ -197,6 +275,67 @@ class products_with_attributes_stock extends base {
 //    $quantity_handled = true;
   }
   
+  /**
+   *
+   *    $GLOBALS['zco_notifier']->notify(
+            'ZEN_CHECK_STOCK_MESSAGE',
+            array(
+                $products_id,
+                $products_quantity
+            ),
+            $out_of_stock_message
+        );
+   *
+   **/
+  function updateZenCheckStockMessage(&$callingClass, $notifier, $products_array, &$out_of_stock_message) {
+    // Check if SBA has been initiated, if not then errors will be thrown by some of
+    //   the remaining code.  Exit gracefully from this code to not have it process anything.
+    if (empty($_SESSION['pwas_class2'])) return;
+
+    // Make it easier/faster to retrieve the items from the array and
+    //  preserve the keys of the array.
+    $products_array = array_reverse($products_array, true);
+
+    // array_pop takes off the top of the array (last element)
+    $products_id = array_pop($products_array);
+    $products_quantity = array_pop($products_array);
+
+    if (!isset($products_id)
+      || !is_array($products_id) && (int)$products_id <= 0
+      || is_array($products_id)
+        && (!isset($products_id['products_id'])
+            || (int)$products_id['products_id'] <= 0
+          )
+    ) {
+      return false;
+    }
+
+    $product_id = $products_id;
+    if (is_array($products_id)) {
+      $product_id = $products_id['products_id'];
+    }
+
+    // Check if SBA tracked, if not, then no need to process further.
+    if (!$_SESSION['pwas_class2']->zen_product_is_sba($product_id)) return false;
+
+    // Here would be a good place to call some other function to identify how to
+    //  handle this "product" (variant).  Is it possible to be oversold?
+    //  Should there be some sort of "back order" message?
+    //  What is represented here is a message/condition where the returned
+    //   quantity of product indicates some sort of "oversell" condition.
+    //   Do not yet know the result of sending back an empty message
+    //   though can see that there will still be text there as a
+    //.  surrounding class... So even if attempted to force execution of
+    //   this code by always causing a negative value, then would always
+    //   have some "remnant" with which to deal.
+    $out_of_stock_message = $out_of_stock_message;
+    // Message will only be displayed/requested when
+    //  zen_get_products_stock - the ordered quantity is less than 0 and no real/direct
+    //  way to know the quantity ordered without some "guessing" unless there is
+    //  more information readily available as part of this process.
+
+  }
+
   /**
    * NOTIFY_ZEN_HAS_PRODUCT_ATTRIBUTES_VALUES
       ZC: 1.56 inserted. Used to identify if attributes affect product's price.
@@ -886,7 +1025,7 @@ class products_with_attributes_stock extends base {
             // By this point, it is not display only, it is not a default, it is identified as a known variant, it is out of stock and not
             //   permitted to be added to the cart, so disable it.
             $disablebackorder[] = ' disabled="disabled" ';
-          } elseif (zen_get_products_stock($prod_id) <= 0) {
+          } elseif (zen_get_products_stock(array('products_id' => $prod_id, 'attributes' => array($products_opt->fields['options_id'] => $products_opt->fields['options_values_id']))) <= 0) {
             // Basically the expectation is that this options_id/options value doesn't have a variant defined and the total quantity of product is <=0
             //   then disable the option as a general rule
             $disablebackorder[] = ' disabled="disabled" ';
@@ -1514,8 +1653,8 @@ class products_with_attributes_stock extends base {
       $productArray[$i]['attributeImage'] = array();
 
       if (STOCK_CHECK == 'true') {
-        $SBAqtyAvailable = zen_get_products_stock($productArray[$i]['id'], $products[$i]['attributes']); // Quantity of product available with the selected attribute(s).
-        $totalQtyAvailable = zen_get_products_stock($productArray[$i]['id']); // Total quantity of product available if all attribute optioned product were added to the cart.
+        $SBAqtyAvailable = zen_get_products_stock(array('products_id' => $productArray[$i]['id'], 'attributes' => $products[$i]['attributes'])); // Quantity of product available with the selected attribute(s).
+        $totalQtyAvailable = zen_get_products_stock(array('products_id' => $productArray[$i]['id'], 'attributes' => array())); // Total quantity of product available if all attribute optioned product were added to the cart.
 
         // Clear flag stock condition for SBA product to be controlled by SBA below
         $productArray[$i]['flagStockCheck'] = '';
@@ -1700,12 +1839,13 @@ class products_with_attributes_stock extends base {
               } 
             }
             if (zen_not_null($attributes)) {
-              if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
+//              if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
+              if (zen_check_stock(array('products_id' => $products[$i]['id'], 'attributes' => $attributes), $products[$i]['quantity'])) {
                 zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
                 break;
               }
             } else {
-              $qtyAvailable = zen_get_products_stock($products[$i]['id']);
+              $qtyAvailable = zen_get_products_stock(array('products_id' => $products[$i]['id']));
               if ($qtyAvailable - $products[$i]['quantity'] < 0 || $qtyAvailable - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
                 zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
                 break;
