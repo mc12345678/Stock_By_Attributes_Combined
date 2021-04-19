@@ -93,6 +93,8 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_HEADER_END_SHOPPING_CART';
     $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_SHIPPING';
     $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_CONFIRMATION';
+    $attachNotifier[] = 'NOTIFY_MODULES_MAIN_PRODUCT_IMAGE_START';
+    $attachNotifier[] = 'NOTIFY_OPTIMIZE_IMAGE';
 
   
     $this->attach($this, $attachNotifier);
@@ -1862,6 +1864,36 @@ class products_with_attributes_stock extends base {
     $this->from = 'order';
   }
   
+  // NOTIFY_MODULES_MAIN_PRODUCT_IMAGE_START
+  function updateNotifyModulesMainProductImageStart(&$callingClass, $notifier) {
+    if (empty($this->MainImage)) {
+      $this->MainImage = true;
+    }
+  }
+
+  // NOTIFY_OPTIMIZE_IMAGE
+  function updateNotifyOptimizeImage(&$callingClass, $notifier, $template_dir, &$src, &$alt, &$width, &$height, &$parameters) {
+
+    if (empty($this->MainImage)) {
+      return;
+    }
+
+    unset($this->MainImage);
+
+    if (empty($_GET['products_id'])) {
+      return;
+    }
+
+    $products_id = (int)$_GET['products_id'];
+
+    if (!$_SESSION['pwas_class2']->zen_product_is_sba($products_id)) {
+      return;
+    }
+
+    $parameters .= ' id="SBA_ProductImage" ';
+  }
+
+
   // @todo handle $products_id when $i is not available as part of $order
   function setCheckStockParams($from, $products_id = null) {
     if ($from != 'order') {
