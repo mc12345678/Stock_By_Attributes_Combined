@@ -1561,7 +1561,7 @@ class products_with_attributes_stock extends base {
       }
       // Add products_model designation regardless the desire to show customid
       $customid[$i] .= (zen_not_null($productsI['model'])
-            ? '<br />(' . $productsI['model'] . ')'
+            ? '<br />' . PWA_CUSTOMID_NAME . '(' . $productsI['model'] . ')'
             : '');
 
       // if there is information to be shown from either, then append it with a prefixing space.
@@ -1596,7 +1596,7 @@ class products_with_attributes_stock extends base {
 
         $attrval['customid'] = '(' . $attrval['customid'] . ')';
 //        $attrval['option'] = $attrval['customid'] . ' ' . $attrval['option']; // Place customid before the option name
-        $attrval['value'] .= PHP_EOL . $attrval['customid']; // Place the customid after the attribute value.
+        $attrval['value'] .= /*PHP_EOL*/ ' - ' . $attrval['customid']; // Place the customid after the attribute value.
       }
       unset($attrval); // Prevent overwriting old data because modifying a referenced value.
     }
