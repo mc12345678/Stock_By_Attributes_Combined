@@ -2010,7 +2010,7 @@ class products_with_attributes_stock extends base {
     if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_PRODUCT_LINE_ITEM') {
       if (STOCK_LIMITED != 'true') {
         if ($this->_orderIsSBA) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
-          for ($i=0, $n=count($this->products); $i<$n; $i++) {
+          foreach ($this->products as $i => $productsI) {
             if ($callingClass->products[$i]['id'] == $paramsArray['products_prid']) {
               break;
             }
