@@ -1441,20 +1441,23 @@ class products_with_attributes_stock extends base {
     function updateNotifyOrderProcessingStockDecrementEnd(&$callingClass, $notifier, $i) {
     //Need to modify the email that is going out regarding low-stock.
     //paramsArray is $i at time of development.
-      if ($this->_orderIsSBA && STOCK_LIMITED == 'true') { // Only take SBA action on SBA tracked product mc12345678 12-18-2015 as of 07-17-2017 prevent generating information related to low-stock email when stock is not limited by ZC.
-        $this->orderProcessingI = $i;
-        /* Added test for $callingClass->doStockDecrement to support backwards compatibility with ZC 1.5.1 and email generation. 2017-07-12
-        */
-        if ((isset($callingClass->doStockDecrement) ? $callingClass->doStockDecrement : true)  && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= STOCK_REORDER_LEVEL) {
-          // kuroi: trigger and details for attribute low stock email
-          $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid']['value'] . ', name ' . $this->_productI['name'] . ', ';
-          foreach($this->_productI['attributes'] as $attributes){
-            $callingClass->email_low_stock .= $attributes['option'] . ': ' . $attributes['value'] . ', ';
-          }
-          $callingClass->email_low_stock .= 'Stock: ' . $this->_attribute_stock_left . "\n\n";
-        // kuroi: End Stock by Attribute additions
-        }
+      if (!($this->_orderIsSBA && STOCK_LIMITED == 'true')) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015 as of 07-17-2017 prevent generating information related to low-stock email when stock is not limited by ZC.
+        return;
       }
+      $this->orderProcessingI = $i;
+      /* Added test for $callingClass->doStockDecrement to support backwards compatibility with ZC 1.5.1 and email generation. 2017-07-12
+      */
+      $reorder_level = STOCK_REORDER_LEVEL;
+      if (!((isset($callingClass->doStockDecrement) && $callingClass->doStockDecrement || !isset($callingClass->doStockDecrement))  && $this->_stock_values->RecordCount() > 0 && $this->_attribute_stock_left <= $reorder_level)) {
+        return;
+      }
+      // kuroi: trigger and details for attribute low stock email
+      $callingClass->email_low_stock .=  'ID# ' . zen_get_prid($this->_productI['id']) . ', model# ' . $this->_productI['model'] . ', customid ' . $this->_productI['customid']['value'] . ', name ' . $this->_productI['name'] . ', ';
+      foreach ($this->_productI['attributes'] as $attributes) {
+        $callingClass->email_low_stock .= $attributes['option'] . ': ' . $attributes['value'] . ', ';
+      }
+      $callingClass->email_low_stock .= 'Stock: ' . $this->_attribute_stock_left . "\n\n";
+    // kuroi: End Stock by Attribute additions
     }
   
   /**
