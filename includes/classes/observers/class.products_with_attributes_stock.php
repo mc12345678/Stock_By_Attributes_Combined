@@ -1600,7 +1600,7 @@ class products_with_attributes_stock extends base {
 
       // Below only impacts/addresses product that have a customid marked as multi so that the individual customid info
       // Can be displayed adjacent to the associated attribute.
-      if ($productsI['customid']['type'] !== 'multi') {
+      if ($productsI['customid']['type'] !== 'multi' && !($productsI['customid']['type'] === 'single' && count($productsI['attributes']) == 1)) {
         continue;
       }
 
