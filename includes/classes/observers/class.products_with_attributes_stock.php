@@ -939,7 +939,7 @@ class products_with_attributes_stock extends base {
           $selected_attribute = $_SESSION['cart']->contents[$prod_id]['attributes'][$products_options_names_fields['products_options_id']];
         } else {
           // use customer-selected values
-          if (!empty($_POST['id'])) {
+          if (!empty($_POST['id']) && is_array($_POST['id'])) {
             foreach($_POST['id'] as $key => $value) {
               if ($key == $products_options_names_fields['products_options_id']) {
                 $selected_attribute = $value;
