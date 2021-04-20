@@ -1292,47 +1292,48 @@ class products_with_attributes_stock extends base {
     $this->_productI = $productI;
     $this->_orderIsSBA = $_SESSION['pwas_class2']->zen_product_is_sba($this->_productI['id']);
     
-    if ($this->_orderIsSBA /*&& zen_product_is_sba($this->_productI['id'])*/) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
-      $this->_stock_info = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order'); // Sorted comma separated list of the attribute_id.      // START "Stock by Attributes"
-
-      $attributeList = null;
-      $customid = null;
-      if (is_array($this->_productI) && array_key_exists('attributes', $this->_productI) && is_array($this->_productI['attributes']) && !empty($this->_productI['attributes'])) {
-        foreach($this->_productI['attributes'] as $attributes){
-          $attributeList[] = $attributes['value_id'];
-        }
-        $customid = $_SESSION['pwas_class2']->zen_get_customid($this->_productI['id'],$attributeList); // Expects that customid is the string of text representing either the combination product or comma imploded customid of each individual attribute that comprises this variant, or if none is provided/available then the model is returned.
-        $productI['customid']['value'] = $customid;
-        $this->_productI['customid']['value'] = $customid;
-//      $productI['model'] = (zen_not_null($customid) ? $customid : $productI['model']);
-        // Options: products_model remains as is: false
-        //          products_model is replaced by existing customid: 1
-        //          products_model is always replaced by customid regardless of existence of customid: 2
-        //          products_model is always used unless empty then customid: 3
-        switch (true) {
-          case !defined('STOCK_SBA_CUSTOM_FOR_MODEL'):
-            $model = $productI['model'];
-            break;
-          case STOCK_SBA_CUSTOM_FOR_MODEL == '1':
-            $model = (zen_not_null($customid) && strlen(trim($customid)) > 0) ? $customid : $productI['model'];
-            break;
-          case STOCK_SBA_CUSTOM_FOR_MODEL == '2':
-            $model = $customid;
-            break;
-          case STOCK_SBA_CUSTOM_FOR_MODEL == '3':
-            $model = (zen_not_null($productI['model']) && strlen(trim($productI['model'])) > 0) ? $productI['model'] : $customid;
-            break;
-          default:
-            $model = $productI['model'];
-        }
-
-        $productI['model'] = $model; //(defined('STOCK_SBA_CUSTOM_FOR_MODEL') && STOCK_SBA_CUSTOM_FOR_MODEL !== 'false' && zen_not_null($customid) && strlen(trim($customid)) > 0 ? $customid : $productI['model']);
-        $this->_productI['model'] = $model; //(defined('STOCK_SBA_CUSTOM_FOR_MODEL') && STOCK_SBA_CUSTOM_FOR_MODEL !== 'false' && zen_not_null($customid) && strlen(trim($customid)) > 0 ? $customid : $productI['model']);
-      }
-
-    // @TODO: work with not decreasing overall stock for items that are generally Tracked by SBA, but have non-stock selections that would not affect the quantities tracked by SBA or in some cases ZC.  
-    //   This can be done by setting $callingClass->doStockDecrement as necessary to prevent decreasing the total stock item(s).
+    if (!$this->_orderIsSBA /*&& zen_product_is_sba($this->_productI['id'])*/) { // Only take SBA action on SBA tracked product mc12345678 12-18-2015
+      return;
     }
+    $this->_stock_info = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute_info(zen_get_prid($this->_productI['id']), $this->_productI['attributes'], 'order'); // Sorted comma separated list of the attribute_id.      // START "Stock by Attributes"
+
+    $attributeList = null;
+    $customid = null;
+    if (!(is_array($this->_productI) && array_key_exists('attributes', $this->_productI) && is_array($this->_productI['attributes']) && !empty($this->_productI['attributes']))) {
+      // @TODO: work with not decreasing overall stock for items that are generally Tracked by SBA, but have non-stock selections that would not affect the quantities tracked by SBA or in some cases ZC.  
+      //   This can be done by setting $callingClass->doStockDecrement as necessary to prevent decreasing the total stock item(s).
+      return;
+    }
+    foreach ($this->_productI['attributes'] as $attributes) {
+      $attributeList[] = $attributes['value_id'];
+    }
+    $customid = $_SESSION['pwas_class2']->zen_get_customid($this->_productI['id'],$attributeList); // Expects that customid is the string of text representing either the combination product or comma imploded customid of each individual attribute that comprises this variant, or if none is provided/available then the model is returned.
+    $productI['customid']['value'] = $customid;
+    $this->_productI['customid']['value'] = $customid;
+//  $productI['model'] = (zen_not_null($customid) ? $customid : $productI['model']);
+    // Options: products_model remains as is: false
+    //          products_model is replaced by existing customid: 1
+    //          products_model is always replaced by customid regardless of existence of customid: 2
+    //          products_model is always used unless empty then customid: 3
+    switch (true) {
+      case !defined('STOCK_SBA_CUSTOM_FOR_MODEL'):
+        $model = $productI['model'];
+        break;
+      case STOCK_SBA_CUSTOM_FOR_MODEL == '1':
+        $model = (zen_not_null($customid) && strlen(trim($customid)) > 0) ? $customid : $productI['model'];
+        break;
+      case STOCK_SBA_CUSTOM_FOR_MODEL == '2':
+        $model = $customid;
+        break;
+      case STOCK_SBA_CUSTOM_FOR_MODEL == '3':
+        $model = (zen_not_null($productI['model']) && strlen(trim($productI['model'])) > 0) ? $productI['model'] : $customid;
+        break;
+      default:
+        $model = $productI['model'];
+    }
+
+    $productI['model'] = $model; //(defined('STOCK_SBA_CUSTOM_FOR_MODEL') && STOCK_SBA_CUSTOM_FOR_MODEL !== 'false' && zen_not_null($customid) && strlen(trim($customid)) > 0 ? $customid : $productI['model']);
+    $this->_productI['model'] = $model; //(defined('STOCK_SBA_CUSTOM_FOR_MODEL') && STOCK_SBA_CUSTOM_FOR_MODEL !== 'false' && zen_not_null($customid) && strlen(trim($customid)) > 0 ? $customid : $productI['model']);
     // END "Stock by Attributes"
   }
 
