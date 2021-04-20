@@ -451,7 +451,7 @@ class products_with_attributes_stock extends base {
    * ZC 1.5.6: $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP', $i++, $products_options->fields);
    * ZC 1.5.7: $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_START_OPTIONS_LOOP', $i++, $products_options->fields, $products_options_names->fields, $data_properties, $field_disabled, $attributeDetailsArrayForJson);
    */
-  function updateNotifyAttributesModuleStartOptionsLoop(&$callingClass, $notifier, $i, &$products_options_fields, &$products_options_names_fields, &$data_properties, &$field_disabled, &$attributeDetailsArrayforJson){
+  function updateNotifyAttributesModuleStartOptionsLoop(&$callingClass, $notifier, $i, &$products_options_fields, &$products_options_names_fields, &$data_properties, &$field_disabled, &$attributeDetailsArrayforJson) {
     global $db, /*$options_menu_images, */$products_options_array, /*$products_options_names,*/
            $PWA_STOCK_QTY;
     if (is_null($products_options_names_fields)) {
@@ -712,7 +712,7 @@ class products_with_attributes_stock extends base {
    * ZC 1.5.x:  $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_SALE_MAKER_DISPLAY_PRICE_PERCENTAGE');
    * ZC 1.5.7:  $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_SALEMAKER_DISPLAY_PRICE_PERCENTAGE', $products_options->fields, $product_info->fields, $products_options_display_price, $data_properties);
    */
-  function updateNotifyAttributesModuleSaleMakerDisplayPricePercentage(&$callingClass, $notifier, $products_options_fields, &$product_info_fields, &$products_options_display_price, &$data_properties){
+  function updateNotifyAttributesModuleSaleMakerDisplayPricePercentage(&$callingClass, $notifier, $products_options_fields, &$product_info_fields, &$products_options_display_price, &$data_properties) {
     // attribute types to which this applies
     $group_price_modified = array(
       PRODUCTS_OPTIONS_TYPE_RADIO,
@@ -834,7 +834,7 @@ class products_with_attributes_stock extends base {
     * ZC 1.5.7: Called something else, one for radio, one for checkboxes
     * Disable code has been moved up in processing
     */
-  function updateNotifyAttributesModuleAttribSelected(&$callingClass, $notifier, $paramsArray){
+  function updateNotifyAttributesModuleAttribSelected(&$callingClass, $notifier, $paramsArray) {
     global /*$products_options_names, */$products_options, $selected_attribute/*, $moveSelectedAttribute,*//* $disablebackorder*/;
     
 //       if ($this->_isSBA && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2' && $products_options_names->RecordCount() > 1) || (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '3' && $products_options_names->RecordCount() == 1))) {  // Perhaps only certain features need to be bypassed, but for now all mc12345678
@@ -927,7 +927,7 @@ class products_with_attributes_stock extends base {
   /*
    * 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
    */
-  function updateNotifyAttributesModuleDefaultSwitch(&$callingClass, $notifier, $products_options_names_fields, &$options_name, &$options_menu, &$options_comment, &$options_comment_position, &$options_html_id){
+  function updateNotifyAttributesModuleDefaultSwitch(&$callingClass, $notifier, $products_options_names_fields, &$options_name, &$options_menu, &$options_comment, &$options_comment_position, &$options_html_id) {
 
           switch (true) {
       case ($products_options_names_fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA): // SBA Select List (Dropdown) Basic
@@ -1351,7 +1351,7 @@ class products_with_attributes_stock extends base {
      * @param     $stock_values
      * @param int $attribute_stock_left
      */
-    function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left = 0){
+    function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left = 0) {
       global $db; //, $pwas_class;
 
       $this->_stock_values = $stock_values;
