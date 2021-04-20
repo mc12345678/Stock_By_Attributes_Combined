@@ -940,7 +940,6 @@ class products_with_attributes_stock extends base {
         } else {
           // use customer-selected values
           if (!empty($_POST['id'])) {
-            reset($_POST['id']);
             foreach($_POST['id'] as $key => $value) {
               if ($key == $products_options_names_fields['products_options_id']) {
                 $selected_attribute = $value;
