@@ -1803,40 +1803,43 @@ class products_with_attributes_stock extends base {
     // from a default ZC includes/modules/pages/checkout_shipping/header_php.php file which could otherwise be modified
     //  but instead of repeating exactly the contents of that file, it's potential redirects, etc... Just want to validate
     //  that the cart is ready to handle working with the products.
-    if ($_SESSION['cart']->count_contents() > 0 && isset($_SESSION['customer_id']) && $_SESSION['customer_id'] && zen_get_customer_validate_session($_SESSION['customer_id']) != false) {
-      $_SESSION['valid_to_checkout'] = true;
-      $_SESSION['cart']->get_products(true);
-      if ($_SESSION['valid_to_checkout']) {
-        // Now we are "allowed" to process cart items and specifically to ensure that the product if SBA tracked can 
-        //  move forward in the cart.
-        if ((STOCK_CHECK == 'true') && (STOCK_ALLOW_CHECKOUT != 'true')) {
-          $products = $_SESSION['cart']->get_products();
-          for ($i = 0, $n = count($products); $i < $n; $i++) {
-            unset($attributes);
-            $attributes = null;
+    if (!($_SESSION['cart']->count_contents() > 0 && isset($_SESSION['customer_id']) && $_SESSION['customer_id'] && zen_get_customer_validate_session($_SESSION['customer_id']) != false)) {
+      return;
+    }
+    $_SESSION['valid_to_checkout'] = true;
+    $_SESSION['cart']->get_products(true);
+    if (!$_SESSION['valid_to_checkout']) {
+      return;
+    }
+    // Now we are "allowed" to process cart items and specifically to ensure that the product if SBA tracked can 
+    //  move forward in the cart.
+    if (!((STOCK_CHECK == 'true') && (STOCK_ALLOW_CHECKOUT != 'true'))) {
+      return;
+    }
+    $products = $_SESSION['cart']->get_products();
+    foreach ($products as $i => $productsI) {
+      unset($attributes);
+      $attributes = null;
 
-            if (isset($products[$i]) && is_array($products[$i]) && array_key_exists('attributes', $products[$i]) && isset($products[$i]['attributes']) && is_array($products[$i]['attributes'])) {
-              if ($_SESSION['pwas_class2']->zen_product_is_sba($products[$i]['id'])) {
-                $attributes = $products[$i]['attributes'];
-              } 
-            }
-            if (zen_not_null($attributes)) {
-//              if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
-              if (zen_check_stock(array('products_id' => $products[$i]['id'], 'attributes' => $attributes), $products[$i]['quantity'])) {
-                zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
-                break;
-              }
-            } else {
-              $qtyAvailable = zen_get_products_stock(array('products_id' => $products[$i]['id']));
-              if ($qtyAvailable - $products[$i]['quantity'] < 0 || $qtyAvailable - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
-                zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
-                break;
-              }
-            }
-          }
-        } // EOF stock check against total quantity.
-      } // EOF valid to checkout.
-    } // EOF opening validation
+      if (isset($products[$i]) && is_array($products[$i]) && array_key_exists('attributes', $products[$i]) && isset($products[$i]['attributes']) && is_array($products[$i]['attributes'])) {
+        if ($_SESSION['pwas_class2']->zen_product_is_sba($products[$i]['id'])) {
+          $attributes = $products[$i]['attributes'];
+        }
+      }
+      if (zen_not_null($attributes)) {
+//        if (zen_check_stock($products[$i]['id'], $products[$i]['quantity'], $attributes)) {
+        if (zen_check_stock(array('products_id' => $products[$i]['id'], 'attributes' => $attributes), $products[$i]['quantity'])) {
+          zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+          break;
+        }
+      } else {
+        $qtyAvailable = zen_get_products_stock(array('products_id' => $products[$i]['id']));
+        if ($qtyAvailable - $products[$i]['quantity'] < 0 || $qtyAvailable - $_SESSION['cart']->in_cart_mixed($products[$i]['id']) < 0) {
+          zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
+          break;
+        }
+      }
+    }
   } // EOF function updateNotifyHeaderStartCheckoutShipping 
   
   // NOTIFY_HEADER_START_CHECKOUT_CONFIRMATION
