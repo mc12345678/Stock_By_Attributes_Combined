@@ -202,11 +202,13 @@ class products_with_attributes_stock_admin extends base {
     
     $stock_ids = zen_get_sba_ids_from_attribute($attribute_id);
 
-    if (!empty($stock_ids) && is_array($stock_ids)) {
-      $stock_ids = array_map(function($i){ return (int)$i; }, $stock_ids);
-      $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
-           where stock_id in (" . implode(',', $stock_ids) . ")");
+    if (!(!empty($stock_ids) && is_array($stock_ids))) {
+      return;
     }
+
+    $stock_ids = array_map(function($i){ return (int)$i; }, $stock_ids);
+    $db->Execute("delete from " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " 
+         where stock_id in (" . implode(',', $stock_ids) . ")");
 
   }
   
