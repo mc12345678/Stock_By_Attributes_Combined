@@ -1484,7 +1484,9 @@ class products_with_attributes_stock extends base {
      *  supplied in the stock_id parameter (which should only be populated when a SBA tracked
      *  item is in the order */
 //      $_SESSION['paramsArray'] = $paramsArray;
-    if ($this->_orderIsSBA && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK')) {  
+    if (!($this->_orderIsSBA && defined('TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK'))) {
+      return;
+    }
       //Need to validate that order had attributes in it.  If so, then were they tracked by SBA and then add to appropriate table.
 
 /*    `orders_products_attributes_stock_id` INT(11) NOT NULL auto_increment, 
@@ -1495,39 +1497,38 @@ class products_with_attributes_stock extends base {
       `stock_attribute` VARCHAR(255) NULL DEFAULT NULL, 
       `products_prid` TINYTEXT NOT NULL, */
 
-      $i = $this->orderProcessingI;
+    $i = $this->orderProcessingI;
 
-      $customid = '';
-      $stock_info = array();
+    $customid = '';
+    $stock_info = array();
       
-      if (zen_not_null($this->_stock_info['stock_id'])) {
-        // This is an item that is uniquely identified as a single entry in the PWAS table and is either one or multiple attributes.
-        $customid = $orderClass->products[$i]['customid']['value'];
-        $stock_info = $this->_stock_info;
-      } else {
-        if ($orderClass->products[$i]['customid']['type'] == 'multi') {
-          // Each attribute is uniquely identified as a record in the PWAS table and is made up of more than one attribute.
-          foreach ($orderClass->products[$i]['attributes'] as $key => $value) {
-            if ($value['option_id'] == $paramsArray['products_options_id'] && $value['value_id'] == $paramsArray['products_options_values_id']) {
-              $customid = $orderClass->products[$i]['attributes'][$key]['customid'];
-              $stock_info = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute_info(zen_get_prid($orderClass->products[$i]['id']), array($value), 'order'); // Sorted comma separated list of the attribute_id.
-              break;
-            }
+    if (zen_not_null($this->_stock_info['stock_id'])) {
+      // This is an item that is uniquely identified as a single entry in the PWAS table and is either one or multiple attributes.
+      $customid = $orderClass->products[$i]['customid']['value'];
+      $stock_info = $this->_stock_info;
+    } else {
+      if ($orderClass->products[$i]['customid']['type'] == 'multi') {
+        // Each attribute is uniquely identified as a record in the PWAS table and is made up of more than one attribute.
+        foreach ($orderClass->products[$i]['attributes'] as $key => $value) {
+          if ($value['option_id'] == $paramsArray['products_options_id'] && $value['value_id'] == $paramsArray['products_options_values_id']) {
+            $customid = $orderClass->products[$i]['attributes'][$key]['customid'];
+            $stock_info = $_SESSION['pwas_class2']->zen_get_sba_stock_attribute_info(zen_get_prid($orderClass->products[$i]['id']), array($value), 'order'); // Sorted comma separated list of the attribute_id.
+            break;
           }
         }
-        // @TODO: at some point to be able to handle combinations of PWAS table items such that there are combinations of records or variants making up a single product.
-      } 
-
-      $sql_data_array = array('orders_products_attributes_id' =>$paramsArray['orders_products_attributes_id'],
-                            'orders_id' =>$paramsArray['orders_id'], 
-                            'orders_products_id' =>$paramsArray['orders_products_id'], 
-                            'stock_id' => $stock_info['stock_id'], 
-                            'stock_attribute' => $stock_info['stock_attribute'], 
-                            'customid' => $customid,
-                            'products_prid' =>$paramsArray['products_prid']);
-      zen_db_perform(TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK, $sql_data_array); //inserts data into the TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK table.
-
+      }
+      // @TODO: at some point to be able to handle combinations of PWAS table items such that there are combinations of records or variants making up a single product.
     }
+
+    $sql_data_array = array('orders_products_attributes_id' =>$paramsArray['orders_products_attributes_id'],
+                          'orders_id' =>$paramsArray['orders_id'],
+                          'orders_products_id' =>$paramsArray['orders_products_id'],
+                          'stock_id' => $stock_info['stock_id'],
+                          'stock_attribute' => $stock_info['stock_attribute'],
+                          'customid' => $customid,
+                          'products_prid' =>$paramsArray['products_prid']);
+    zen_db_perform(TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK, $sql_data_array); //inserts data into the TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK table.
+
   } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
 
   function catalogCustomID(&$productArray, &$customid) {
