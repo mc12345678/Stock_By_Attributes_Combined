@@ -43,6 +43,7 @@ class products_with_attributes_stock_admin extends base {
     $attachNotifier[] = 'OPTIONS_NAME_MANAGER_UPDATE_OPTIONS_VALUES_DELETE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUE';
     $attachNotifier[] = 'OPTIONS_VALUES_MANAGER_DELETE_VALUES_OF_OPTIONNAME';
+    $attachNotifier[] = 'NOTIFY_ORDER_AFTER_QUERY';
     $attachNotifier[] = 'ORDER_QUERY_ADMIN_COMPLETE';
     $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT_STOCK_DECREMENT'; // Need to code for
     $attachNotifier[] = 'EDIT_ORDERS_ADD_PRODUCT';
@@ -416,11 +417,12 @@ class products_with_attributes_stock_admin extends base {
     unset($stock_ids);
   }
 
-  // ORDER_QUERY_ADMIN_COMPLETE
-  function updateOrderQueryAdminComplete(&$orderClass, $notifier, $paramsArray) {
+  // $this->notify('NOTIFY_ORDER_AFTER_QUERY', IS_ADMIN_FLAG, $this->orderId);
+  function updateNotifyOrderAfterQuery(&$orderClass, $notifier, $is_admin, $order_id) {
     global $db;
     
-    $order_id = $paramsArray['orders_id'];
+    $this->OrderAfterQuery = true;
+//    $order_id = $paramsArray['orders_id'];
     
     //$orders_products_sba = $db->Execute("select orders_products_attributes_stock_id, orders_products_attributes_id, orders_products_id, stock_id, stock_attribute, customid, products_prid from " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES_STOCK . " where orders_id = " . (int)$order_id );
     
@@ -432,7 +434,7 @@ class products_with_attributes_stock_admin extends base {
     ////$index = 0;
     //$subindex = 0;
     $appendCustomId = defined('STOCK_SBA_DISPLAY_CUSTOMID') && STOCK_SBA_DISPLAY_CUSTOMID === 'true' && 
-      in_array(basename($GLOBALS['PHP_SELF'], '.php'), array(FILENAME_ORDERS_INVOICE, FILENAME_ORDERS_PACKINGSLIP, FILENAME_ORDERS));
+      ($is_admin ? in_array(basename($GLOBALS['PHP_SELF'], '.php'), array(FILENAME_ORDERS_INVOICE, FILENAME_ORDERS_PACKINGSLIP, FILENAME_ORDERS)) : true);
     
     foreach ($orderClass->products as $index => &$product) {
     //while (!$orders_products->EOF) {                                     
@@ -544,6 +546,14 @@ class products_with_attributes_stock_admin extends base {
     unset($index);
     unset($order_id);
     //unset($orders_products);
+  }
+
+  // ORDER_QUERY_ADMIN_COMPLETE // Should be using: NOTIFY_ORDER_AFTER_QUERY as of 1.5.6
+  function updateOrderQueryAdminComplete(&$orderClass, $notifier, $paramsArray) {
+    if (empty($this->OrderAfterQuery)) {
+      $this->updateNotifyOrderAfterQuery($orderClass, $notifier, IS_ADMIN_FLAG, $paramsArray['orders_id']);
+    }
+    unset($this->OrderAfterQuery);
   }
   
 //    $zco_notifier->notify ('EDIT_ORDERS_ADD_PRODUCT_STOCK_DECREMENT', array ( 'order_id' => $order_id, 'product' => $product ), $doStockDecrement);
