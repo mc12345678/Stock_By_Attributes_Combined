@@ -87,9 +87,6 @@ class products_with_attributes_stock extends base {
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_CHECKBOX_SELECTED'; // Added for ZC 1.5.7
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
     $attachNotifier[] = 'NOTIFY_ATTRIBUTES_MODULE_OPTION_BUILT';
-    $attachNotifier[] = 'NOTIFY_HEADER_END_ACCOUNT_HISTORY_INFO';
-    $attachNotifier[] = 'NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION';
-    $attachNotifier[] = 'NOTIFY_HEADER_END_CHECKOUT_SUCCESS';
     $attachNotifier[] = 'NOTIFY_HEADER_END_SHOPPING_CART';
     $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_SHIPPING';
     $attachNotifier[] = 'NOTIFY_HEADER_START_CHECKOUT_CONFIRMATION';
@@ -1520,26 +1517,6 @@ class products_with_attributes_stock extends base {
     }
   } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
 
-  /*
-   * @TODO: Move to separate file for independent implementation and/or use as desired.
-   * $zco_notifier->notify('NOTIFY_HEADER_END_ACCOUNT_HISTORY_INFO');
-   */
-  function updateNotifyHeaderEndAccountHistoryInfo(&$callingClass, $notifier, $paramsArray) {
-    global $order, $customid;
-
-    $this->catalogCustomID($order, $customid);
-  }
-
-  /*
-   * $zco_notifier->notify('NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION');
-   * NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION
-   */
-  function updateNotifyHeaderEndCheckoutConfirmation(&$callingClass, $notifier, $paramsArray) {
-    global $order, $customid;
-
-    $this->catalogCustomID($order, $customid);
-  }
-
   function catalogCustomID(&$order, &$customid) {
     if (!isset($customid) || !is_array($customid)) {
       $customid = array();
@@ -1601,15 +1578,6 @@ class products_with_attributes_stock extends base {
       unset($attrval); // Prevent overwriting old data because modifying a referenced value.
     }
     unset($productsI); // Prevent overwriting old data because modifying a referenced value.
-  }
-
-  // NOTIFY_HEADER_END_CHECKOUT_SUCCESS
-  function updateNotifyHeaderEndCheckoutSuccess(&$callingClass, $notifier, $paramsArray) {
-    global $order;
-    
-    if (isset($order) && is_object($order)) {
-      $this->updateNotifyHeaderEndCheckoutConfirmation($callingClass, $notifier, $paramsArray);
-    }
   }
 
   // NOTIFY_HEADER_END_SHOPPING_CART
@@ -2046,20 +2014,6 @@ class products_with_attributes_stock extends base {
     if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM') {
       $this->updateNotifyOrderDuringCreateAddedAttributeLineItem($callingClass, $notifier, $paramsArray, $paramsArray['orders_products_attributes_id']);
     } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
-    
-    /**
-     * ZC 1.5.1: $zco_notifier->notify('NOTIFY_HEADER_END_ACCOUNT_HISTORY');
-     **/
-    if ($notifier == 'NOTIFY_HEADER_END_ACCOUNT_HISTORY_INFO') {
-      $this->updateNotifyHeaderEndAccountHistoryInfo($callingClass, $notifier, $paramsArray);
-    }
-
-    /**
-     * ZC 1.5.1: $zco_notifier->notify('NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION');
-     **/
-    if ($notifier == 'NOTIFY_HEADER_END_CHECKOUT_CONFIRMATION' || $notifier == 'NOTIFY_HEADER_END_CHECKOUT_SUCCESS') {
-      $this->updateNotifyHeaderEndCheckoutConfirmation($callingClass, $notifier, $paramsArray);
-    }
     
     /**
      * ZC 1.5.1: $zco_notifier->notify('NOTIFY_HEADER_END_SHOPPING_CART');
