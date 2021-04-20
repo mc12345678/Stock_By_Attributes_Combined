@@ -1242,20 +1242,23 @@ class products_with_attributes_stock extends base {
     $index = $paramsArray['index'];
     $productsI = $paramsArray['products'];
     
-    if (is_array($productsI) && array_key_exists('attributes', $productsI) && is_array($productsI['attributes']) && !empty($productsI['attributes'])) {
-      $orderClass->products[$index]['customid']['value'] = $_SESSION['pwas_class2']->zen_get_customid($productsI['id'], $productsI['attributes']);
-
-        $custom_multi_query = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($productsI['id'], $productsI['attributes'], 'products');
-
-        if (!isset($custom_multi_query) || $custom_multi_query === NULL || $custom_multi_query === false) {
-          $custom_type = 'none';
-        } elseif (is_array($custom_multi_query) && count($custom_multi_query) > 1) {
-          $custom_type = 'multi';
-        } else {
-          $custom_type = 'single';
-        }
-      $orderClass->products[$index]['customid']['type'] = $custom_type;
+    // Require product to have attributes present to look up the customid
+    if (!is_array($productsI) || !array_key_exists('attributes', $productsI) || !is_array($productsI['attributes']) || empty($productsI['attributes'])) {
+      return;
     }
+
+    $orderClass->products[$index]['customid']['value'] = $_SESSION['pwas_class2']->zen_get_customid($productsI['id'], $productsI['attributes']);
+
+    $custom_multi_query = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($productsI['id'], $productsI['attributes'], 'products');
+
+    if (!isset($custom_multi_query) || $custom_multi_query === false || is_array($custom_multi_query) && count($custom_multi_query) === 0) {
+      $custom_type = 'none';
+    } elseif (is_array($custom_multi_query) && count($custom_multi_query) > 1) {
+      $custom_type = 'multi';
+    } else {
+      $custom_type = 'single';
+    }
+    $orderClass->products[$index]['customid']['type'] = $custom_type;
   }
   
   /*
