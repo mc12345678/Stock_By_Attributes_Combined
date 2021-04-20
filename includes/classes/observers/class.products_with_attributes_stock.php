@@ -1940,7 +1940,7 @@ class products_with_attributes_stock extends base {
       $this->updateNotifyAttributesModuleDefaultSwitch($callingClass, $notifier, $paramsArray, $options_name, $options_menu, $options_comment, $options_comment_position, $options_html_id);
     }
     
-    if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_PRODUCT_LINE_ITEM'){
+    if ($notifier == 'NOTIFY_ORDER_DURING_CREATE_ADDED_PRODUCT_LINE_ITEM') {
       
     }
 
@@ -1977,7 +1977,7 @@ class products_with_attributes_stock extends base {
     /**
      *Provided in ZC 1.5.1: $this->notify('NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN', array('i'=>$i, 'stock_values'=>$stock_values));
      **/
-    if ($notifier == 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN'){
+    if ($notifier == 'NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_BEGIN') {
       global $attribute_stock_left;
 
     /*
