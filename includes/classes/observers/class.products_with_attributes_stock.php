@@ -1517,12 +1517,12 @@ class products_with_attributes_stock extends base {
     }
   } //endif NOTIFY_ORDER_DURING_CREATE_ADDED_ATTRIBUTE_LINE_ITEM - mc12345678
 
-  function catalogCustomID(&$order, &$customid) {
+  function catalogCustomID(&$productArray, &$customid) {
     if (!isset($customid) || !is_array($customid)) {
       $customid = array();
     }
     
-    foreach ($order->products as $i => &$productsI) {
+    foreach ($productArray as $i => &$productsI) {
       $customid[$i] = '';
       
       if (!isset($productsI['customid']) || !is_array($productsI['customid']) || count($productsI['customid']) == 0) {
@@ -1543,7 +1543,7 @@ class products_with_attributes_stock extends base {
 
       // if there is information to be shown from either, then append it with a prefixing space.
       if (zen_not_null($customid[$i])) {
-        $order->products[$i]['name'] .= ' ' . $customid[$i];
+        $productArray[$i]['name'] .= ' ' . $customid[$i];
       }
 
       // If there is no desire for the customid, then don't need the remaining content below.

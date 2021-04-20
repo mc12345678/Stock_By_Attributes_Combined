@@ -29,7 +29,7 @@ class pwas_customid extends base {
   function updateNotifyHeaderEndAccountHistoryInfo(&$callingClass, $notifier, $paramsArray) {
     global $order, $customid, $products_with_attributes_stock_observe;
 
-    $products_with_attributes_stock_observe->catalogCustomID($order, $customid);
+    $products_with_attributes_stock_observe->catalogCustomID($order->products, $customid);
   }
 
   /*
@@ -39,7 +39,7 @@ class pwas_customid extends base {
   function updateNotifyHeaderEndCheckoutConfirmation(&$callingClass, $notifier, $paramsArray) {
     global $order, $customid, $products_with_attributes_stock_observe;
 
-    $products_with_attributes_stock_observe->catalogCustomID($order, $customid);
+    $products_with_attributes_stock_observe->catalogCustomID($order->products, $customid);
   }
 
   // NOTIFY_HEADER_END_CHECKOUT_SUCCESS
