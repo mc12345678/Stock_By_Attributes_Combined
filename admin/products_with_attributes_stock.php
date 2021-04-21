@@ -198,9 +198,10 @@ switch ($action) {
                           LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' pd ON (pa.products_id = pd.products_id)
                       WHERE pd.language_id= :language_id:
                       ORDER BY pd.products_name';
+
       $query = $db->bindVars($query, ':language_id:', $language_id, 'integer');
       
-      $products = $db->execute($query);
+      $products = $db->Execute($query);
 
       while (!$products->EOF) {
         $products_array_list[] = array(
