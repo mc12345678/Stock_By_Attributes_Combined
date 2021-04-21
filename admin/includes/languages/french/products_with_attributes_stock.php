@@ -61,4 +61,5 @@ define('PWA_ADJUST_QUANTITY_NONE_FOUND', 'No product were found using search con
 define('PWA_ADJUST_QUANTITY_MULTIPLE_NOT_SUPPORTED_YET', 'Multiple product were found using the search criteria \'%1$s\' to try to adjust by %2$f; however, this is not yet supported. Try a search that provides a single variant.');
 define('PWA_BUTTON_SEARCH', 'Search');
 define('PWA_BUTTON_ADJUST', 'Adjust');
+define('PWA_EXCESS_PRODUCT', 'PRODUCT TRACKED AS Stock With Attributes BUT DO NOT CURRENTLY HAVE ATTRIBUTES');
 

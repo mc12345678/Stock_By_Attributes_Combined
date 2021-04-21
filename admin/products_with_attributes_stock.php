@@ -895,6 +895,24 @@ switch ($action) {
 }
 } // EOF zen_not_null($_GET['action'])
 
+// Determine product identified in PWAS table that do not currently actually have attributes.
+$query = 'SELECT DISTINCT
+                  pa.products_id, pd.products_name
+                FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
+                    LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' pd ON (pa.products_id = pd.products_id)
+                WHERE pd.language_id= :language_id:
+                ORDER BY pd.products_name';
+$query2 = 'SELECT DISTINCT pwas.products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' pwas LEFT JOIN (' . $query . ') att ON (att.products_id = pwas.products_id) WHERE att.products_id IS NULL';
+$query2 = $db->bindVars($query2, ':language_id:', $language_id, 'integer');
+
+$excess_products = $db->Execute($query2);
+
+$all_prod = array();
+
+foreach ($excess_products as $product) {
+  $all_prod[] = $product['products_id'];
+}
+
   $search_order_by = 'products_model';
 
   if (isset($_GET['search_order_by']) || isset($_POST['search_order_by'])) {
@@ -1485,6 +1503,12 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     <a class="forward" style="float:right;" href="<?php echo zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync_all" . '&search_order_by=' . $search_order_by, $request_type); ?>"><strong>Sync All Quantities</strong></a><br class="clearBoth" /><hr />
     <div id="pwa-table"><?php 
     echo $stock->displayFilteredRows(STOCK_SET_SBA_SEARCHBOX, null, $seachPID);
+    ?></div><?php
+    // Display information associated with product that are identified in the
+    //  PWAS table that currently do not have attributes. Allow action to be
+    //  taken on this.
+    ?><br class="clearBoth"><div id="pwa-excess-table"><?php
+    echo $stock->displayExcessRows($all_prod, null);
     ?></div><?php
     break;
 }
