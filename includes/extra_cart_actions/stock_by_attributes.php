@@ -1,6 +1,6 @@
 <?php
 /*
- * Stock by Attributes 1.5.4 2016-01-02 mc12345678
+ * Stock by Attributes 2021-04-20 mc12345678
  */
 
 $renumber = true;
@@ -77,6 +77,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
     }
 
     $attributes2 = array();
+
+    // Remove warning of trying to use/reference a non-existent variable.
+    if (!isset( $_POST['id'][$posted['products_id_i']])) {
+      $_POST['id'][$posted['products_id_i']] = null;
+    }
 
     $attributes2 = $_SESSION['pwas_class2']->zen_sba_attribs_no_text($posted['products_id_i'], $_POST['id'][$posted['products_id_i']], 'products', 'update');
       
