@@ -1116,7 +1116,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
           echo '<h3>' . zen_get_products_name($products_id) . '</h3>';
 
           foreach ($attributes_list as $attributes) {
-            echo '<p><strong>' . $attributes['option'] . ': </strong>' . $attributes['value'] . '</p>';
+            echo '<p><strong>' . (isset($attributes['option']) ? $attributes['option'] : '') . ': </strong>' . (isset($attributes['value']) ? $attributes['value'] : '') . '</p>';
           }
 
           echo $hidden_form;
