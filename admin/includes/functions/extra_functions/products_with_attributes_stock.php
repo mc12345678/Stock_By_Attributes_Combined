@@ -64,12 +64,13 @@ function return_attribute_combinations($arrMain, $intVars, $currentLoop = array(
     while (!$products_stock_attributes->EOF) {
       //$stock_attrib_list = array();
       $stock_attrib_list = explode(',', $products_stock_attributes->fields['stock_attributes']);
+      $stock_attrib_list = array_map('trim', $stock_attrib_list);
 
       foreach($stock_attrib_list as $stock_attrib){
-        if (in_array($stock_attrib, $products_attributes_id)) {
-          $stock_id_list[] = $products_stock_attributes->fields['stock_id'];
+        if (!in_array($stock_attrib, $products_attributes_id)) {
           continue;
         }
+        $stock_id_list[] = $products_stock_attributes->fields['stock_id'];
       }
       
       $products_stock_attributes->MoveNext();
