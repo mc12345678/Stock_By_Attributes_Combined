@@ -211,10 +211,10 @@ class products_with_attributes_stock extends base
     // returns an array of product ids which contain attributes
     function get_products_with_attributes() {
       global $db;
+      $products_array = array();
+      $language_id = 1;
       if (!empty($_SESSION['languages_id'])) {
         $language_id = (int)$_SESSION['languages_id'];
-      } else {
-        $language_id=1;
       }
       $query = 'SELECT DISTINCT pa.products_id, pd.products_name, p.products_quantity, p.products_model, p.products_image
                 FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' pa
@@ -268,10 +268,9 @@ class products_with_attributes_stock extends base
         if (empty($languages)) {
           $languages = zen_get_languages();
         }
+        $language_id = 1;
         if (isset($_SESSION['languages_id']) && $_SESSION['languages_id'] > 0) {
           $language_id = (int)$_SESSION['languages_id'];
-        } else { 
-          $language_id = 1;
         }
         $s = '';
         $w = '';
@@ -545,10 +544,9 @@ class products_with_attributes_stock extends base
         if (empty($languages)) {
           $languages = zen_get_languages();
         }
+        $language_id = 1;
         if (isset($_SESSION['languages_id']) && $_SESSION['languages_id'] > 0) {
           $language_id = (int)$_SESSION['languages_id'];
-        } else {
-          $language_id = 1;
         }
         $s = '';
         $w = '';
@@ -1156,14 +1154,17 @@ function insertTablePASR($products_id = null, $strAttributes = null, $quantity =
   }
   
   //Table PAS
-  if (is_numeric($quantity) && is_numeric($pasrid)) {
+  if (!(is_numeric($quantity) && is_numeric($pasrid))) {
+    //PANIC we had an error!!!
+    exit;
+  }
     
-    $query = "insert into ". TABLE_PRODUCTS_ATTRIBUTES_STOCK ." (`quantity`,`customid`)
-          values ($quantity, $customid)
-          ON DUPLICATE KEY UPDATE
-          `quantity` = $quantity,
-          `customid` =  $customid;";
-    $result = $db->execute($query);
+  $query = "insert into ". TABLE_PRODUCTS_ATTRIBUTES_STOCK ." (`quantity`,`customid`)
+        values ($quantity, $customid)
+        ON DUPLICATE KEY UPDATE
+        `quantity` = $quantity,
+        `customid` =  $customid;";
+  $result = $db->Execute($query);
     
 //     //Get the last records ID
 //     $query = "select pas.products_attributes_stock_id
@@ -1181,11 +1182,6 @@ function insertTablePASR($products_id = null, $strAttributes = null, $quantity =
 //             LIMIT 1;";
 //     $result = $db->execute($query);
     
-  }
-  else {
-    //PANIC we had an error!!!
-    exit;
-  }
 
    return $result;
 }
@@ -1204,21 +1200,18 @@ function insertTablePAS($products_id = null, $quantity = null, $customid = null)
 //   INSERT INTO `znc_products_attributes_stock` (`products_id`, `quantity`, `customid`) VALUES (226, 636, 'test37');
   
   //Table PASR (Inset and get $pasrid for next query)
-  if (is_numeric($products_id)) {
-
-    $query = "insert into ". TABLE_PRODUCTS_ATTRIBUTES_STOCK ." (`products_id`,`quantity`,`customid`)
-          values ($products_id, $quantity, $customid)
-          ON DUPLICATE KEY UPDATE
-          `products_id` = $products_id,
-          `quantity` = $quantity,
-          `customid` =  $customid;";
-    $result = $db->execute($query);
-
-  }
-  else {
+  if (!is_numeric($products_id)) {
     //PANIC we had an error!!!
     exit('PANIC we had an error!!!');
   }
+
+  $query = "insert into ". TABLE_PRODUCTS_ATTRIBUTES_STOCK ." (`products_id`,`quantity`,`customid`)
+        values ($products_id, $quantity, $customid)
+        ON DUPLICATE KEY UPDATE
+        `products_id` = $products_id,
+        `quantity` = $quantity,
+        `customid` =  $customid;";
+  $result = $db->Execute($query);
 
   return $result;
 }
@@ -1231,6 +1224,7 @@ function updateCustomIDAttrib($stockid = null, $customid = null) {
   $customid = $GLOBALS['db']->prepare_input($customid);
   $customid = $this->nullDataEntry($customid);//sets proper quoting for input
 
+  $result = false;
   if ($customid && is_numeric($stockid) ) {
     $query = 'update ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' set customid = ' . $customid . ' where stock_id = ' . $stockid . ' limit 1';
     $result = $GLOBALS['db']->execute($query);
@@ -1246,6 +1240,7 @@ function updateTitleAttrib($stockid = null, $skuTitle = null) {
   $skuTitle = $GLOBALS['db']->prepare_input($skuTitle);
   $skuTitle = $this->nullDataEntry($skuTitle);//sets proper quoting for input
 
+  $result = false;
   if (isset($skuTitle) && $skuTitle && is_numeric($stockid) ) {
     $query = 'UPDATE ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' SET title = ' . $skuTitle . ' WHERE stock_id = ' . $stockid . ' LIMIT 1';
     $result = $GLOBALS['db']->execute($query);
@@ -1695,46 +1690,48 @@ function nullDataEntry($fieldtoNULL) {
 ////
 // Return a product ID with attributes as provided on the store front
     function zen_sba_get_uprid($prid, $params) {
-      if ( (is_array($params)) && (!strstr($prid, ':')) ) {
-        $uprid = $prid;
-        foreach($params as $option => $value) {
-          if (is_array($value)) {
-            foreach($value as $opt => $val) {
-              $uprid = $uprid . '{' . $option . '}' . trim($opt);
-            }
-          } else {
-          //CLR 030714 Add processing around $value. This is needed for text attributes.
-              $uprid = $uprid . '{' . $option . '}' . trim($value);
-          }
-        }      //CLR 030228 Add else stmt to process product ids passed in by other routines.
-        $md_uprid = '';
-  
-        $md_uprid = md5($uprid);
-        return $prid . ':' . $md_uprid;
-      } else {
+      if ( !(is_array($params) && !strstr($prid, ':')) ) {
         return $prid;
       }
-      
+      $uprid = $prid;
+      foreach($params as $option => $value) {
+        if (is_array($value)) {
+          foreach($value as $opt => $val) {
+            $uprid = $uprid . '{' . $option . '}' . trim($opt);
+          }
+          continue;
+        }
+        //CLR 030714 Add processing around $value. This is needed for text attributes.
+        $uprid = $uprid . '{' . $option . '}' . trim($value);
+      }      //CLR 030228 Add else stmt to process product ids passed in by other routines.
+      $md_uprid = '';
+  
+      $md_uprid = md5($uprid);
+      return $prid . ':' . $md_uprid;
     }
 
 function convertDropdownsToSBA()
 {
   global $db, $resultMmessage, $failed;
 
-  if (defined('PRODUCTS_OPTIONS_TYPE_SELECT_SBA')) {
-    $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " SET `products_options_type` = :products_options_type_select_sba:
-            WHERE `products_options_type` = :products_options_type_select:";
-
-    $sql = $db->bindVars($sql, ':products_options_type_select_sba:', PRODUCTS_OPTIONS_TYPE_SELECT_SBA, 'integer');
-    $sql = $db->bindVars($sql, ':products_options_type_select:', PRODUCTS_OPTIONS_TYPE_SELECT, 'integer');
-
-    $db->Execute($sql);
-    if ($db->error) {
-      $msg = ' Error Message: ' . $db->error;
-      $failed = true;
-    }
-  } else {
+  if (!defined('PRODUCTS_OPTIONS_TYPE_SELECT_SBA')) {
     $msg = ' Error Message: PRODUCTS_OPTIONS_TYPE_SELECT_SBA not defined.';
+    $failed = true;
+    if (isset($resultMmessage)) {
+      array_push($resultMmessage, 'product_attribute_combo field updated ' . $msg);
+    }
+    return;
+  }
+
+  $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " SET `products_options_type` = :products_options_type_select_sba:
+          WHERE `products_options_type` = :products_options_type_select:";
+
+  $sql = $db->bindVars($sql, ':products_options_type_select_sba:', PRODUCTS_OPTIONS_TYPE_SELECT_SBA, 'integer');
+  $sql = $db->bindVars($sql, ':products_options_type_select:', PRODUCTS_OPTIONS_TYPE_SELECT, 'integer');
+
+  $db->Execute($sql);
+  if ($db->error) {
+    $msg = ' Error Message: ' . $db->error;
     $failed = true;
   }
 
@@ -1748,82 +1745,84 @@ function convertSBAToSBA()
 {
   global $db, $resultMmessage, $failed;
 
-  if (defined('PRODUCTS_OPTIONS_TYPE_SELECT_SBA')) {
-
-    $results_track = array(); // Array to track what has been identified.
-
-    // Need to identify which option values are listed in the SBA table and then update them if they are a dropdown select.
-    $sql = 'SELECT stock_attributes FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE stock_attributes != \'\'';
-
-    $results = $db->Execute($sql);
-
-    while (!$results->EOF)
-    {
-      $results_array = explode(',', $results->fields['stock_attributes']);
-
-      // Need one or more checks before using the results_array
-      foreach ($results_array as $key=> $value)
-      {
-        $products_options_id_sql = 'SELECT options_id FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' WHERE products_attributes_id = :products_attributes_id:';
-        $products_options_id_sql = $db->bindVars($products_options_id_sql, ':products_attributes_id:', $value, 'integer');
-
-        if (method_exists($db, 'ExecuteNoCache')) {
-          $products_options_id = $db->ExecuteNoCache($products_options_id_sql);
-        } else {
-          $products_options_id = $db->Execute($products_options_id_sql, false, false, 0, true);
-        }
-
-        $product_type_sql = 'SELECT products_options_type FROM ' . TABLE_PRODUCTS_OPTIONS . ' WHERE products_options_id = :products_options_id:';
-        $product_type_sql = $db->bindVars($product_type_sql, ':products_options_id:', $products_options_id->fields['options_id'], 'integer');
-
-        if (method_exists($db, 'ExecuteNoCache')) {
-          $product_type = $db->ExecuteNoCache($product_type_sql);
-        } else {
-          $product_type = $db->Execute($product_type_sql, false, false, 0, true);
-        }
-
-        // Since converting select type to SBA select, don't do anything to the list unless it is a select.
-        if ($product_type->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT) {
-          continue;
-        }
-
-        if (!isset($results_track[$products_options_id->fields['options_id']])) {
-          $results_track[$products_options_id->fields['options_id']] = $products_options_id->fields['options_id'];
-          // Do update here? or wait till later?
-        }
-      }
-      unset($results_array);
-
-      $results->MoveNext();
-    }
-
-    unset($results);
-
-    sort($results_track); // This will sequence the option_ids so that the "completion" point is better understood.
-
-    foreach ($results_track as $result_key => $result)
-    {
-      $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " po SET po.products_options_type = :products_options_type:
-              WHERE `products_options_id` = :products_options_id:";
-
-      $sql = $db->bindVars($sql, ':products_options_type:', PRODUCTS_OPTIONS_TYPE_SELECT_SBA, 'integer');
-      $sql = $db->bindVars($sql, ':products_options_id:', $result, 'integer');
-
-      $db->Execute($sql);
-
-      if ($db->error) {
-        $msg = ' Error Message: ' . $db->error;
-        $failed = true;
-
-        break;
-      }
-    }
-    unset($results_track);
-
-  } else {
+  if (!defined('PRODUCTS_OPTIONS_TYPE_SELECT_SBA')) {
     $msg = ' Error Message: PRODUCTS_OPTIONS_TYPE_SELECT_SBA not defined.';
     $failed = true;
+    if (isset($resultMmessage)) {
+      array_push($resultMmessage, 'product_attribute_combo field updated ' . $msg);
+    }
+    return;
   }
+
+  $results_track = array(); // Array to track what has been identified.
+
+  // Need to identify which option values are listed in the SBA table and then update them if they are a dropdown select.
+  $sql = 'SELECT stock_attributes FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE stock_attributes != \'\'';
+
+  $results = $db->Execute($sql);
+
+  while (!$results->EOF)
+  {
+    $results_array = explode(',', $results->fields['stock_attributes']);
+
+    // Need one or more checks before using the results_array
+    foreach ($results_array as $key=> $value)
+    {
+      $products_options_id_sql = 'SELECT options_id FROM ' . TABLE_PRODUCTS_ATTRIBUTES . ' WHERE products_attributes_id = :products_attributes_id:';
+      $products_options_id_sql = $db->bindVars($products_options_id_sql, ':products_attributes_id:', $value, 'integer');
+
+      if (method_exists($db, 'ExecuteNoCache')) {
+        $products_options_id = $db->ExecuteNoCache($products_options_id_sql);
+      } else {
+        $products_options_id = $db->Execute($products_options_id_sql, false, false, 0, true);
+      }
+
+      $product_type_sql = 'SELECT products_options_type FROM ' . TABLE_PRODUCTS_OPTIONS . ' WHERE products_options_id = :products_options_id:';
+      $product_type_sql = $db->bindVars($product_type_sql, ':products_options_id:', $products_options_id->fields['options_id'], 'integer');
+
+      if (method_exists($db, 'ExecuteNoCache')) {
+        $product_type = $db->ExecuteNoCache($product_type_sql);
+      } else {
+        $product_type = $db->Execute($product_type_sql, false, false, 0, true);
+      }
+
+      // Since converting select type to SBA select, don't do anything to the list unless it is a select.
+      if ($product_type->fields['products_options_type'] != PRODUCTS_OPTIONS_TYPE_SELECT) {
+        continue;
+      }
+
+      if (!isset($results_track[$products_options_id->fields['options_id']])) {
+        $results_track[$products_options_id->fields['options_id']] = $products_options_id->fields['options_id'];
+        // Do update here? or wait till later?
+      }
+    }
+    unset($results_array);
+
+    $results->MoveNext();
+  }
+
+  unset($results);
+
+  sort($results_track); // This will sequence the option_ids so that the "completion" point is better understood.
+
+  foreach ($results_track as $result_key => $result)
+  {
+    $sql = "UPDATE " . TABLE_PRODUCTS_OPTIONS . " po SET po.products_options_type = :products_options_type:
+            WHERE `products_options_id` = :products_options_id:";
+
+    $sql = $db->bindVars($sql, ':products_options_type:', PRODUCTS_OPTIONS_TYPE_SELECT_SBA, 'integer');
+    $sql = $db->bindVars($sql, ':products_options_id:', $result, 'integer');
+
+    $db->Execute($sql);
+
+    if ($db->error) {
+      $msg = ' Error Message: ' . $db->error;
+      $failed = true;
+
+      break;
+    }
+  }
+  unset($results_track);
 
   if (isset($resultMmessage)) {
     array_push($resultMmessage, 'product_attribute_combo field updated ' . $msg);
@@ -1967,11 +1966,7 @@ function convertNonSBAToDropdown()
       $isSBA_query = $db->bindVars($isSBA_query, ':products_id:', $product_id, 'integer');
       $isSBA = $db->Execute($isSBA_query);
       
-      if ($isSBA->fields['total'] > 0) {
-        return true;
-      } else {
-        return false;
-      }
+      return ($isSBA->fields['total'] > 0);
     }
     
     return false;
