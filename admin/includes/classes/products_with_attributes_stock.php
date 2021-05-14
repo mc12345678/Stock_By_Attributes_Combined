@@ -104,23 +104,25 @@ class products_with_attributes_stock extends base
       }
       $products_options_array = array();
       
-      while (!$attributes->EOF) {
-        
-        $sql = "SELECT    pov.products_options_values_id,
-                      pov.products_options_values_name,
-                      pa.*
-            FROM      " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov
-            WHERE     pa.products_id = " . (int)$products_id . "
-            AND       pa.options_id = " . (int)$attributes->fields['products_options_id'] . "
-            AND       pa.options_values_id = pov.products_options_values_id
-            AND       pov.language_id = " . (int)$languageId . " " .
-              $order_by;
+      $sql2 = "SELECT    pov.products_options_values_id,
+                    pov.products_options_values_name,
+                    pa.*
+          FROM      " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov
+          WHERE     pa.products_id = " . (int)$products_id . "
+          AND       pa.options_id = :products_options_id:
+          AND       pa.options_values_id = pov.products_options_values_id
+          AND       pov.language_id = " . (int)$languageId . " " .
+            $order_by;
 
-        $attributes_array_ans= $db->Execute($sql);
+      while (!$attributes->EOF) {
+
+        $sql2 = $db->bindVars($sql, ':products_options_id:', $attributes->fields['products_options_id'], 'integer');
+        $attributes_array_ans = $db->Execute($sql2);
 
         //loop for each option/attribute listed
 
         while (!$attributes_array_ans->EOF) {
+          //  @TODO: Modify prices shown to match the admin/catalog setup instead of just $ and 2 decimal places.
           $attributes_array[$attributes->fields['products_options_name']][] =
             array('id' => $attributes_array_ans->fields['products_attributes_id'],
                 'text' => $attributes_array_ans->fields['products_options_values_name']
