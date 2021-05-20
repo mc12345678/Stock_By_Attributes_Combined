@@ -673,7 +673,11 @@ function insertSBAconfiguration(){
       9,".$result.",now(),null,'zen_cfg_select_option(array(\'0\', \'1\'),'),
       ('SBA CustomID replaces products_model', 'STOCK_SBA_CUSTOM_FOR_MODEL', '1',
     'In review and display of order history related information, how should the products_model of the product be treated related to the SBA customid?<br /><br /> Default: false (Only show the product\'s assigned products_model)<br />1 - Substitute the product\'s products_model with the customid when the customid is not empty or blank<br />2 - Always substitute the product\'s products_model with the customid<br />3 - Substitute the product\'s products_model with the customid when the products_model is blank or empty',
-      9,".$result.",now(),null,'zen_cfg_select_option(array(\'false\', \'1\', \'2\', \'3\'),'),";
+      9,".$result.",now(),null,'zen_cfg_select_option(array(\'false\', \'1\', \'2\', \'3\'),'),
+      ('SBA CustomID Unique', 'STOCK_SBA_CUSTOMID_UNIQUE', 'true',
+    'Should each CustomID within the catalog be unique (no duplicates)?<br /><br /> Default: true<br /> true: Where programmed, either prevent the addition of duplicate CustomIDs or provide a way to remove duplicates, this does not mean that a CustomID is required as it could be empty.<br />false: Allow duplicate CustomIDs to exist and to be added to the database.',
+      9, " . $result . ", now(), null, 'zen_cfg_select_option(array(\'false\', \'true\', ),'),
+      ";
 
   $sql2 ="SELECT c.sort_order + 1 as next_sort_order
       FROM ".TABLE_CONFIGURATION." c
