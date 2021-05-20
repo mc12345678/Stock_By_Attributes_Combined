@@ -977,7 +977,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
       $customid = $this->nullDataEntry($customid);
 
       // query for any duplicate records based on input where the input has a match to a non-empty key.
-      $query = "SELECT count(*) AS total FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE (products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . (isset($customid) /* @TODO if customid is not required to be unique then and with a false */ ? "OR customid = :customid:" : "");
+      $query = "SELECT count(*) AS total FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE (products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . (isset($customid) /* @TODO if customid is not required to be unique then and with a false */ ? "OR customid = :customid: " : "");
       $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
       $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'passthru');
       $query = $db->bindVars($query, ':product_attribute_combo:', $productAttributeCombo, 'passthru');
@@ -993,7 +993,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
       
       // No duplication of desired key(s) of table. @TODO: May want to move this down after other reviews so that insertion
       //   code is written one time and use some sort of flag to skip the code that follows the if.
-      if ($result_keys->fields['total'] == 0) {
+      if ($result_keys->fields['total'] == 0 || $insert_result === true) {
           $insert_result = true;
           
           // Because no duplicates, information is considered new and is to be inserted.
@@ -1020,6 +1020,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
       
           $result = $result_final = $db->Execute($query);
           
+          return $result;
       } elseif ($insert_result === false) {
           // A record has been found to match the provided data, now to identify how to proceed with the given data.
           //$result_multiple = null; // Establish base/known value for comparison/review.
@@ -1031,11 +1032,15 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
               
               $result_customid = $db->Execute($query);
               
+              if ($result_customid->fields['total'] == 0) {
+                // Customid is unique (not used already) which means that other data was found to match and therefore this record should get updated.
+                $update_result = true;
+              }
               // Found customid in the database; however, need to identify if it belongs to the current data or to some other record. 
              // This check, with the addition of an additional flag, allows the possibility of having a duplicate customid.
               if ($result_customid->fields['total'] > 0) {
-                // Identify if records exist that match everything except the customid.
-                $query = "SELECT count(*) as total FROM "  . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE ((products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . ") AND `customid` != :customid:";
+                // Identify if records exist that match the unique portion of this record to exclude considering customid as needing to be unique.
+                $query = "SELECT count(*) as total, customid FROM "  . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE ((products_id = :products_id: AND stock_attributes = :stock_attributes:) " . (isset($productAttributeCombo) ? "OR product_attribute_combo = :product_attribute_combo: " : "") . ")";
                   // If find a record, then the customid was assigned to some other product or the two parts of the where
                   //   statement do not uniquely identify a single stock_id.
                 $query = $db->bindVars($query, ':products_id:', $products_id, 'integer');
@@ -1045,16 +1050,48 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
                 } else {
                   $query = $db->bindVars($query, ':product_attribute_combo:', $productAttributeCombo, 'passthru'); // @TODO Need to also consider ignore NULL style.
                 }
-                $query = $db->bindVars($query, ':customid:', $customid, 'passthru'); // @TODO Need to also consider ignore NULL style.
+                //$query = $db->bindVars($query, ':customid:', $customid, 'passthru'); // @TODO Need to also consider ignore NULL style.
 
                 $result_customid_unique = $db->Execute($query);
+                
+                $insert_result = true;
+                // If a result comes back then this variant is already present.
+                // Note that generally speaking (original design) only one variant is expected to exist such that this loop is expected to occur at most one time;
+                //   however, alternate design/construction may be in place outside of this core code that could result in multiple records meeting the above criteria.
+                //   Therefore, a loop is built in to help with expansion. The goal here is to address the customid and nothing else (yet), so it doesn't really matter
+                //   in this process of whether there are multiple matching variants or just one. If the customid is expected to be unique and it is used in multiple
+                //   places, then this should identify that condition and provide information to support feedback and further correction.
+                while (!$result_customid_unique->EOF) {
+                  if ($result_customid_unique->fields['customid'] != $customid) {
+                    // Variant record exists, but it doesn't have this customid.
+                    $result_customid_unique->MoveNext();
+                    continue;
+                  }
+                  // Until evaluated further, don't insert this record as the $customid was found to exist somewhere and this variant exists already.
+                  $insert_result = false;
+                  
+                  if ($result_customid->fields['total'] > 1) {
+                    // customid found in this variant, but also exists in another.  If expectation is that all are unique, then there is more work to be done.
+                    //  Make/prepare notification, no further action really needed other than at some point either adding the other information or returning
+                    //   to modify.  E.g., if duplicates are ok, then should add this item to the database using the process that is currently above.
+                    $dup_found = true;
+                    break;
+                  }
+                  // Found the customid in the variant and there is only one variant that has the customid, therefore they describe the same thing. No need to look further.
+                  break;
+                }
+                // This variant exists with/without the customid. May have a different customid, but the one presented is not otherwise found outside of this variant.
+                if (!empty($result_customid_unique->RecordCount()) && empty($dup_found)) {
+                  $update_result = true;
+                }
+                
                 // If a record is found, then the customid is already used elsewhere and should not be updated.
                 // If a record is not found, then the customid is already assigned to this variant and everything else should
                 //   be updated.
 
-                if ($result_customid_unique->fields['total'] == 0) {
-                    $update_result = true;
-                }
+                //if ($result_customid_unique->fields['total'] == 0) {
+                    //$update_result = true;
+                //}
                 /*if (!$result2->EOF) {
                     
                 }*/
@@ -1072,8 +1109,8 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
               }
           }
           
-          // If no $customid clash (non-empty customid) or if the $customid is empty then update.
-          if ($update_result || (isset($result_customid) && $result_customid->fields['total'] == 0) /*!isset($result) || $result->fields['total'] == 0*/) {
+          // If no $customid clash (non-empty customid) or if the $customid is empty/different then update.
+          if ($update_result /*!isset($result) || $result->fields['total'] == 0*/) {
               $query = "UPDATE " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " set `quantity` = :quantity:, `customid` = :customid:, `title` = :title: WHERE `products_id` = :products_id: AND `stock_attributes` = :stock_attributes:";
               $query = $this->query_insert_float($query, ':quantity:', $quantity);
               if (!isset($customid)) {
@@ -1090,11 +1127,16 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
               $query = $db->bindVars($query, ':stock_attributes:', $strAttributes, 'passthru');
 
               $result = $db->Execute($query);
-          } else {
-              // There is a conflict in the customid with the customid being required to be unique.
+              
+              return $result;
           }
 
-      }
+          // There is a conflict in the customid with the customid being required to be unique or the item wasn't previously identified for insertion and is new.
+          // If requires uniqueness, then send one way.
+          // If can be duplicated, then insert this record with the "duplicate".
+          $result = false;
+
+      } // End of grouping evaluating if this variant should be inserted or updated.
       // Above replaces this query to provide improved support because some databases do not support the long
       //  key(s) initially implemented.
 /*     $query = "insert into ". TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK ." (`products_id`, `product_attribute_combo`, `stock_attributes`, `quantity`, `customid`, `title`) 
