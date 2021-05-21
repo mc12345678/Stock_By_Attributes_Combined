@@ -329,6 +329,7 @@ class products_with_attributes_stock_admin extends base {
     unset($option_id);
     unset($options_values_id);
 
+    $remove_attributes_list = array();
     while (!$remove_attributes_query->EOF) {
       $remove_attributes_list[] = $remove_attributes_query->fields['products_attributes_id'];
       $remove_attributes_query->MoveNext();
