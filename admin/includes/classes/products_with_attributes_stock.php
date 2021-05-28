@@ -554,14 +554,14 @@ class products_with_attributes_stock extends base
         //Show last edited record or Limit number of records displayed on page
         $SearchRange = null;
 
-        if (isset($ReturnedProductID) && is_array($ReturnedProductID)) {
+        if (!empty($ReturnedProductID) && is_array($ReturnedProductID)) {
           foreach ($ReturnedProductID as $key => &$singleID) {
             $singleID = (int)zen_db_input($singleID);
           }
           unset($singleID);
           $w = " AND (p.products_id IN (" . implode(',', $ReturnedProductID) . " )) ";
           $ReturnedProductID = array_pop($ReturnedProductID);
-        } elseif (isset($ReturnedProductID)) {
+        } elseif (!empty($ReturnedProductID)) {
           $ReturnedProductID = zen_db_input($ReturnedProductID);
           $w = " AND (p.products_id IN (" . $ReturnedProductID . " )) ";
         } elseif ($NumberRecordsShown > 0) {
