@@ -121,6 +121,10 @@ class products_with_attributes_stock extends base {
             || (int)$products_id_info['products_id'] <= 0
           )
     ) {
+      if (empty($quantity_handled)) {
+        $quantity_handled = true;
+      }
+      $products_quantity = $_SESSION['pwas_class2']->default_zen_get_products_stock(0);
       return false;
     }
 
@@ -162,7 +166,15 @@ class products_with_attributes_stock extends base {
     }
 
     // Check if SBA tracked, if not, then no need to process further.
-    if (!$_SESSION['pwas_class2']->zen_product_is_sba($products_id)) return false;
+    if (!$_SESSION['pwas_class2']->zen_product_is_sba($products_id)) {
+      if (empty($quantity_handled)) {
+        $quantity_handled = true;
+      }
+
+      $products_quantity = $_SESSION['pwas_class2']->default_zen_get_products_stock($products_id);
+
+      return false;
+    }
 
     // Try to get the current setting of this value that defaults to true in PHP 7.4+
     if (empty($prod_is_array)) {
@@ -225,6 +237,12 @@ class products_with_attributes_stock extends base {
     
       // Somehow ended up in this function but applicable sub-routines were not detected
       if ($current_level === -1) {
+        if (empty($quantity_handled)) {
+          $quantity_handled = true;
+        }
+
+        $products_quantity = $_SESSION['pwas_class2']->default_zen_get_products_stock($products_id);
+
         return false;
       }
     }
@@ -240,12 +258,11 @@ class products_with_attributes_stock extends base {
       //   code to process further.  So, keep an eye out on changes made to the function zen_get_products_stock.
       //   Changes made after the return for handling will likely need to be incorporated here.
       if (!empty($prod_is_array)) {
-        $stock_query = "SELECT products_quantity
-                FROM " . TABLE_PRODUCTS . "
-                WHERE products_id = " . (int)$products_id . " LIMIT 1";
+        if (empty($quantity_handled)) {
+          $quantity_handled = true;
+        }
 
-        $stock_values = $db->Execute($stock_query);
-        $products_quantity = $stock_values->fields['products_quantity'];
+        $products_quantity = $_SESSION['pwas_class2']->default_zen_get_products_stock($products_id);
         // Leave the value alone if it is non-falsey otherwise ensure that is used.
         if (empty($quantity_handled)) {
           $quantity_handled = true;
@@ -344,6 +361,8 @@ class products_with_attributes_stock extends base {
    **/
   function updateNotifyZenHasProductAttributesValues(&$callingClass, $notifier, $products_id, &$value_to_return) {
     
+    if (empty($_SESSION['pwas_class2'])) return;
+
     // Saves a database lookup that has or should have already been done.
     if (isset($this->_isSBA) && $this->_isSBA || !isset($this->_isSBA) && $_SESSION['pwas_class2']->zen_product_is_sba($_GET['products_id'])) {
 //      $value_to_return = true;
@@ -356,6 +375,8 @@ class products_with_attributes_stock extends base {
    * ZC 1.5.7: $zco_notifier->notify('NOTIFY_ATTRIBUTES_MODULE_START_OPTION', $products_options_names->fields);
    */
    function updateNotifyAttributesModuleStartOption(&$callingClass, $notifier, $products_options_names_fields) {
+     if (empty($_SESSION['pwas_class2'])) return;
+
      global $db, $sql, /*$options_menu_images, $moveSelectedAttribute, */
         $products_options_array, /*$options_attributes_image,*/
         /*$products_options_names, *//*$products_options_names_count,*/
@@ -755,6 +776,8 @@ class products_with_attributes_stock extends base {
     */
   function updateNotifyAttributesModuleOriginalPrice(&$callingClass, $notifier, $products_options_fields, &$products_options_array, &$products_options_display_price, &$data_properties) {
 
+    if (empty($_SESSION['pwas_class2'])) return;
+
     // If not even an SBA selection, then don't do anything with it.
     if (!$this->_isSBA) {
       return;
@@ -928,6 +951,8 @@ class products_with_attributes_stock extends base {
    * 'NOTIFY_ATTRIBUTES_MODULE_DEFAULT_SWITCH';
    */
   function updateNotifyAttributesModuleDefaultSwitch(&$callingClass, $notifier, $products_options_names_fields, &$options_name, &$options_menu, &$options_comment, &$options_comment_position, &$options_html_id) {
+
+    if (empty($_SESSION['pwas_class2'])) return;
 
           switch (true) {
       case ($products_options_names_fields['products_options_type'] == PRODUCTS_OPTIONS_TYPE_SELECT_SBA): // SBA Select List (Dropdown) Basic
@@ -1267,6 +1292,8 @@ class products_with_attributes_stock extends base {
    */
   function updateNotifyOrderCartAddProductList(&$orderClass, $notifier, $paramsArray) {
     
+    if (empty($_SESSION['pwas_class2'])) return;
+
     if (!is_array($paramsArray) || !array_key_exists('index', $paramsArray) || !array_key_exists('products', $paramsArray)) {
       trigger_error('Array values not as expected.', E_USER_WARNING);
     }
@@ -1298,6 +1325,8 @@ class products_with_attributes_stock extends base {
    * $this->notify('NOTIFY_ORDER_CART_ADD_ATTRIBUTE_LIST', array('index'=>$index, 'subindex'=>$subindex, 'products'=>$products[$i], 'attributes'=>$attributes));
    */
   function updateNotifyOrderCartAddAttributeList(&$orderClass, $notifier, $paramsArray) {
+    if (empty($_SESSION['pwas_class2'])) return;
+
     $index = $paramsArray['index'];
     $subindex = $paramsArray['subindex'];
     $productsI = $paramsArray['products'];
@@ -1320,6 +1349,8 @@ class products_with_attributes_stock extends base {
   //NOTIFY_ORDER_PROCESSING_STOCK_DECREMENT_INIT //Line 716
   function updateNotifyOrderProcessingStockDecrementInit(&$callingClass, $notifier, $paramsArray, & $productI, & $i) {
     //global $pwas_class;
+
+    if (empty($_SESSION['pwas_class2'])) return;
 
     $this->_i = $i;
     $this->_productI = $productI;
@@ -1386,6 +1417,8 @@ class products_with_attributes_stock extends base {
      */
     function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left = 0) {
       global $db; //, $pwas_class;
+
+      if (empty($_SESSION['pwas_class2'])) return;
 
       $this->_stock_values = $stock_values;
 
@@ -1513,6 +1546,8 @@ class products_with_attributes_stock extends base {
      * @param null $opa_insert_id
      */
   function updateNotifyOrderDuringCreateAddedAttributeLineItem(&$orderClass, $notifier, $paramsArray, $opa_insert_id = NULL) {
+    if (empty($_SESSION['pwas_class2'])) return;
+
     /* First check to see if SBA is installed and if it is then look to see if a value is 
      *  supplied in the stock_id parameter (which should only be populated when a SBA tracked
      *  item is in the order */
@@ -1634,6 +1669,8 @@ class products_with_attributes_stock extends base {
    * @param $paramsArray
    */
   function updateNotifyHeaderEndShoppingCart(&$callingClass, $notifier, $paramsArray) {
+    if (empty($_SESSION['pwas_class2'])) return;
+
     global $productArray, $flagAnyOutOfStock, $db;
 
     $flagAnyInsideOutOfStock = false;
@@ -1832,6 +1869,8 @@ class products_with_attributes_stock extends base {
   
   // NOTIFY_HEADER_START_CHECKOUT_SHIPPING
   function updateNotifyHeaderStartCheckoutShipping(&$callingClass, $notifier, $paramsArray) {
+    if (empty($_SESSION['pwas_class2'])) return;
+
     // Attempt to validate that prepared to address/process SBA related information.  The initial logic here is
     // from a default ZC includes/modules/pages/checkout_shipping/header_php.php file which could otherwise be modified
     //  but instead of repeating exactly the contents of that file, it's potential redirects, etc... Just want to validate

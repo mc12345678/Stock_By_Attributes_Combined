@@ -1067,12 +1067,9 @@ Of the attributes provided, determine the number of those attributes that are
     if ($datatype == 'stock' && !$this->zen_product_is_sba($products_id)) {
       //Used with products that have attributes But the attribute is not listed in the SBA Stock table.
       //Get product level stock quantity
-      $stock_query = "select products_quantity from " . TABLE_PRODUCTS . " where products_id = :products_id:";
-      $stock_query = $db->bindVars($stock_query, ':products_id:', $products_id, 'integer');
       // @TODO: identify if function zen_products_lookup($products_id, 'products_quantity') could be used here or if there
       //  would be a cache of information left behind that could cause an issue?
-      $stock_values = $db->Execute($stock_query); //, false, false, 0, true);
-      return $stock_values->fields['products_quantity'];
+      return $this->default_zen_get_products_stock($products_id);
     }
 
     if (!$this->zen_product_is_sba($products_id)) {
@@ -1717,5 +1714,24 @@ Of the attributes provided, determine the number of those attributes that are
 
     return $this->_isSBA[(int)$product_id]['status'];
   }  
+
+  // This is the default version of Zen Cart's code to return the quantity of
+  //   stock that is in the store for a given products_id.  This is incorporated
+  //   to account for the alternate stock quantity lookup process used by this
+  //   plugin.  If another plugin directly modifies the function zen_get_product_stock
+  //   then those changes should be incorporated here to ensure that all product
+  //   are handled as expected.
+  function default_zen_get_products_stock($products_id) {
+    global $db;
+
+    $products_id = zen_get_prid($products_id);
+    $stock_query = "SELECT products_quantity
+                    FROM " . TABLE_PRODUCTS . "
+                    WHERE products_id = " . (int)$products_id . " LIMIT 1";
+
+    $stock_values = $db->Execute($stock_query);
+
+    return $stock_values->fields['products_quantity'];
+  }
 
 }
