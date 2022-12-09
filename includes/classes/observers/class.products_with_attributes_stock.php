@@ -96,6 +96,7 @@ class products_with_attributes_stock extends base {
   
     $this->attach($this, $attachNotifier);
 
+    $this->_isSBA = false;
     $this->_products_options_names_current = 0; // Initialize this variable to 0.
   }  
   
@@ -143,6 +144,7 @@ class products_with_attributes_stock extends base {
       $prod_is_array = true;
       $attributes = array();
       $dupTest = null;
+      $products_id = null;
       foreach ($products_id_info as $key => $value) {
         switch (true) {
           case ($key == 'products_id'):
