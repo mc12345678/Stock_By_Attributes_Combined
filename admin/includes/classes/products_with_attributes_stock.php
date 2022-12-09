@@ -811,6 +811,8 @@ function saveAttrib() {
     foreach ($_POST as $key => $value) {
       $matches = array();
       
+      // Based on current design, could continue on not matching the below.
+      // This would reduce an indented code group.
       if (preg_match('/stockid-(.*?)-(.*)/', $key, $matches)) {
         // $matches[1] is expected to be the pwas database table field to be updated
         // $matches[2] is expected to be the pwas stock_id to be updated
