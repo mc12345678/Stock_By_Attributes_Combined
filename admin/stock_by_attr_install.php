@@ -2262,6 +2262,9 @@ function showScriptResult($Input = null){
     $output = "<p><h2>FAILURES:</h2>There were ERRORs Reported.<br /><b>Review results below</b>:</p>";
     $error = "Errors!";
   }
+  elseif ($Input === null) {
+    return;
+  }
   elseif($Input == 'Full Install'){
     $output = "<p><h2>Stock by Attributes <b>DATABASE</b> component was installed.</h2></p>";
     $error = "No Error reported";
@@ -2272,11 +2275,11 @@ function showScriptResult($Input = null){
   }
 
   $output .= "<hr />
-        <p><h3>Results from the selection $Input: ($error)</h3>
+        <p><h3>Results from the selection " . $Input . ": (" . $error . ")</h3>
         </p><p>";
 
   foreach($resultMmessage as $msg){
-    $output .= " $msg <br />";
+    $output .= " " . $msg . " <br />";
   }
 
   $output .= "</p><hr/>";
