@@ -813,48 +813,49 @@ function saveAttrib() {
       
       // Based on current design, could continue on not matching the below.
       // This would reduce an indented code group.
-      if (preg_match('/stockid-(.*?)-(.*)/', $key, $matches)) {
-        // $matches[1] is expected to be the pwas database table field to be updated
-        // $matches[2] is expected to be the pwas stock_id to be updated
+      if (!preg_match('/stockid-(.*?)-(.*)/', $key, $matches)) {
+        continue;
+      }
+      // $matches[1] is expected to be the pwas database table field to be updated
+      // $matches[2] is expected to be the pwas stock_id to be updated
 
-        $tabledata = '';
-        $stock_id = null;
-        
-        $tabledata = $matches[1];
-        $stock_id = $matches[2];
-        
-        switch ($tabledata) {
-          case 'quantity':
-          case 'sort':
+      $tabledata = '';
+      $stock_id = null;
+      
+      $tabledata = $matches[1];
+      $stock_id = $matches[2];
+      
+      switch ($tabledata) {
+        case 'quantity':
+        case 'sort':
 //            $value = (float)$value; // Get a float value
-            $value = $this->query_insert_float(':quantity:', ':quantity:', $value);
-            break;
-          case 'customid':
-          case 'title':
-            if ($db->getBindVarValue('NULL', 'string') === 'null' && $value !== 'NULL') {
-              if (empty($value)) {
-                $value = 'NULL';
-              }
-              $value = $db->getBindVarValue($value, 'string');
-            } else {
-              $value = $db->prepare_input($value); // Maybe if numeric bind to float, else bind to string.
-              $value = $this->nullDataEntry($value); // Get the value or string of entered text, if there is nothing then be able to store a null value that is not the text 'null'.
-              if (empty($value)) {
-                $value = 'null';
-              }
-            }  
-            break;
-          default:
-            continue 2;
-        }
+          $value = $this->query_insert_float(':quantity:', ':quantity:', $value);
+          break;
+        case 'customid':
+        case 'title':
+          if ($db->getBindVarValue('NULL', 'string') === 'null' && $value !== 'NULL') {
+            if (empty($value)) {
+              $value = 'NULL';
+            }
+            $value = $db->getBindVarValue($value, 'string');
+          } else {
+            $value = $db->prepare_input($value); // Maybe if numeric bind to float, else bind to string.
+            $value = $this->nullDataEntry($value); // Get the value or string of entered text, if there is nothing then be able to store a null value that is not the text 'null'.
+            if (empty($value)) {
+              $value = 'null';
+            }
+          }  
+          break;
+        default:
+          continue 2;
+      }
 
-        if (isset($stock_id) && (int)$stock_id > 0) {
-          $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET :field: = $value WHERE stock_id = :stock_id: LIMIT 1";
-          $sql = $db->bindVars($sql, ':field:', $tabledata, 'noquotestring');
-          $sql = $db->bindVars($sql, ':stock_id:', $stock_id, 'integer');
-          $db->execute($sql);
-          $i++;
-        }
+      if (isset($stock_id) && (int)$stock_id > 0) {
+        $sql = "UPDATE ".TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK." SET :field: = $value WHERE stock_id = :stock_id: LIMIT 1";
+        $sql = $db->bindVars($sql, ':field:', $tabledata, 'noquotestring');
+        $sql = $db->bindVars($sql, ':stock_id:', $stock_id, 'integer');
+        $db->execute($sql);
+        $i++;
       }
       
 /*      $id1 = intval(str_replace('stockid1-', '', $key));//title
