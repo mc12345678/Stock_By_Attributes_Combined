@@ -2075,14 +2075,9 @@ function checkSBAfileLocation(){
 
     DIR_FS_CATALOG . DIR_WS_INCLUDES . 'extra_cart_actions/stock_by_attributes.php',
     DIR_FS_CATALOG . DIR_WS_INCLUDES . 'extra_datafiles/products_with_attributes_stock_database_tables.php',
-    DIR_FS_CATALOG . DIR_WS_INCLUDES . 'functions/extra_functions/products_with_attributes.php',
     DIR_FS_CATALOG_LANGUAGES . 'english/extra_definitions/products_with_attributes.php',
 
     DIR_FS_CATALOG_TEMPLATES . $template_dir . '/templates/tpl_shopping_cart_default.php',
-    DIR_FS_CATALOG_TEMPLATES . $template_dir . '/templates/tpl_account_history_info_default.php',
-    DIR_FS_CATALOG_TEMPLATES . $template_dir . '/templates/tpl_checkout_confirmation_default.php',
-
-    DIR_FS_CATALOG_TEMPLATES . $template_dir . '/jscript/jquery-1.10.2.min.js',
   );
 
   if (PROJECT_VERSION_MAJOR <= '1' && PROJECT_VERSION_MINOR <= '5.4') {
@@ -2095,6 +2090,12 @@ function checkSBAfileLocation(){
   if (PROJECT_VERSION_MAJOR <= '1' && PROJECT_VERSION_MINOR <= '5.6') {
     $files_merge = array(
       DIR_FS_CATALOG_MODULES . $template_dir .'/attributes.php',
+      DIR_FS_CATALOG . DIR_WS_INCLUDES . 'functions/extra_functions/products_with_attributes.php',
+
+      DIR_FS_CATALOG_TEMPLATES . $template_dir . '/templates/tpl_account_history_info_default.php',
+      DIR_FS_CATALOG_TEMPLATES . $template_dir . '/templates/tpl_checkout_confirmation_default.php',
+
+      DIR_FS_CATALOG_TEMPLATES . $template_dir . '/jscript/jquery-1.10.2.min.js',
     );
     $files = array_merge($files, $files_merge);
   }
