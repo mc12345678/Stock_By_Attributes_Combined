@@ -568,7 +568,7 @@ class products_with_attributes_stock extends base {
           || ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '2'
           || (
             ATTRIBUTES_SBA_DISPLAY_CUSTOMID == '3'
-            && $products_options_names_count > 1
+            && $this->_products_options_names_count > 1
           )
         );
       //Add qty to atributes based on STOCK_SHOW_ATTRIB_LEVEL_STOCK setting
