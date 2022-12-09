@@ -201,6 +201,7 @@ function removeSBAconfiguration(){
     'ATTRIBUTES_SBA_DISPLAY_CUSTOMID',
     'SBA_SHOW_OUT_OF_STOCK_ATTR_ON_PRODUCT_INFO',
     'STOCK_SBA_CUSTOM_FOR_MODEL',
+    'STOCK_SBA_CUSTOMID_UNIQUE',
   );
 
   foreach ($delete_confs as $delete_conf) {
@@ -631,7 +632,7 @@ function insertSBAconfiguration(){
   $result = $db->Execute($sql);
   $result = $result->fields['next_sort_order'];
 
-  $sql = "INSERT INTO `".TABLE_CONFIGURATION."` (configuration_title, configuration_key, configuration_value,
+  $sql = "INSERT IGNORE INTO `".TABLE_CONFIGURATION."` (configuration_title, configuration_key, configuration_value,
          configuration_description, configuration_group_id, sort_order,
          date_added, use_function, set_function)
 
