@@ -1829,7 +1829,7 @@ class products_with_attributes_stock extends base {
         $products_options_names->MoveNext();
         unset($sql2);
       }
-      if (!empty($productArray[$i]['attributeImage'])) {
+      if (!empty($productArray[$i]['attributeImage']) && defined('SBA_SHOW_IMAGE_ON_PRODUCT_INFO') && SBA_SHOW_IMAGE_ON_PRODUCT_INFO != '0') {
         $productArray[$i]['productsImage'] = (IMAGE_SHOPPING_CART_STATUS == 1 ? zen_image(DIR_WS_IMAGES . $productArray[$i]['attributeImage'][count($productArray[$i]['attributeImage']) - 1], $productArray[$i]['productsName'], IMAGE_SHOPPING_CART_WIDTH, IMAGE_SHOPPING_CART_HEIGHT) : '');
       }
       unset($productArray[$i]['attributeImage']);
