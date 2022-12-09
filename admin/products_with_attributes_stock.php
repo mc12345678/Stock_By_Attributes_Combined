@@ -1486,7 +1486,10 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
 <?php if (isset($_GET['products_filter']) && $_GET['products_filter'] != '') { ?>
         <td colspan="2"><table border="0" cellspacing="0" cellpadding="2">
 <!--            <td class="attributes-even" align="center"><?php echo zen_draw_products_pull_down('products_filter', 'size="10" id="pwas-filter"', '', true, $_GET['products_filter'], true, true); ?></td>-->
-            <td class="attributes-even" align="center"><?php echo zen_draw_products_pull_down('products_filter', 'size="10" id="pwas-filter-drop"', array('')/* @todo should list all product that do not have attributes as an array */, true, $_GET['products_filter'], true, true); /* pwas-filter*/ ?></td>
+            <td class="attributes-even" align="center"><?php
+              $sba_pull_down_function = function_exists('zen_draw_pulldown_products') ? 'zen_draw_pulldown_products' : 'zen_draw_products_pull_down';
+              echo $sba_pull_down_function('products_filter', 'size="10" id="pwas-filter-drop"', array('')/* @todo should list all product that do not have attributes as an array */, true, $_GET['products_filter'], true, true); /* pwas-filter*/
+            ?></td>
             <td class="main" align="right" valign="top"><?php echo zen_image_submit('button_display.gif', IMAGE_DISPLAY); ?></td>
 <?php    echo zen_draw_input_field('pwas-search-button', 'Search', 'id="pwas-search-button"', true, 'submit', true);
          echo zen_draw_hidden_field('search_order_by', $search_order_by);
