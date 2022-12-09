@@ -1419,7 +1419,7 @@ class products_with_attributes_stock extends base {
      * @param     $stock_values
      * @param int $attribute_stock_left
      */
-    function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left = 0) {
+    function updateNotifyOrderProcessingStockDecrementBegin(&$callingClass, $notifier, $paramsArray, &$stock_values, &$attribute_stock_left = 0.0) {
       global $db; //, $pwas_class;
 
       if (empty($_SESSION['pwas_class2'])) return;
