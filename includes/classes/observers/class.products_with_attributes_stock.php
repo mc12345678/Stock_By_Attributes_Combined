@@ -30,7 +30,9 @@ class products_with_attributes_stock extends base {
   private $_stock_values;
   
   private $_isSBA = false;
-  
+
+  private $SBATracker = array();
+
   private $_orderIsSBA = false;
   
   private $_products_options_names_count;
@@ -1777,7 +1779,7 @@ class products_with_attributes_stock extends base {
 
          */
 
-      if (!isset($this->_isSBA[(int)$productArray[$i]['id']]['sql' . (int)$i])) {
+      if (!isset($this->SBATracker[(int)$productArray[$i]['id']]['sql' . (int)$i])) {
         //get the option/attribute list
         $sql = "select distinct popt.products_options_id, popt.products_options_name, popt.products_options_sort_order,
                               popt.products_options_type, popt.products_options_length, popt.products_options_comment,
@@ -1794,9 +1796,9 @@ class products_with_attributes_stock extends base {
         $sql = $db->bindVars($sql, ':products_id:', $productArray[$i]['id'], 'integer');
         $sql = $db->bindVars($sql, ':languages_id:', $_SESSION['languages_id'], 'integer');
         $products_options_names = $db->Execute($sql);
-        $this->_isSBA[(int)$productArray[$i]['id']]['sql' . $i] = $products_options_names;
+        $this->SBATracker[(int)$productArray[$i]['id']]['sql' . $i] = $products_options_names;
       } else {
-        $products_options_names = $this->_isSBA[(int)$productArray[$i]['id']]['sql'. $i];
+        $products_options_names = $this->SBATracker[(int)$productArray[$i]['id']]['sql'. $i];
 
         if (method_exists($products_options_names, 'rewind')) {
           $products_options_names->Rewind();
