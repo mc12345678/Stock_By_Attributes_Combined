@@ -2755,8 +2755,10 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
 
     </p><div id="SBA-table" style="color:blue;margin-left:50px;margin-right:50px;font-size:15px;">';
 
+  $script_result = null;
   //Selection action
-  if($action == 'installAll'){
+  switch ($action) {
+    case 'installAll':
     //Called functions for this installation
     //Some functions listed below need additional tests and updates, they are commented out
     //Clean-up functions to remove database entries
@@ -2778,21 +2780,21 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
     insertSBAproductsOptionsTypes();//Call function to Add New entries
     //Test for proper New file placement
     checkSBAfileLocation();//Call to check for proper placement of New files
-    echo showScriptResult('Full Install');//show script result
-  }
-  elseif ($action == 'installNonStock') {
+      $script_result = 'Full Install';
+      break;
+    case 'installNonStock':
     addSBANonStockTable();
-    echo showScriptResult('Non-Stock DB Table Install');//show script result
-  }
-  elseif($action == 'removeSettings'){
+      $script_result = 'Non-Stock DB Table Install';
+      break;
+    case 'removeSettings':
     removeSBAconfiguration();  // Call function to remove configuration entries.
     removeSBAadminPages(); // Call function to remove admin pages entry
     removeDynDropdownsConfiguration();
     removeDynDropdownsAdminPages();
     echo removeSBAfiles(); // show instructions for file removal/reversion to previous state
-    echo showScriptResult('Remove Configuration Settings');
-  }
-  elseif($action == 'removeAll'){
+      $script_result = 'Remove Configuration Settings';
+      break;
+    case 'removeAll':
     //Clean-up functions to remove database entries
     removeSBAconfiguration();//Call function to Remove configuration entries
     removeSBAadminPages();//Call function to Remove Admin Pages entry
@@ -2802,90 +2804,91 @@ echo '<div id="" style="background-color: green; padding: 2px 10px;"></div>
     dropSBANonStockTable(); // Call function to remove the SBA table that tracks non-stock attributes.
 //    dropSBAOrdersTable(); // Not sure this should be performed, as it will remove historical data.
     echo removeSBAfiles();//show instructions for file removal/reversion to previous state
-    echo showScriptResult('Remove All');//show results of table modifications
-  }
-  elseif($action == 'runOptionalSQL1'){
+      $script_result = 'Remove All';
+      break;
+    case 'runOptionalSQL1':
     //Default version used in script.
     //This will only add the product attributes that are NOT display-only AND are NOT the new "SBA" selections
     installOptionalSQL1();
-    echo showScriptResult('Optional SQL 1');//show script result
-  }
-  elseif($action == 'runOptionalSQL2'){
+      $script_result = 'Optional SQL 1';
+      break;
+    case 'runOptionalSQL2':
     //This will add all the products attributes
     installOptionalSQL2();
-    echo showScriptResult('Optional SQL 2');//show script result
-  }
-  elseif($action == 'runOptionalSQL3'){
+      $script_result = 'Optional SQL 2';
+      break;
+    case 'runOptionalSQL3':
     //This will add only the display-only product attributes
     installOptionalSQL3();
-    echo showScriptResult('Optional SQL 3');//show script result
-  }
-  elseif($action == 'runOptionalSQL4'){
+      $script_result = 'Optional SQL 3';
+      break;
+    case 'runOptionalSQL4':
     //This will only add the product attributes that are NOT display-only
     installOptionalSQL4();
-    echo showScriptResult('Optional SQL 4');//show script result
-  }
-  elseif($action == 'runOptionalSQL5'){
+      $script_result = 'Optional SQL 4';
+      break;
+    case 'runOptionalSQL5':
     //This will only add the product attributes that are NOT read-only
     installOptionalSQL5();
-    echo showScriptResult('Optional SQL 5');//show script result
-  }
-  elseif($action == 'runOptionalSQL6'){
+      $script_result = 'Optional SQL 5';
+      break;
+    case 'runOptionalSQL6':
     // This will ensure that constants that formerly were stored in gID=0 are
     //  present for operation with this plugin and general site operation.
     verifyProductOptionsTypes();
-    echo showScriptResult('Optional SQL 6');
-  }
-  elseif($action == 'runOptionalAllToSBA'){
+      $script_result = 'Optional SQL 6';
+      break;
+    case 'runOptionalAllToSBA':
 
     convertDropdownsToSBA();
-    echo showScriptResult('All Dropdowns to SBA Select Basic Dropdowns');//show script result
-  }
-  elseif($action == 'runOptionalSBAToSBA'){
+      $script_result = 'All Dropdowns to SBA Select Basic Dropdowns';
+      break;
+    case 'runOptionalSBAToSBA':
 
     convertSBAToSBA();
-    echo showScriptResult('All SBA Dropdown Option Names to SBA Select Basic Dropdowns');//show script result
-  }
-  elseif($action == 'runOptionalNonSBAToDropdown'){
+      $script_result = 'All SBA Dropdown Option Names to SBA Select Basic Dropdowns';
+      break;
+    case 'runOptionalNonSBAToDropdown':
 
     convertNonSBAToDropdown();
-    echo showScriptResult('All Non SBA SBA Select Basic Dropdowns to ZC Dropdowns');//show script result
-  }
-  elseif($action == 'updatePASfieldPAC'){
+      $script_result = 'All Non SBA SBA Select Basic Dropdowns to ZC Dropdowns';
+      break;
+    case 'updatePASfieldPAC':
     //Updates the product_attribute_combo field
     updateProductAttributeCombo();
-    echo showScriptResult('Product Attribute Combo field');//show script result
-  }
-  elseif($action == 'truncatePAStable'){
+      $script_result = 'Product Attribute Combo field';
+      break;
+    case 'truncatePAStable':
     //TRUNCATE the products_with_attributes_stock table
     truncateProductAttributeStockTable();
-    echo showScriptResult('Product Attribute Stock Table Cleared');//show script result
-  }
-  elseif($action == 'checkFiles'){
+      $script_result = 'Product Attribute Stock Table Cleared';
+      break;
+    case 'checkFiles':
     //check SBA NEW file Locations
     checkSBAobsoleteFiles();
     checkSBAfileLocation();
-    echo showScriptResult('File Check');//show script result
-  }
-  elseif($action == 'exportTable'){
+      $script_result = 'File Check';
+      break;
+    case 'exportTable':
     exportSBAtableData();
-    echo showScriptResult('Export Table Data');//show script result
-  }
-  elseif($action == 'importTable'){
+      $script_result = 'Export Table Data';
+      break;
+    case 'importTable':
     importSBAtableData();
-    echo showScriptResult('Import Table Data');//show script result
-  }
-  elseif($action == 'Optional SQL'){
+      $script_result = 'Import Table Data';
+      break;
+    case 'Optional SQL':
     echo displayOptionalSQL();
-  }
-  elseif($action == 'Table'){
+      break;
+    case 'Table':
     echo displaySBAtableCreate();
-  }
-  else{
+      break;
+    default:
     //display instruction screen
     echo instructionsSelectionOptions();
     echo instructionsSBA();
   }
+  echo showScriptResult($script_result);//show script result
 
   echo '</div><hr />';
 
