@@ -3,6 +3,10 @@
  * Stock by Attributes 2021-04-20 mc12345678
  */
 
+if (empty($_SESSION['pwas_class2'])) {
+  return;
+}
+
 $renumber = true;
 
 if (!defined('STOCK_SBA_CHECKOUT_SBA_ONLY'))
