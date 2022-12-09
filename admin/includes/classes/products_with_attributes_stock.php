@@ -843,8 +843,7 @@ function saveAttrib() {
             }  
             break;
           default:
-            next;
-            break;
+            continue 2;
         }
 
         if (isset($stock_id) && (int)$stock_id > 0) {
