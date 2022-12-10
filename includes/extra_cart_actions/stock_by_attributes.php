@@ -212,8 +212,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
          * 
          */
       }
-      $chk_current_qty_individual = zen_get_products_stock(array('products_id' => $_POST['products_id'][$i], 'attributes' => $attributes));
-      $chk_current_qty = zen_get_products_stock(array('products_id' => $_POST['products_id'][$i], 'attributes' => (($chk_mixed) ? NULL : $attributes)));
+      $chk_current_qty_individual = zen_get_products_stock(array(
+        'products_id' => $_POST['products_id'][$i],
+        'attributes' => $attributes
+      ));
+      $chk_current_qty = zen_get_products_stock(array(
+        'products_id' => $_POST['products_id'][$i],
+        'attributes' => (($chk_mixed) ? NULL : $attributes)
+      ));
 
       if ($productIsSBA[$i] && $sba_add_prods['old_id_set']) {
         $temp_new_qty = $new_qty;
@@ -234,7 +240,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
       $chk_current_qty_total = false;
 
       if (defined('STOCK_ALL_CHECKOUT') && STOCK_ALL_CHECKOUT == 'false' && $chk_mixed == false) { // Would say that it would be on this line to add an admin switch for controlling total product quantity versus variant.
-        $chk_current_qty_total = zen_get_products_stock(array('products_id' => $posted['products_id_i']));
+        $chk_current_qty_total = zen_get_products_stock(array(
+          'products_id' => $posted['products_id_i']
+        ));
       }
       // Check to see if the quantity rules of the individual stock quantities will take the product out-of-stock
       if (STOCK_ALLOW_CHECKOUT == 'false' && ($new_qty > $chk_current_qty || $new_qty > $chk_current_qty_individual || ($chk_current_qty_total !== false && $new_qty > $chk_current_qty_total))) {
@@ -724,7 +732,10 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
           $new_qty = $_SESSION['cart']->adjust_quantity($new_qty, $_POST['products_id'], 'shopping_cart');
 
 // bof: adjust new quantity to be same as current in stock
-          $chk_current_qty = zen_get_products_stock(array('products_id' => $product_id, 'attributes' => $attributes));
+          $chk_current_qty = zen_get_products_stock(array(
+            'products_id' => $product_id,
+            'attributes' => $attributes
+          ));
           $_SESSION['cart']->flag_duplicate_msgs_set = FALSE;
           
           $productAttrAreSBA = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, isset($attributes) && is_array($attributes) ? $attributes : array(), 'products', 'ids');
