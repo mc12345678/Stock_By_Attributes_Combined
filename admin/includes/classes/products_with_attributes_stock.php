@@ -323,7 +323,9 @@ class products_with_attributes_stock extends base
             ' . $w . '
             ORDER BY pd.products_name
             ' . $SearchRange.'';*/
-        if (isset($_GET['page']) && ($_GET['page'] > 1)) $rows = STOCK_SET_SBA_NUMRECORDS * ((int)$_GET['page'] - 1);
+        if (isset($_GET['page']) && ($_GET['page'] > 1)){
+          $rows = (defined('STOCK_SET_SBA_NUMRECORDS') ? STOCK_SET_SBA_NUMRECORDS : 25) * ((int)$_GET['page'] - 1);
+        }
 
         if (isset($_GET['search_order_by'])) {
           $search_order_by = zen_db_prepare_input($_GET['search_order_by']);
