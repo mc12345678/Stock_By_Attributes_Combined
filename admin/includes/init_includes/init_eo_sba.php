@@ -107,7 +107,8 @@ if(!function_exists('zen_html_quotes')) {
                   unset($k,$s,$attributeId, $attributeValue);
                   break;
               case PRODUCTS_OPTIONS_TYPE_TEXT:
-                  $text = eo_get_selected_product_attribute_value_by_id($orders_products_attributes_id[0], array_shift(array_keys($optionInfo['options'])));
+                  $array_keys = array_keys($optionInfo['options']);
+                  $text = eo_get_selected_product_attribute_value_by_id($orders_products_attributes_id[0], array_shift($array_keys));
 
                   if($text === null) {
                       $text = '';
@@ -120,7 +121,8 @@ if(!function_exists('zen_html_quotes')) {
 
                   break;
               case PRODUCTS_OPTIONS_TYPE_FILE:
-                  $value = eo_get_selected_product_attribute_value_by_id($orders_products_attributes_id[0], array_shift(array_keys($optionInfo['options'])));
+                  $array_keys = array_keys($optionInfo['options']);
+                  $value = eo_get_selected_product_attribute_value_by_id($orders_products_attributes_id[0], array_shift($array_keys));
                   if(zen_not_null($value)) {
                       $order[$index]['attrs'][(int)$optionID[$j]]['value'] = zen_html_quotes($value);
                   }
