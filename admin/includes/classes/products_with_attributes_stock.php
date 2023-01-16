@@ -609,7 +609,7 @@ class products_with_attributes_stock extends base
           $w = " AND (p.products_id IN (" . $ReturnedProductID . " )) ";
         } elseif ($NumberRecordsShown > 0) {
           $NumberRecordsShown = zen_db_input($NumberRecordsShown);
-          $SearchRange = " LIMIT $NumberRecordsShown";//sets start record and total number of records to display
+          $SearchRange = " LIMIT " . (int)$NumberRecordsShown;//sets start record and total number of records to display
         }
 
         $retArr = array();
