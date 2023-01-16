@@ -328,7 +328,7 @@ class products_with_attributes_stock extends base
         }
 
         if (isset($_GET['search_order_by'])) {
-          $search_order_by = zen_db_prepare_input($_GET['search_order_by']);
+          $search_order_by = zen_db_prepare_input(trim($_GET['search_order_by']));
         } else {
           $search_order_by = 'products_model';
         }
@@ -345,7 +345,41 @@ class products_with_attributes_stock extends base
           $search_order_by = 'pd.' . $search_order_by;
         }
 
-        $query_products =    "SELECT DISTINCT pa.products_id, pd.products_name, p.products_quantity, p.products_model, p.products_image, p.products_type, p.master_categories_id, " . $search_order_by . " FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_DESCRIPTION . " pd, " . TABLE_PRODUCTS . " p WHERE pd.language_id=" . (int)$language_id . " AND pa.products_id = pd.products_id AND pa.products_id = p.products_id " . $w . " ORDER BY " . $search_order_by . " " . $SearchRange;
+        // Fields needed/expected to support SBA operations
+        $retFields = array(
+          'pa.products_id',
+          'pd.products_name',
+          'p.products_quantity',
+          'p.products_model',
+          'p.products_image',
+          'p.products_type',
+          'p.master_categories_id',
+          );
+
+        $search_order_array = explode(',', $search_order_by);
+        
+        foreach($search_order_array as $key => $searchFor) {
+          $fieldsKey = array_search(trim($searchFor), $retFields);
+          // Remove the search order item from the additional search order fields.
+          if ($fieldsKey !== false) {
+              unset($search_order_array[$key]);
+          }
+        }
+
+        $search_order_by_fields = implode(', ', $search_order_array);
+        unset($search_order_array);
+        
+        $retFieldsTxt = implode(', ', $retFields);
+
+        $query_products =    "SELECT DISTINCT " . $retFieldsTxt . ((empty($search_order_by_fields) || empty($retFieldsTxt)) ? '' : ', ') . $search_order_by_fields . " 
+          FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa 
+          INNER JOIN " . TABLE_PRODUCTS_DESCRIPTION . " pd ON (pa.products_id = pd.products_id)
+          INNER JOIN " . TABLE_PRODUCTS . " p ON (pa.products_id = p.products_id)
+          WHERE 
+          pd.language_id=" . (int)$language_id . "
+          " . $w . "
+          ORDER BY " . $search_order_by . "
+          " . $SearchRange;
 
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
           $products_split = new splitPageResults($_GET['page'], STOCK_SET_SBA_NUMRECORDS, $query_products, $products_query_numrows);
@@ -543,6 +577,11 @@ class products_with_attributes_stock extends base
     // Display information about product items in PWAS table that do not appear to have attributes in the main database.
     function displayExcessRows($ReturnedProductID = null, $NumberRecordsShown = null) {
         global $db, $sniffer, $languages;
+
+        if (empty($ReturnedProductID)) {
+          return '';
+        }
+
         if (empty($languages)) {
           $languages = zen_get_languages();
         }
@@ -603,7 +642,44 @@ class products_with_attributes_stock extends base
           $search_order_by = 'pd.' . $search_order_by;
         }
 
-        $query_products =    "SELECT DISTINCT p.products_id, pd.products_name, p.products_quantity, p.products_model, p.products_image, p.products_type, p.master_categories_id, " . $search_order_by . " FROM " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION . " pd WHERE pd.language_id=" . (int)$language_id . " AND p.products_id = pd.products_id " . $w . " ORDER BY " . $search_order_by . " " . $SearchRange;
+        $retFields = array(
+          'p.products_id',
+          'pd.products_name',
+          'p.products_quantity',
+          'p.products_model',
+          'p.products_image',
+          'p.products_type',
+          'p.master_categories_id',
+          );
+
+        $search_order_array = explode(',', $search_order_by);
+        
+        foreach($search_order_array as $key => $searchFor) {
+          $fieldsKey = array_search(trim($searchFor), $retFields);
+          if ($fieldsKey !== false) {
+              // Remove the search order item from our requested fields.
+              unset($search_order_array[$key]);
+          }
+        }
+
+        // No results to process if there are no fields, return an empty string.
+        if (empty($retFields) && empty($search_order_array)) {
+          return '';
+        }
+
+        $search_order_by_fields = implode(', ', $search_order_array);
+        unset($search_order_array);
+
+        $retFieldsTxt = implode(', ', $retFields);
+
+        $query_products =    "SELECT DISTINCT " . $retFieldsTxt . ((empty($search_order_by_fields) || empty($retFieldsTxt)) ? '' : ', ') . $search_order_by_fields . "
+          FROM " . TABLE_PRODUCTS . " p
+          INNER JOIN " . TABLE_PRODUCTS_DESCRIPTION . " pd ON (p.products_id = pd.products_id)
+          WHERE 
+          pd.language_id=" . (int)$language_id . "
+          " . $w . " 
+          ORDER BY " . $search_order_by . "
+          " . $SearchRange;
 
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
           $products_split = new splitPageResults($_GET['page'], STOCK_SET_SBA_NUMRECORDS, $query_products, $products_query_numrows);
