@@ -12,7 +12,7 @@
  * Modified from Dynamic Dropdowns and ZC to support products with attributes 
  * that are not tracked by SBA.
  * 
- * Stock by Attributes 1.5.4 : mc12345678 18-12-24
+ * Stock by Attributes 1.5.4 : mc12345678 23-01-15
  */
 ?>
 <div id="productAttributes">
@@ -118,7 +118,9 @@
 
 <div class="wrapperAttribsOptions" id="<?php echo $options_html_id[$i]; ?>">
 <h4 class="optionName back"><?php echo $options_name[$i]; ?></h4>
-<div class="back"><?php echo "\n" . $options_menu[$i]; ?></div>
+<div class="back">
+  <?php echo "\n" . $options_menu[$i]; ?>
+</div>
 <br class="clearBoth" />
 </div>
 

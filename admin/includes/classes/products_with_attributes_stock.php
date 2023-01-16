@@ -410,7 +410,9 @@ class products_with_attributes_stock extends base
       <th class="thProdId">' . PWA_PRODUCT_ID . '</th>
       <th class="thProdName">' . PWA_PRODUCT_NAME . '</th>';
     
-        if (STOCK_SHOW_IMAGE == 'true') {$html .= '<th class="thProdImage">' . PWA_PRODUCT_IMAGE . '</th>';}   
+        if (STOCK_SHOW_IMAGE == 'true') {
+          $html .= '<th class="thProdImage">' . PWA_PRODUCT_IMAGE . '</th>';
+        }
 
         $html .= '<th class="thProdModel">' . PWA_PRODUCT_MODEL . '</th>            
               <th class="thProdQty">' . PWA_QUANTITY_FOR_ALL_VARIANTS . '</th>
@@ -622,7 +624,9 @@ class products_with_attributes_stock extends base
             ' . $w . '
             ORDER BY pd.products_name
             ' . $SearchRange.'';*/
-        if (isset($_GET['page']) && ($_GET['page'] > 1)) $rows = STOCK_SET_SBA_NUMRECORDS * ((int)$_GET['page'] - 1);
+        if (isset($_GET['page']) && ($_GET['page'] > 1)) {
+          $rows = STOCK_SET_SBA_NUMRECORDS * ((int)$_GET['page'] - 1);
+        }
 
         if (isset($_GET['search_order_by'])) {
           $search_order_by = zen_db_prepare_input($_GET['search_order_by']);

@@ -209,7 +209,9 @@ if ($order->billing['street_address'] != $order->delivery['street_address']) {
                 }
             $product_name = $order->products[$i]['name'];
             //"Stock by Attributes" support image swapping to display sba - 1 of 1
-            if (empty($prod_img)) $prod_img = '';
+            if (empty($prod_img)) {
+                $prod_img = '';
+            }
             $zco_notifier->notify('NOTIFY_PACKINGSLIP_INLOOP', array('i'=>$i, 'prod_img'=>$prod_img), $prod_img);
             // END "Stock by Attributes" sba - 1 of 1
             ?>
