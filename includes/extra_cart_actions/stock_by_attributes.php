@@ -7,6 +7,16 @@ if (empty($_SESSION['pwas_class2'])) {
   return;
 }
 
+if (!is_file(DIR_WS_CLASSES . 'sba_shopping_cart.php')) {
+  return;
+}
+
+if (!class_exists('sbaShoppingCart')) {
+  include_once DIR_WS_CLASSES . 'sba_shopping_cart.php';
+}
+
+$sba_cart = new sbaShoppingCart($_SESSION['cart']);
+
 $renumber = true;
 
 if (!defined('STOCK_SBA_CHECKOUT_SBA_ONLY'))
@@ -16,7 +26,7 @@ if (!defined('STOCK_SBA_CHECKOUT_SBA_ONLY'))
 
 //What about: 'multiple_products_add_product' (Needs to be addressed though don't see at the moment why since generally unable to select multiple products each with attributes, perhaps something to consider for later, but let's get serious here at the moment as there are more routine actions to be handled properly first.), 'update_product' (Needs to be addressed), or 'cart' (does a notify action, so may need to address?)actions?
 if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
-  if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'FUNCTION ' . __FUNCTION__, 'caution');
+  if ($sba_cart->getDisplayDebugMessages()) $messageStack->add_session('header', 'FUNCTION ' . __FUNCTION__, 'caution');
 
   $productIsSBA = array();
 
@@ -175,7 +185,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
           $cart_qty = $_SESSION['cart']->in_cart_mixed($_POST['products_id'][$i]);
         }
       }
-      if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'FUNCTION ' . __FUNCTION__ . ' Products_id: ' . $posted['products_id_i'] . ' cart_qty: ' . $cart_qty . ' <br>', 'caution');
+      if ($sba_cart->getDisplayDebugMessages()) $messageStack->add_session('header', 'FUNCTION ' . __FUNCTION__ . ' Products_id: ' . $posted['products_id_i'] . ' cart_qty: ' . $cart_qty . ' <br>', 'caution');
       $new_qty = $_POST['cart_quantity'][$i]; // new quantity
       if ($productIsSBA[$i] && $sba_add_prods['old_id_set']) {
         // Ensure that the quantity being added is an acceptable quantity by decimal places.
@@ -265,7 +275,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
           $new_qty = $chk_current_qty;
         }
 
-        $messageStack->add_session('shopping_cart', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id'][$i]), 'caution');
+        $messageStack->add_session('shopping_cart', ($sba_cart->getDisplayDebugMessages() ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id'][$i]), 'caution');
       }
       if ($productIsSBA[$i] && $sba_add_prods['old_id_set']) {
         if (STOCK_ALLOW_CHECKOUT == 'false' && ($pos === false || ($sba_add_prods['quantity'][$pos] <= $chk_current_qty))) {
@@ -293,7 +303,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
             $adjust_new_qty = 'true';
             $alter_qty = $chk_current_qty - $cart_qty;
             $new_qty = ($alter_qty > 0 ? $alter_qty : 0);
-            $messageStack->add_session('shopping_cart', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id'][$i]), 'caution');
+            $messageStack->add_session('shopping_cart', ($sba_cart->getDisplayDebugMessages() ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id'][$i]), 'caution');
           }
 // eof: adjust new quantity to be same as current in stock
         // adjust quantity if needed
@@ -323,7 +333,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
         
 // bof: notify about adjustment to new quantity to be same as current in stock or maximum to add
           if ($adjust_max == 'true') {
-            $messageStack->add_session('shopping_cart', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id'][$i]), 'caution');
+            $messageStack->add_session('shopping_cart', ($sba_cart->getDisplayDebugMessages() ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id'][$i]), 'caution');
           }
 // eof: notify about adjustment to new quantity to be same as current in stock or maximum to add
         
@@ -342,12 +352,12 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
         }
       }
       if ($adjust_max == 'true') {
-        if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'FUNCTION ' . __FUNCTION__ . '<br>' . ERROR_MAXIMUM_QTY . zen_get_products_name($posted['products_id_i']) . '<br>requested_qty: ' . $requested_qty . ' current_qty: ' . $current_qty , 'caution');
+        if ($sba_cart->getDisplayDebugMessages()) $messageStack->add_session('header', 'FUNCTION ' . __FUNCTION__ . '<br>' . ERROR_MAXIMUM_QTY . zen_get_products_name($posted['products_id_i']) . '<br>requested_qty: ' . $requested_qty . ' current_qty: ' . $current_qty , 'caution');
         $messageStack->add_session('shopping_cart', ERROR_MAXIMUM_QTY . zen_get_products_name($posted['products_id_i']), 'caution');
       } else {
 // display message if all is good and not on shopping_cart page
         if ((DISPLAY_CART == 'false' && $_GET['main_page'] != FILENAME_SHOPPING_CART) && $messageStack->size('shopping_cart') == 0) {
-          $messageStack->add_session('header', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . SUCCESS_ADDED_TO_CART_PRODUCTS, 'success');
+          $messageStack->add_session('header', ($sba_cart->getDisplayDebugMessages() ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . SUCCESS_ADDED_TO_CART_PRODUCTS, 'success');
         } else {
           if ($_GET['main_page'] != FILENAME_SHOPPING_CART) {
             zen_redirect(zen_href_link(FILENAME_SHOPPING_CART));
@@ -361,7 +371,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 }
 
 if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
-  if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'A: FUNCTION ' . __FUNCTION__, 'caution');
+  if ($sba_cart->getDisplayDebugMessages()) $messageStack->add_session('header', 'A: FUNCTION ' . __FUNCTION__, 'caution');
   // Here can add product attributes grid check and prepare to iterate through the "products" that have been added.
   // if is a multi-product add, then capture/process the necessary data to be able to assign each $_POST['products_id'], $_POST['id'],
   // and $_POST['cart_quantity'].  $_POST['products_id'] is expected to be relatively the same for each product (ie. the product's number only).
@@ -547,7 +557,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       $_POST['cart_quantity'] = $prod_qty[$grid_loop - 1];
       if (isset($_POST['products_id'] ) && is_numeric ( $_POST['products_id'])) {
 //Loop for each product in the cart
-        if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'A2: FUNCTION ' . __FUNCTION__, 'caution');
+        if ($sba_cart->getDisplayDebugMessages()) $messageStack->add_session('header', 'A2: FUNCTION ' . __FUNCTION__, 'caution');
         $the_list = '';
         $adjust_max= 'false';
         if (isset($_POST['id']) && is_array($_POST['id'])) {
@@ -721,7 +731,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
           $product_id = zen_get_uprid($_POST['products_id'], $attributes);
         }
 
-        if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'B: FUNCTION ' . __FUNCTION__ . ' Products_id: ' . $_POST['products_id'] . ' cart_qty: ' . $cart_qty . ' $_POST[cart_quantity]: ' . $_POST['cart_quantity'] . ' <br>', 'caution');
+        if ($sba_cart->getDisplayDebugMessages()) $messageStack->add_session('header', 'B: FUNCTION ' . __FUNCTION__ . ' Products_id: ' . $_POST['products_id'] . ' cart_qty: ' . $cart_qty . ' $_POST[cart_quantity]: ' . $_POST['cart_quantity'] . ' <br>', 'caution');
 
 //Check if item is an SBA tracked item, if so, then perform analysis of whether to add or not.
         if ($_SESSION['pwas_class2']->zen_product_is_sba($_POST['products_id'])) {
@@ -736,7 +746,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
             'products_id' => $product_id,
             'attributes' => $attributes
           ));
-          $_SESSION['cart']->flag_duplicate_msgs_set = FALSE;
+          $sba_cart->setFlagDuplicateMsgsSet(FALSE);
           
           $productAttrAreSBA = $_SESSION['pwas_class2']->zen_get_sba_attribute_info($product_id, isset($attributes) && is_array($attributes) ? $attributes : array(), 'products', 'ids');
                 
@@ -749,8 +759,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       
           if (STOCK_ALLOW_CHECKOUT == 'false' && ($cart_qty + $new_qty > $chk_current_qty)) {
             $new_qty = $chk_current_qty;
-            $messageStack->add_session('shopping_cart', ($_SESSION['cart']->display_debug_messages ? 'C: FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id']), 'caution');
-            $_SESSION['cart']->flag_duplicate_msgs_set = TRUE;
+            $messageStack->add_session('shopping_cart', ($sba_cart->getDisplayDebugMessages() ? 'C: FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id']), 'caution');
+            $sba_cart->setFlagDuplicateMsgsSet(TRUE);
 
             if ($chk_current_qty <= 0) {
               $the_list .= PWA_COMBO_OUT_OF_STOCK . "<br />";
@@ -771,8 +781,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
               $adjust_new_qty = 'true';
               $alter_qty = $chk_current_qty - $cart_qty;
               $new_qty = ($alter_qty > 0 ? $alter_qty : 0);
-              if (!$_SESSION['cart']->flag_duplicate_msgs_set) {
-                $messageStack->add_session('shopping_cart', ($_SESSION['cart']->display_debug_messages ? 'D: FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id']), 'caution');
+              if (!$sba_cart->getFlagDuplicateMsgsSet()) {
+                $messageStack->add_session('shopping_cart', ($sba_cart->getDisplayDebugMessages() ? 'D: FUNCTION ' . __FUNCTION__ . ': ' : '') . WARNING_PRODUCT_QUANTITY_ADJUSTED . zen_get_products_name($_POST['products_id']), 'caution');
               }
             }
 // eof: adjust new quantity to be same as current in stock
@@ -903,7 +913,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
 
           if ($adjust_max == 'true') {
             $messageStack->add_session('shopping_cart', ERROR_MAXIMUM_QTY . zen_get_products_name($_POST['products_id']), 'caution');
-            if ($_SESSION['cart']->display_debug_messages) $messageStack->add_session('header', 'E: FUNCTION ' . __FUNCTION__ . '<br>' . ERROR_MAXIMUM_QTY . zen_get_products_name($_POST['products_id']), 'caution');
+            if ($sba_cart->getDisplayDebugMessages()) $messageStack->add_session('header', 'E: FUNCTION ' . __FUNCTION__ . '<br>' . ERROR_MAXIMUM_QTY . zen_get_products_name($_POST['products_id']), 'caution');
           }
     
           // Want to bypass this entire section if not done with addressing all of the products, though also may need to pull out some of
@@ -913,7 +923,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
             // no errors
   // display message if all is good and not on shopping_cart page
             if (DISPLAY_CART == 'false' && $_GET['main_page'] != FILENAME_SHOPPING_CART && $messageStack->size('shopping_cart') == 0) {
-              $messageStack->add_session('header', ($_SESSION['cart']->display_debug_messages ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . SUCCESS_ADDED_TO_CART_PRODUCT, 'success');
+              $messageStack->add_session('header', ($sba_cart->getDisplayDebugMessages() ? 'FUNCTION ' . __FUNCTION__ . ': ' : '') . SUCCESS_ADDED_TO_CART_PRODUCT, 'success');
               if ($grid_loop >= $grid_add_number) {
                 zen_redirect(zen_href_link($goto, zen_get_all_get_params($parameters)));
               }
@@ -932,3 +942,4 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
     } // EOF while(grid_loop++ <= $grid_add_number
   } 
 }
+unset($sba_cart);
