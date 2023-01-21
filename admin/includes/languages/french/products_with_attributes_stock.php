@@ -23,7 +23,9 @@ define('PWA_QUANTITY_FOR_ALL_VARIANTS', 'Quantit&eacute; pour toutes les Variant
 define('PWA_ADD_QUANTITY', 'Ajouter Quantit&eacute; pour cette Variante du Produit');
 define('PWA_SYNC_QUANTITY', 'Synchronisation de la Quantiti&eacute;');
 define('PWA_TEXT_SEARCH', 'Search: ');
-define('TEXT_IMAGE_NONEXISTENT', 'Aucune image disponible');
+if (!defined('TEXT_IMAGE_NONEXISTENT')) {
+  define('TEXT_IMAGE_NONEXISTENT', 'Aucune image disponible');
+}
 
 define('PWA_EDIT_QUANTITY', 'Editer la Quantit&eacute;');
 define('PWA_DELETE_VARIANT', 'Effacer la Variante');
