@@ -296,7 +296,7 @@ class products_with_attributes_stock extends base
           $ReturnedProductID = zen_db_input($ReturnedProductID);
           //$w = "( p.products_id = '$ReturnedProductID' ) AND  " ;//sets returned record to display
           $w = " AND ( p.products_id = '$ReturnedProductID' ) " ;//sets returned record to display
-          if (!isset($_GET['products_filter']) || ($_GET['products_filter'] != '' && $_GET['products_filter'] <= 0)) {
+          if (empty($_GET['products_filter']) || $_GET['products_filter'] < 0) {
             $SearchRange = "LIMIT 1";//show only selected record
           }
         } /*elseif ( $ReturnedProductID != null && isset($_GET['search'])) {
@@ -1519,19 +1519,13 @@ function nullDataEntry($fieldtoNULL) {
 
   //Need to test for absolute 0 (===), else compare will convert $fieldtoNULL to a number (null) and evauluate as a null 
   //This is due to PHP string to number compare "feature"
-  if (!empty($fieldtoNULL) || $fieldtoNULL === 0) {
-    if ((is_numeric($fieldtoNULL) && ($fieldtoNULL > 0 && strpos($fieldtoNULL, '0') !== 0 || $fieldtoNULL < 0 && strpos($fieldtoNULL, '0') !== 1)) || $fieldtoNULL === 0) {
-      $output = $fieldtoNULL;//returns number without quotes
-    }
-    else{
-      $output = "'".$fieldtoNULL."'";//encases the string in quotes
-    }
+  if (empty($fieldtoNULL) && $fieldtoNULL !== 0) {
+    return 'null';
   }
-  else{
-    $output = 'null';
+  if ((is_numeric($fieldtoNULL) && ($fieldtoNULL > 0 && strpos($fieldtoNULL, '0') !== 0 || $fieldtoNULL < 0 && strpos($fieldtoNULL, '0') !== 1)) || $fieldtoNULL === 0) {
+    return $fieldtoNULL;//returns number without quotes
   }
-
-  return $output;
+  return "'".$fieldtoNULL."'";//encases the string in quotes
 }
 
   /* ********************************************************************* */
