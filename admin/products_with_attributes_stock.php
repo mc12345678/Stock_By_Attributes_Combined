@@ -903,7 +903,10 @@ $query = 'SELECT DISTINCT
                     LEFT JOIN ' . TABLE_PRODUCTS_DESCRIPTION . ' pd ON (pa.products_id = pd.products_id)
                 WHERE pd.language_id= :language_id:
                 ORDER BY pd.products_name';
-$query2 = 'SELECT DISTINCT pwas.products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' pwas LEFT JOIN (' . $query . ') att ON (att.products_id = pwas.products_id) WHERE att.products_id IS NULL';
+$query2 = 'SELECT DISTINCT pwas.products_id FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' pwas 
+        LEFT JOIN (' . $query . ') att ON (att.products_id = pwas.products_id)
+        WHERE
+        att.products_id IS NULL';
 $query2 = $db->bindVars($query2, ':language_id:', $language_id, 'integer');
 
 $excess_products = $db->Execute($query2);
