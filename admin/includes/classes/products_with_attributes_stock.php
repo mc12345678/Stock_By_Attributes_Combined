@@ -284,8 +284,8 @@ class products_with_attributes_stock extends base
                         OR p.products_model LIKE '%$s%' 
                         OR p.products_id 
                 IN (SELECT products_id 
-                      FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK. " pwas 
-                      WHERE pwas.customid 
+                      FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pwas
+                      WHERE pwas.customid
                         LIKE '%$s%')
                         ) "; //changed search to products_model 'starts with'.
         }
@@ -323,7 +323,7 @@ class products_with_attributes_stock extends base
             ' . $w . '
             ORDER BY pd.products_name
             ' . $SearchRange.'';*/
-        if (isset($_GET['page']) && ($_GET['page'] > 1)){
+        if (isset($_GET['page']) && ($_GET['page'] > 1)) {
           $rows = (defined('STOCK_SET_SBA_NUMRECORDS') ? STOCK_SET_SBA_NUMRECORDS : 25) * ((int)$_GET['page'] - 1);
         }
 
@@ -388,22 +388,22 @@ class products_with_attributes_stock extends base
 
         $html = '';
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
-          $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">';
-          $html .= '<tr>';
-          $html .= '<td class="smallText" valign="top">'; 
-          $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS); 
-          $html .= '</td>';
-          $html .= '<td class="smallText" align="right">';
-          $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']);
-          $html .= '</td>';
-          $html .= '</tr>';
-          $html .= '</table>';
+          $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">' . "\n";
+          $html .= '  <tr>' . "\n";
+          $html .= '    <td class="smallText" valign="top">' . "\n";
+          $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS) . "\n";
+          $html .= '    </td>' . "\n";
+          $html .= '    <td class="smallText" align="right">' . "\n";
+          $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']) . "\n";
+          $html .= '    </td>' . "\n";
+          $html .= '  </tr>' . "\n";
+          $html .= '</table>' . "\n";
         }
-        $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid=' . $ReturnedProductID . (!empty($_GET['page']) ? '&amp;page=' . $_GET['page'] : ''), 'post');
-        $html .= zen_draw_hidden_field('save', '1');
-        $html .= zen_draw_hidden_field('pid', $ReturnedProductID);
-        $html .= zen_image_submit('button_save.gif', IMAGE_SAVE) . ' Hint: To quickly edit click in the "Quantity in Stock" field.';
-        $html .= '<br/>';
+        $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid=' . $ReturnedProductID . (!empty($_GET['page']) ? '&amp;page=' . $_GET['page'] : ''), 'post') . "\n";
+        $html .= zen_draw_hidden_field('save', '1') . "\n";
+        $html .= zen_draw_hidden_field('pid', $ReturnedProductID) . "\n";
+        $html .= zen_image_submit('button_save.gif', IMAGE_SAVE) . ' Hint: To quickly edit click in the "Quantity in Stock" field.' . "\n";
+        $html .= '<br/>' . "\n";
         $html .= '
     <table id="mainProductTable"> 
     <tr>
@@ -414,7 +414,7 @@ class products_with_attributes_stock extends base
           $html .= '<th class="thProdImage">' . PWA_PRODUCT_IMAGE . '</th>';
         }
 
-        $html .= '<th class="thProdModel">' . PWA_PRODUCT_MODEL . '</th>            
+        $html .= '<th class="thProdModel">' . PWA_PRODUCT_MODEL . '</th>
               <th class="thProdQty">' . PWA_QUANTITY_FOR_ALL_VARIANTS . '</th>
               <th class="thProdAdd">' . PWA_ADD_QUANTITY . '</th> 
               <th class="thProdSync">' . PWA_SYNC_QUANTITY . '</th>
@@ -448,19 +448,27 @@ class products_with_attributes_stock extends base
           $html .= '<td colspan="7">' . "\n";
           $html .= '<div class="productGroup">' . "\n";
           $html .= '<table>' . "\n";
-            $html .= '<tr class="productRow">' . "\n";
-            $html .= '<td class="tdProdId">' . $products->fields['products_id'] . '</td>';
-            $html .= '<td class="tdProdName">' . $products->fields['products_name'] . '</td>';
+            $html .= '  <tr class="productRow">' . "\n";
+            $html .= '    <td class="tdProdId">' . "\n";
+            $html .= $products->fields['products_id'] . "\n";
+            $html .= '    </td>';
+            $html .= '    <td class="tdProdName">' . "\n";
+            $html .= $products->fields['products_name'] . "\n";
+            $html .= '    </td>';
             
             if (STOCK_SHOW_IMAGE == 'true') {$html .= '<td class="tdProdImage">' . zen_info_image(zen_output_string($products->fields['products_image']), zen_output_string($products->fields['products_name']), "60", "60") . '</td>';}
             
             //product.php? page=1 & product_type=1 & cPath=13 & pID=1042 & action=new_product
             //$html .= '<td class="tdProdModel">' . $products->fields['products_model'] . ' </td>';
-            $html .= '<td class="tdProdModel">' . $products->fields['products_model'] . '<br /><a href="' . zen_href_link(FILENAME_PRODUCT, "page=1&amp;product_type=" . $products->fields['products_type'] . "&amp;cPath=" . $products->fields['master_categories_id'] . "&amp;pID=" . $products->fields['products_id'] . "&amp;action=new_product", 'NONSSL').'">Link</a><br /><br /><a href="' . zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, "products_filter=&amp;products_filter=" . $products->fields['products_id'] . "&amp;current_category_id=" . $products->fields['master_categories_id'], 'NONSSL') . '">' . BOX_CATALOG_CATEGORIES_ATTRIBUTES_CONTROLLER . '</a></td>';
-            $html .= '<td class="tdProdQty">' . $products->fields['products_quantity'] . $synchronized . '</td>';
-            $html .= '<td class="tdProdAdd"><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=add&amp;products_id=" . $products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL') . '">' . PWA_ADD_QUANTITY . '</a><br /><br /><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete_all&amp;products_id=" . $products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_DELETE_VARIANT_ALL .'</a></td>';
-            $html .= '<td class="tdProdSync"><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_SYNC_QUANTITY . '</a></td>';
-            $html .= '</tr>' . "\n";
+            $html .= '    <td class="tdProdModel">' . "\n";
+            $html .= $products->fields['products_model'] . '<br /><a href="' . zen_href_link(FILENAME_PRODUCT, "page=1&amp;product_type=" . $products->fields['products_type'] . "&amp;cPath=" . $products->fields['master_categories_id'] . "&amp;pID=" . $products->fields['products_id'] . "&amp;action=new_product", 'NONSSL').'">Link</a><br /><br /><a href="' . zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, "products_filter=&amp;products_filter=" . $products->fields['products_id'] . "&amp;current_category_id=" . $products->fields['master_categories_id'], 'NONSSL') . '">' . BOX_CATALOG_CATEGORIES_ATTRIBUTES_CONTROLLER . '</a>' . "\n";
+            $html .= '    </td>';
+            $html .= '    <td class="tdProdQty">' . "\n";
+            $html .= $products->fields['products_quantity'] . $synchronized . "\n";
+            $html .= '    </td>';
+            $html .= '    <td class="tdProdAdd"><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=add&amp;products_id=" . $products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL') . '">' . PWA_ADD_QUANTITY . '</a><br /><br /><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete_all&amp;products_id=" . $products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_DELETE_VARIANT_ALL .'</a></td>';
+            $html .= '    <td class="tdProdSync"><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_SYNC_QUANTITY . '</a></td>';
+            $html .= '  </tr>' . "\n";
             $html .= '</table>' . "\n";
             
           // SUB            
@@ -471,7 +479,7 @@ class products_with_attributes_stock extends base
           if ($attribute_products->RecordCount() > 0) {
 
               $html .= '<table class="stockAttributesTable">';
-              $html .= '<tr>';
+              $html .= '  <tr>' . "\n";
               $html .= '<th class="stockAttributesHeadingStockId">' . PWA_STOCK_ID.'</th>
                     <th class="stockAttributesHeadingComboId" title="This number is the Product ID and related Attributes (Unique Combo).">'.PWA_PAC.'</th>
                     <th class="stockAttributesHeadingVariant">' . PWA_VARIANT .'</th>
@@ -481,16 +489,16 @@ class products_with_attributes_stock extends base
                     <th class="stockAttributesHeadingSKUTitleId">' . PWA_SKU_TITLE . '</th>
                     <th class="stockAttributesHeadingEdit">' . PWA_EDIT . '</th>
                     <th class="stockAttributesHeadingDelete">' . PWA_DELETE . '</th>';
-              $html .= '</tr>';
+              $html .= '  </tr>' . "\n";
 
               while (!$attribute_products->EOF) {
                 
-                  $html .= '<tr id="sid-' . $attribute_products->fields['stock_id'] . '">';
-                  $html .= '<td class="stockAttributesCellStockId">' . "\n";
+                  $html .= '  <tr id="sid-' . $attribute_products->fields['stock_id'] . '">' . "\n";
+                  $html .= '    <td class="stockAttributesCellStockId">' . "\n";
                   $html .= $attribute_products->fields['stock_id'];
-                  $html .= '</td>' . "\n";
-                  $html .= '<td>' . $attribute_products->fields['product_attribute_combo'] . '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellVariant">' . "\n";
+                  $html .= '    </td>' . "\n";
+                  $html .= '    <td>' . $attribute_products->fields['product_attribute_combo'] . '</td>' . "\n";
+                  $html .= '    <td class="stockAttributesCellVariant">' . "\n";
                  
                   if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
                     $options_order_by= ' ORDER BY LPAD(po.products_options_sort_order,11,"0"), po.products_options_name';
@@ -520,7 +528,9 @@ class products_with_attributes_stock extends base
                   foreach ($attributes_of_stock as $attri_id)
                   {
                       $stock_attribute = $this->get_attributes_name($attri_id['products_attributes_id'], $attri_id['language_id']/*$_SESSION['languages_id']*/);
-                      if ($stock_attribute === false) continue; // If the products_attributes_id is not found in the selected language then move on.
+                      if ($stock_attribute === false) {
+                        continue; // If the products_attributes_id is not found in the selected language then move on.
+                      }
                       if ($stock_attribute['option'] == '' && $stock_attribute['value'] == '') {
                         // delete stock attribute
                         $db->Execute("DELETE FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " WHERE stock_id = " . $attribute_products->fields['stock_id'] . " LIMIT 1;");
@@ -536,18 +546,18 @@ class products_with_attributes_stock extends base
 //                  sort($attributes_output);
                   $html .= implode("\n", $attributes_output);
 
-                  $html .= '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellQuantity editthis" id="stockid-quantity-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['quantity'] . '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellSort editthis" id="stockid-sort-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['sort'] . '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellCustomid editthis" id="stockid-customid-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['customid'] . '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellTitle" id="stockid-title-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['title'] . '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellEdit">' . "\n";
+                  $html .= '    </td>' . "\n";
+                  $html .= '    <td class="stockAttributesCellQuantity editthis" id="stockid-quantity-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['quantity'] . '</td>' . "\n";
+                  $html .= '    <td class="stockAttributesCellSort editthis" id="stockid-sort-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['sort'] . '</td>' . "\n";
+                  $html .= '    <td class="stockAttributesCellCustomid editthis" id="stockid-customid-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['customid'] . '</td>' . "\n";
+                  $html .= '    <td class="stockAttributesCellTitle" id="stockid-title-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['title'] . '</td>' . "\n";
+                  $html .= '    <td class="stockAttributesCellEdit">' . "\n";
                   $html .= '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=edit&amp;products_id=" . $products->fields['products_id'] . '&amp;attributes=' . $attribute_products->fields['stock_attributes'] . '&amp;q=' . $attribute_products->fields['quantity'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL') . '">' . PWA_EDIT_QUANTITY . '</a>'; //s_mack:prefill_quantity
-                  $html .= '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellDelete">' . "\n";
+                  $html .= '    </td>' . "\n";
+                  $html .= '    <td class="stockAttributesCellDelete">' . "\n";
                   $html .= '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete&amp;products_id=" . $products->fields['products_id'] . '&amp;attributes=' . $attribute_products->fields['stock_attributes'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_DELETE_VARIANT . '</a>';
-                  $html .= '</td>' . "\n";
-                  $html .= '</tr>' . "\n";
+                  $html .= '    </td>' . "\n";
+                  $html .= '  </tr>' . "\n";
                  
 
                   $attribute_products->MoveNext();
@@ -561,16 +571,16 @@ class products_with_attributes_stock extends base
       $html .= zen_image_submit('button_save.gif', IMAGE_SAVE);
       $html .= '</form>' . "\n";
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
-      $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">';
-      $html .= '<tr>';
-      $html .= '<td class="smallText" valign="top">';
-      $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS); 
-      $html .= '</td>';
-      $html .= '<td class="smallText" align="right">';
-      $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']);
-      $html .= '</td>';
-      $html .= '</tr>';
-      $html .= '</table>';
+      $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">' . "\n";
+      $html .= '  <tr>' . "\n";
+      $html .= '    <td class="smallText" valign="top">' . "\n";
+      $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS) . "\n";
+      $html .= '    </td>' . "\n";
+      $html .= '    <td class="smallText" align="right">' . "\n";
+      $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']) . "\n";
+      $html .= '    </td>' . "\n";
+      $html .= '  </tr>' . "\n";
+      $html .= '</table>' . "\n";
         }
 
       return $html;
@@ -696,21 +706,21 @@ class products_with_attributes_stock extends base
         }
         $html .= '<span>' . PWA_EXCESS_PRODUCT . '</span><br class="clearBoth">';
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
-          $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">';
-          $html .= '<tr>';
-          $html .= '<td class="smallText" valign="top">';
-          $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS);
-          $html .= '</td>';
-          $html .= '<td class="smallText" align="right">';
-          $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']);
-          $html .= '</td>';
-          $html .= '</tr>';
-          $html .= '</table>';
+          $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">' . "\n";
+          $html .= '  <tr>' . "\n";
+          $html .= '    <td class="smallText" valign="top">' . "\n";
+          $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS) . "\n";
+          $html .= '    </td>' . "\n";
+          $html .= '    <td class="smallText" align="right">' . "\n";
+          $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']) . "\n";
+          $html .= '    </td>' . "\n";
+          $html .= '  </tr>' . "\n";
+          $html .= '</table>' . "\n";
         }
-        $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid=' . (int)$products->fields['products_id']/*$ReturnedProductID*/ . (!empty($_GET['page']) ? '&amp;page=' . $_GET['page'] : ''), 'post');
-        $html .= zen_draw_hidden_field('save', '1');
-        $html .= zen_draw_hidden_field('pid', (string)(int)$products->fields['products_id']);
-        $html .= zen_image_submit('button_save.gif', IMAGE_SAVE) . ' Hint: To quickly edit click in the "Quantity in Stock" field.';
+        $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid=' . (int)$products->fields['products_id']/*$ReturnedProductID*/ . (!empty($_GET['page']) ? '&amp;page=' . $_GET['page'] : ''), 'post') . "\n";
+        $html .= zen_draw_hidden_field('save', '1') . "\n";
+        $html .= zen_draw_hidden_field('pid', (string)(int)$products->fields['products_id']) . "\n";
+        $html .= zen_image_submit('button_save.gif', IMAGE_SAVE) . ' Hint: To quickly edit click in the "Quantity in Stock" field.' . "\n";
         $html .= '<br/>';
         $html .= '
     <table id="mainProductTable">
@@ -750,24 +760,25 @@ class products_with_attributes_stock extends base
             }
           }
 
-          $html .= '<tr>' . "\n";
-          $html .= '<td colspan="7">' . "\n";
-          $html .= '<div class="productGroup">' . "\n";
-          $html .= '<table>' . "\n";
-            $html .= '<tr class="productRow">' . "\n";
-            $html .= '<td class="tdProdId">' . $products->fields['products_id'] . '</td>';
-            $html .= '<td class="tdProdName">' . $products->fields['products_name'] . '</td>';
+          $html .= '  <tr>' . "\n";
+          $html .= '    <td colspan="7">' . "\n";
+          $html .= '      <div class="productGroup">' . "\n";
+          $html .= '        <table>' . "\n";
+          $html .= '          <tr class="productRow">' . "\n";
+          $html .= '            <td class="tdProdId">' . $products->fields['products_id'] . '</td>' . "\n";
+          $html .= '            <td class="tdProdName">' . $products->fields['products_name'] . '</td>' . "\n";
 
-            if (STOCK_SHOW_IMAGE == 'true') {$html .= '<td class="tdProdImage">' . zen_info_image(zen_output_string($products->fields['products_image']), zen_output_string($products->fields['products_name']), "60", "60") . '</td>';}
+          if (STOCK_SHOW_IMAGE == 'true') {
+            $html .= '            <td class="tdProdImage">' . zen_info_image(zen_output_string($products->fields['products_image']), zen_output_string($products->fields['products_name']), "60", "60") . '</td>';}
 
             //product.php? page=1 & product_type=1 & cPath=13 & pID=1042 & action=new_product
             //$html .= '<td class="tdProdModel">' . $products->fields['products_model'] . ' </td>';
-            $html .= '<td class="tdProdModel">' . $products->fields['products_model'] . '<br /><a href="' . zen_href_link(FILENAME_PRODUCT, "page=1&amp;product_type=" . $products->fields['products_type'] . "&amp;cPath=" . $products->fields['master_categories_id'] . "&amp;pID=" . $products->fields['products_id'] . "&amp;action=new_product", 'NONSSL').'">Link</a><br /><br /><a href="' . zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, "products_filter=&amp;products_filter=" . $products->fields['products_id'] . "&amp;current_category_id=" . $products->fields['master_categories_id'], 'NONSSL') . '">' . BOX_CATALOG_CATEGORIES_ATTRIBUTES_CONTROLLER . '</a></td>';
-            $html .= '<td class="tdProdQty">' . $products->fields['products_quantity'] . $synchronized . '</td>';
-            $html .= '<td class="tdProdAdd"><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=add&amp;products_id=" . $products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL') . '">' . PWA_ADD_QUANTITY . '</a><br /><br /><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete_all&amp;products_id=" . $products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_DELETE_VARIANT_ALL .'</a></td>';
-            $html .= '<td class="tdProdSync"><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_SYNC_QUANTITY . '</a></td>';
-            $html .= '</tr>' . "\n";
-            $html .= '</table>' . "\n";
+            $html .= '            <td class="tdProdModel">' . $products->fields['products_model'] . '<br /><a href="' . zen_href_link(FILENAME_PRODUCT, "page=1&amp;product_type=" . $products->fields['products_type'] . "&amp;cPath=" . $products->fields['master_categories_id'] . "&amp;pID=" . $products->fields['products_id'] . "&amp;action=new_product", 'NONSSL').'">Link</a><br /><br /><a href="' . zen_href_link(FILENAME_ATTRIBUTES_CONTROLLER, "products_filter=&amp;products_filter=" . $products->fields['products_id'] . "&amp;current_category_id=" . $products->fields['master_categories_id'], 'NONSSL') . '">' . BOX_CATALOG_CATEGORIES_ATTRIBUTES_CONTROLLER . '</a></td>';
+            $html .= '            <td class="tdProdQty">' . $products->fields['products_quantity'] . $synchronized . '</td>';
+            $html .= '            <td class="tdProdAdd"><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=add&amp;products_id=" . $products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL') . '">' . PWA_ADD_QUANTITY . '</a><br /><br /><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete_all&amp;products_id=" . $products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_DELETE_VARIANT_ALL .'</a></td>';
+            $html .= '            <td class="tdProdSync"><a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=resync&amp;products_id=".$products->fields['products_id'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_SYNC_QUANTITY . '</a></td>';
+            $html .= '          </tr>' . "\n";
+            $html .= '        </table>' . "\n";
 
           // SUB
 /*          $query = 'SELECT * FROM ' . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . ' WHERE products_id="' . $products->fields['products_id'] . '"
@@ -776,9 +787,9 @@ class products_with_attributes_stock extends base
           $attribute_products = $db->Execute($query);*/
           if ($attribute_products->RecordCount() > 0) {
 
-              $html .= '<table class="stockAttributesTable">';
-              $html .= '<tr>';
-              $html .= '<th class="stockAttributesHeadingStockId">' . PWA_STOCK_ID.'</th>
+              $html .= '        <table class="stockAttributesTable">' . "\n";
+              $html .= '          <tr>' . "\n";
+              $html .= '            <th class="stockAttributesHeadingStockId">' . PWA_STOCK_ID.'</th>
                     <th class="stockAttributesHeadingComboId" title="This number is the Product ID and related Attributes (Unique Combo).">'.PWA_PAC.'</th>
                     <th class="stockAttributesHeadingVariant">' . PWA_VARIANT .'</th>
                     <th class="stockAttributesHeadingQuantity">' . PWA_QUANTITY_IN_STOCK . '</th>
@@ -787,16 +798,16 @@ class products_with_attributes_stock extends base
                     <th class="stockAttributesHeadingSKUTitleId">' . PWA_SKU_TITLE . '</th>
                     <th class="stockAttributesHeadingEdit">' . PWA_EDIT . '</th>
                     <th class="stockAttributesHeadingDelete">' . PWA_DELETE . '</th>';
-              $html .= '</tr>';
+              $html .= '          </tr>' . "\n";
 
               while (!$attribute_products->EOF) {
 
-                  $html .= '<tr id="sid-' . $attribute_products->fields['stock_id'] . '">';
-                  $html .= '<td class="stockAttributesCellStockId">' . "\n";
-                  $html .= $attribute_products->fields['stock_id'];
-                  $html .= '</td>' . "\n";
-                  $html .= '<td>' . $attribute_products->fields['product_attribute_combo'] . '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellVariant">' . "\n";
+                  $html .= '          <tr id="sid-' . $attribute_products->fields['stock_id'] . '">' . "\n";
+                  $html .= '            <td class="stockAttributesCellStockId">' . "\n";
+                  $html .= $attribute_products->fields['stock_id'] . "\n";
+                  $html .= '            </td>' . "\n";
+                  $html .= '            <td>' . $attribute_products->fields['product_attribute_combo'] . '</td>' . "\n";
+                  $html .= '            <td class="stockAttributesCellVariant">' . "\n";
 
                   if (PRODUCTS_OPTIONS_SORT_ORDER == '0') {
                     $options_order_by= ' ORDER BY LPAD(po.products_options_sort_order,11,"0"), po.products_options_name';
@@ -842,40 +853,40 @@ class products_with_attributes_stock extends base
 //                  sort($attributes_output);
                   $html .= implode("\n", $attributes_output);
 
-                  $html .= '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellQuantity editthis" id="stockid-quantity-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['quantity'] . '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellSort editthis" id="stockid-sort-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['sort'] . '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellCustomid editthis" id="stockid-customid-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['customid'] . '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellTitle" id="stockid-title-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['title'] . '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellEdit">' . "\n";
+                  $html .= '            </td>' . "\n";
+                  $html .= '            <td class="stockAttributesCellQuantity editthis" id="stockid-quantity-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['quantity'] . '</td>' . "\n";
+                  $html .= '            <td class="stockAttributesCellSort editthis" id="stockid-sort-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['sort'] . '</td>' . "\n";
+                  $html .= '            <td class="stockAttributesCellCustomid editthis" id="stockid-customid-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['customid'] . '</td>' . "\n";
+                  $html .= '            <td class="stockAttributesCellTitle" id="stockid-title-' . $attribute_products->fields['stock_id'] . '">' . $attribute_products->fields['title'] . '</td>' . "\n";
+                  $html .= '            <td class="stockAttributesCellEdit">' . "\n";
                   $html .= '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=edit&amp;products_id=" . $products->fields['products_id'] . '&amp;attributes=' . $attribute_products->fields['stock_attributes'] . '&amp;q=' . $attribute_products->fields['quantity'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL') . '">' . PWA_EDIT_QUANTITY . '</a>'; //s_mack:prefill_quantity
-                  $html .= '</td>' . "\n";
-                  $html .= '<td class="stockAttributesCellDelete">' . "\n";
+                  $html .= '            </td>' . "\n";
+                  $html .= '            <td class="stockAttributesCellDelete">' . "\n";
                   $html .= '<a href="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, "action=delete&amp;products_id=" . $products->fields['products_id'] . '&amp;attributes=' . $attribute_products->fields['stock_attributes'] . '&amp;search_order_by=' . $search_order_by, 'NONSSL').'">' . PWA_DELETE_VARIANT . '</a>';
-                  $html .= '</td>' . "\n";
-                  $html .= '</tr>' . "\n";
+                  $html .= '            </td>' . "\n";
+                  $html .= '          </tr>' . "\n";
 
                   $attribute_products->MoveNext();
               }
-              $html .= '</table>';
+              $html .= '        </table>' . "\n";
           }
-          $html .= '</div>' . "\n";
+          $html .= '      </div>' . "\n";
           $products->MoveNext();
       }
-      $html .= '</table>' . "\n";
+      $html .= '    </table>' . "\n";
       $html .= zen_image_submit('button_save.gif', IMAGE_SAVE);
-      $html .= '</form>' . "\n";
+      $html .= '  </form>' . "\n";
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
-      $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">';
-      $html .= '<tr>';
-      $html .= '<td class="smallText" valign="top">';
-      $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS);
-      $html .= '</td>';
-      $html .= '<td class="smallText" align="right">';
+      $html .= '<table border="0" width="100%" cellspacing="0" cellpadding="2" class="pageResults">' . "\n";
+      $html .= '  <tr>' . "\n";
+      $html .= '    <td class="smallText" valign="top">' . "\n";
+      $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS) . "\n";
+      $html .= '    </td>' . "\n";
+      $html .= '    <td class="smallText" align="right">' . "\n";
       $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']);
-      $html .= '</td>';
-      $html .= '</tr>';
-      $html .= '</table>';
+      $html .= '    </td>' . "\n";
+      $html .= '  </tr>' . "\n";
+      $html .= '</table>' . "\n";
         }
       $html .= '<span>' . PWA_EXCESS_PRODUCT . '</span>';
 
