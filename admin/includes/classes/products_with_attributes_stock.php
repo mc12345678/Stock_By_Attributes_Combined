@@ -591,12 +591,13 @@ class products_with_attributes_stock extends base
 
     // Display information about product items in PWAS table that do not appear to have attributes in the main database.
     function displayExcessRows($ReturnedProductID = null, $NumberRecordsShown = null) {
-        global $db, $sniffer, $languages;
 
         // No excess rows to report, do not process
         if (empty($ReturnedProductID)) {
           return '';
         }
+
+        global $db, $sniffer, $languages;
 
         if (empty($languages)) {
           $languages = zen_get_languages();
