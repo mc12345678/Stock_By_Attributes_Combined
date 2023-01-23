@@ -407,7 +407,7 @@ switch ($action) {
       $messageStack->add_session(PWA_QUANTITY_BAD, 'failure');
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=add&products_id=' . (int)$products_id, $request_type));
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $products_id, $request_type));
-    } elseif (!isset($attributes) || str_replace(',', null, $attributes) == null) {
+    } elseif (!isset($attributes) || str_replace(',', '', $attributes) == '') {
       $messageStack->add_session(PWA_ATTRIBUTE_MISSING, 'failure');
       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . $products_id, $request_type));
     }

@@ -1006,7 +1006,7 @@ function insertNewAttribQty($products_id = null, $productAttributeCombo = null, 
     global $db;
     //$stock = $products_with_attributes_stock_class; // Should replace all instance of $stock with the class variable.
     $productAttributeCombo = $this->nullDataEntry($productAttributeCombo);//sets proper quoting for input
-    $skuTitle = $GLOBALS['db']->prepare_input($skuTitle);
+    $skuTitle = isset($skuTitle) ? $GLOBALS['db']->prepare_input($skuTitle) : null;
     $skuTitle = $this->nullDataEntry($skuTitle);//sets proper quoting for input
     //$customid = addslashes($customid);
     //$customid = $this->nullDataEntry($customid);//sets proper quoting for input
