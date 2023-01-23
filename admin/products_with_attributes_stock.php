@@ -1336,8 +1336,27 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
 // calculate the previous and next
 
     $result = $db->Execute("select products_type from " . TABLE_PRODUCTS . " where products_id=" . (int)$products_filter);
-    $check_type = ($result->EOF) ? 0 : $result->fields['products_type'];
+    /* Modified result for $check_type to
+      attempt to prevent zen_get_configuration_key_value_layout
+      generating a log by use of non-existent type 0.
+      Does not prevent a log for a product type that has not been populated */
+    $check_type = ($result->EOF) ? 1 : $result->fields['products_type'];
+    if (!function_exists('zen_define_default')) {
+      if (!defined('PRODUCT_INFO_PREVIOUS_NEXT_SORT')) {
     define('PRODUCT_INFO_PREVIOUS_NEXT_SORT', zen_get_configuration_key_value_layout('PRODUCT_INFO_PREVIOUS_NEXT_SORT', $check_type));
+      }
+    } else {
+      /* Introduced in Zen Cart 1.5.8 */
+      /* define test still required because Zen Cart from at least version 1.3.9 does not have a
+        configuration_key record in the product_type_layout table for 'PRODUCT_INFO_PREVIOUS_NEXT_SORT'. Until
+        https://github.com/zencart/zencart/pull/5547 is corrected, a debug log is generated.
+        Generally speaking this code comes from admin/includes/modules/products_prev_next.php; however,
+        the variables used in there are different and the code of this module did not get modified to match.
+      */
+      if (!defined('PRODUCT_INFO_PREVIOUS_NEXT_SORT')) {
+        zen_define_default('PRODUCT_INFO_PREVIOUS_NEXT_SORT', zen_get_configuration_key_value_layout('PRODUCT_INFO_PREVIOUS_NEXT_SORT', $check_type));
+      }
+    }
 
     // sort order
     switch(PRODUCT_INFO_PREVIOUS_NEXT_SORT) {
