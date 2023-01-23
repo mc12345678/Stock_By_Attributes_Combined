@@ -338,9 +338,11 @@ class products_with_attributes_stock extends base
             $search_order_by = 'products_model';
           }
         }
+        // Purposefully reperformed if the above fails.
         if ($sniffer->field_exists(TABLE_PRODUCTS, $search_order_by)) {
           $search_order_by = 'p.' . $search_order_by;
         }
+        // Purposefully reperformed if the above fails.
         if ($sniffer->field_exists(TABLE_PRODUCTS_DESCRIPTION, $search_order_by)) {
           $search_order_by = 'pd.' . $search_order_by;
         }
@@ -458,6 +460,7 @@ class products_with_attributes_stock extends base
             
             if (STOCK_SHOW_IMAGE == 'true') {$html .= '<td class="tdProdImage">' . zen_info_image(zen_output_string($products->fields['products_image']), zen_output_string($products->fields['products_name']), "60", "60") . '</td>';}
             
+            // @TODO: Determine the current page applicable to this pID
             //product.php? page=1 & product_type=1 & cPath=13 & pID=1042 & action=new_product
             //$html .= '<td class="tdProdModel">' . $products->fields['products_model'] . ' </td>';
             $html .= '    <td class="tdProdModel">' . "\n";
@@ -590,6 +593,7 @@ class products_with_attributes_stock extends base
     function displayExcessRows($ReturnedProductID = null, $NumberRecordsShown = null) {
         global $db, $sniffer, $languages;
 
+        // No excess rows to report, do not process
         if (empty($ReturnedProductID)) {
           return '';
         }
