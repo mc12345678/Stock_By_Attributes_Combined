@@ -866,7 +866,7 @@ switch ($action) {
             $sql = "SELECT quantity FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                     WHERE stock_id = " . $products_answer->fields['stock_id'];
 
-            if (method_exists('ExecuteNoCache', $db)) {
+            if (method_exists($db, 'ExecuteNoCache')) {
               $result = $db->ExecuteNoCache($sql);
             } else {
               $result = $db->Execute($sql, false, false, 0, true);
@@ -1205,6 +1205,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       }
       if (isset($_POST['search'])) {
         $seachBox = trim($_POST['search']);
+        $_GET['search'] = $_POST['search'];
       }
       $s = zen_db_input($seachBox);
       $w = " AND ( p.products_id = '$s'
@@ -1343,7 +1344,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     $check_type = ($result->EOF) ? 1 : $result->fields['products_type'];
     if (!function_exists('zen_define_default')) {
       if (!defined('PRODUCT_INFO_PREVIOUS_NEXT_SORT')) {
-    define('PRODUCT_INFO_PREVIOUS_NEXT_SORT', zen_get_configuration_key_value_layout('PRODUCT_INFO_PREVIOUS_NEXT_SORT', $check_type));
+        define('PRODUCT_INFO_PREVIOUS_NEXT_SORT', zen_get_configuration_key_value_layout('PRODUCT_INFO_PREVIOUS_NEXT_SORT', $check_type));
       }
     } else {
       /* Introduced in Zen Cart 1.5.8 */
@@ -1507,7 +1508,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       <tr><td><form name="set_products_filter_id" <?php echo 'action="' . zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'action=set_products_filter') . '"'; ?> method="post"><?php echo zen_draw_hidden_field('products_filter', $products_filter); ?><?php echo zen_draw_hidden_field('current_category_id', $current_category_id); ?><?php echo zen_draw_hidden_field('securityToken', $_SESSION['securityToken']); ?>
 <?php if (isset($_GET['products_filter']) && $_GET['products_filter'] != '') { ?>
         <td colspan="2"><table border="0" cellspacing="0" cellpadding="2">
-<!--            <td class="attributes-even" align="center"><?php echo zen_draw_products_pull_down('products_filter', 'size="10" id="pwas-filter"', '', true, $_GET['products_filter'], true, true); ?></td>-->
+<!--            <td class="attributes-even" align="center"><?php /*echo zen_draw_products_pull_down('products_filter', 'size="10" id="pwas-filter"', '', true, $_GET['products_filter'], true, true);*/ ?></td>-->
             <td class="attributes-even" align="center"><?php
               $sba_pull_down_function = function_exists('zen_draw_pulldown_products') ? 'zen_draw_pulldown_products' : 'zen_draw_products_pull_down';
               echo $sba_pull_down_function('products_filter', 'size="10" id="pwas-filter-drop"', array('')/* @todo should list all product that do not have attributes as an array */, true, $_GET['products_filter'], true, true); /* pwas-filter*/
