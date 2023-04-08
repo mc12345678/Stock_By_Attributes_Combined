@@ -81,7 +81,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   
   for ($i=0, $n=count($_POST['products_id']); $i<$n; $i++) {
     $posted = array();
-    $posted['products_id_i'] = $_POST['products_id'][$i];
+    $posted['products_id_i'] = (string)$_POST['products_id'][$i];
     
     $productIsSBA[$i] = $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($posted['products_id_i']), true);
     
@@ -383,8 +383,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   /* Test to see if is a grid related submission/product*/
   /* Do additional prestage work for grid related submission/product*/
   if (
-  defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' && !empty($_SESSION['pwas_class2'])
-      ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id']))
+  defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' && !empty($_SESSION['pwas_class2']) && !empty($_POST['products_id'])
+      ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid((string)$_POST['products_id']))
       : true)
   {
     $grid_prod_id = array();
@@ -396,13 +396,13 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   $sba_single_as_multiple = (PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2');
 
   if (isset($_POST['product_id']) 
-       && is_array($_POST['product_id']) 
-       && $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'])) 
+       && is_array($_POST['product_id']) && !empty($_POST['products_id'])
+       && $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid((string)$_POST['products_id']))
       ) {
 
     // product is tracked by SBA and has grid layout.
     foreach($_POST['product_id'] as $prid => $qty) {
-      $products_id = zen_get_prid($prid);
+      $products_id = zen_get_prid((string)$prid);
             
       $option_ref = array();
 
@@ -503,8 +503,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
   }
 
   elseif (
-  defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' 
-          ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id'])) 
+  defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' && !empty($_POST['products_id'])
+          ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid((string)$_POST['products_id'])) 
           : true) 
   {
     if (isset($_POST['product_id']) && is_array($_POST['product_id'])) {
@@ -524,8 +524,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
     }
   }
   
-  if (defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' 
-       ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($_POST['products_id']))
+  if (defined('STOCK_SBA_CHECKOUT_SBA_ONLY') && STOCK_SBA_CHECKOUT_SBA_ONLY == 'true' && !empty($_POST['products_id'])
+       ? $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid((string)$_POST['products_id']))
        : true) {
 
     if (count($grid_id) < 1) {
