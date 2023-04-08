@@ -403,7 +403,7 @@ class products_with_attributes_stock extends queryFactory
           $html .= '  </tr>' . "\n";
           $html .= '</table>' . "\n";
         }
-        $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid=' . $ReturnedProductID . (!empty($_GET['page']) ? '&amp;page=' . $_GET['page'] : ''), 'post') . "\n";
+        $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid=' . $ReturnedProductID . (!empty($_GET['page']) ? '&amp;page=' . $_GET['page'] : '') . (!empty($_GET['search']) ? '&amp;search=' . $_GET['search'] : ''), 'post') . "\n";
         $html .= zen_draw_hidden_field('save', '1') . "\n";
         $html .= zen_draw_hidden_field('pid', $ReturnedProductID) . "\n";
         $html .= zen_image_submit('button_save.gif', IMAGE_SAVE) . ' Hint: To quickly edit click in the "Quantity in Stock" field.' . "\n";
@@ -770,7 +770,7 @@ class products_with_attributes_stock extends queryFactory
           $html .= '  </tr>' . "\n";
           $html .= '</table>' . "\n";
         }
-        $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid=' . (int)$products->fields['products_id']/*$ReturnedProductID*/ . (!empty($_GET['page']) ? '&amp;page=' . $_GET['page'] : ''), 'post') . "\n";
+        $html .= zen_draw_form('stock_update', FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK . '_ajax', 'save=1&amp;pid=' . (int)$products->fields['products_id']/*$ReturnedProductID*/ . (!empty($_GET['page']) ? '&amp;page=' . $_GET['page'] : '') . (!empty($_GET['search']) ? '&amp;search=' . $_GET['search'] : ''), 'post') . "\n";
         $html .= zen_draw_hidden_field('save', '1') . "\n";
         $html .= zen_draw_hidden_field('pid', (string)(int)$products->fields['products_id']) . "\n";
         $html .= zen_image_submit('button_save.gif', IMAGE_SAVE) . ' Hint: To quickly edit click in the "Quantity in Stock" field.' . "\n";

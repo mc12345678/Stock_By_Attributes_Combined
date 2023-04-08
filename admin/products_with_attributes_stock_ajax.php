@@ -22,18 +22,24 @@ require(DIR_WS_CLASSES . 'currencies.php');
 $stock = $products_with_attributes_stock_class;
 
     if( isset($_GET['save']) && $_GET['save'] == 1 ){
-    if (isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0) {
-      $parameters = 'page=' . (int)$_GET['page'];
-    } else {
       $parameters = '';
-    }
-        $x = $stock->saveAttrib();//This does not seem to have a purpose, need to look closer.
-    if( isset($_GET['pid']) && is_numeric($_GET['pid']) && $_GET['pid'] > 0 ){
-      zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, 'updateReturnedPID=' . (int)$_GET['pid'] . '&amp;' . $parameters, 'NONSSL'));
-    }
-    else{
-       zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, $parameters, 'NONSSL'));
-    }
+      if (isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0) {
+        if (!empty($parameters)) {
+          $parameters .= '&amp;';
+        }
+        $parameters .= 'page=' . (int)$_GET['page'];
+      }
+      if (!empty($_GET['search'])) {
+        if (!empty($parameters)) {
+          $parameters .= '&amp;';
+        }
+        $parameters .= 'search=' . $_GET['search'];
+      }
+      $x = $stock->saveAttrib();//This does not seem to have a purpose, need to look closer.
+      if( isset($_GET['pid']) && is_numeric($_GET['pid']) && $_GET['pid'] > 0 ){
+        $parameters = 'updateReturnedPID=' . (int)$_GET['pid'] . (!empty($parameters) ? '&amp;' . $parameters : '');
+      }
+      zen_redirect(zen_href_link(FILENAME_PRODUCTS_WITH_ATTRIBUTES_STOCK, $parameters, 'NONSSL'));
     } else {
         $x = $stock->displayFilteredRows();
         print_r($x);
