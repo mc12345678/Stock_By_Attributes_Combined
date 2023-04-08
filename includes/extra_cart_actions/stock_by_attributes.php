@@ -73,7 +73,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   $sba_add_prods['cart_quantity'] = array(); // Quantity of the product already in the cart at this time.
   $sba_add_prods['quantity'] = array(); // Quantity summary of product in the cart to identify total at each product.
 
-  if (empty($_POST['products_id'])) {
+  if (empty($_POST['products_id']) || !is_array($_POST['products_id'])) {
      $_POST['products_id'] = array();
   }
 
@@ -804,7 +804,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
             } else {
               // process normally
               // iii 030813 added: File uploading: save uploaded files with unique file names
-              $real_ids = isset($_POST['id']) ? $_POST['id'] : "";
+              $real_ids = isset($_POST['id']) ? $_POST['id'] : array();
               if (isset($_GET['number_of_uploads']) && $_GET['number_of_uploads'] > 0) {
                 /**
                  * Need the upload class for attribute type that allows user uploads.
@@ -813,7 +813,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
                 include_once(DIR_WS_CLASSES . 'upload.php');
 
                 for ($i = 1, $n = $_GET['number_of_uploads']; $i <= $n; $i++) {
-                  if (zen_not_null($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]]) and ($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] != 'none')) {
+                  if (isset($_POST[UPLOAD_PREFIX . $i]) && !empty($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]]) && ($_FILES['id']['tmp_name'][TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] != 'none')) {
                     if ($grid_loop == 1) {
                       $products_options_file = new upload('id');
                       $products_options_file->set_destination(DIR_FS_UPLOADS);
@@ -822,7 +822,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
                     if ($grid_loop > 1 || $products_options_file->parse(TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i])) {
                       $products_image_extension = substr($products_options_file->filename, strrpos($products_options_file->filename, '.'));
                       if ($grid_loop == 1 || $renumber) {
-                        if (!empty($_SESSION['customer_id'])) {
+                        if (function_exists('zen_is_logged_in') ? zen_is_logged_in() : !empty($_SESSION['customer_id'])) {
                           $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, customers_id, files_uploaded_name) values('" . zen_session_id() . "', '" . $_SESSION['customer_id'] . "', '" . zen_db_input($products_options_file->filename) . "')");
                         } else {
                           $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, files_uploaded_name) values('" . zen_session_id() . "', '" . zen_db_input($products_options_file->filename) . "')");
@@ -901,9 +901,23 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
                       break;
                     }
                   } else { // No file uploaded -- use previous value
-                    $real_ids[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] = $_POST[TEXT_PREFIX . UPLOAD_PREFIX . $i];
+                    if (isset($_POST[UPLOAD_PREFIX . $i])) {
+                      $real_ids[TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i]] = isset($_POST[TEXT_PREFIX . UPLOAD_PREFIX . $i]) ? $_POST[TEXT_PREFIX . UPLOAD_PREFIX . $i] : '';
+                      if (function_exists('zen_get_attributes_valid') && !zen_get_attributes_valid($_POST['products_id'], TEXT_PREFIX . $_POST[UPLOAD_PREFIX . $i], !empty($_POST[TEXT_PREFIX . UPLOAD_PREFIX . $i]) ? $_POST[TEXT_PREFIX . UPLOAD_PREFIX . $i] : '')) {
+                        $the_list .= TEXT_ERROR_OPTION_FOR . '<span class="alertBlack">' . zen_options_name($_POST[UPLOAD_PREFIX . $i]) . '</span>' . TEXT_INVALID_SELECTION . '<span class="alertBlack">' . ($_POST[TEXT_PREFIX . UPLOAD_PREFIX . $i] == (int)PRODUCTS_OPTIONS_VALUES_TEXT_ID ? TEXT_INVALID_USER_INPUT : zen_values_name($value)) . '</span>' . '<br>';
+                        $new_qty = 0; // Don't increase the quantity of product in the cart.
+                      }
+                    }
                   }
                 }
+
+                if ($the_list != '') {
+                  $messageStack->add('product_info', ERROR_CORRECTIONS_HEADING . $the_list, 'caution');
+                }
+
+                // remove helper param from URI of the upcoming redirect
+                $parameters[] = 'number_of_uploads';
+                unset($_GET['number_of_uploads']);
               }
 
               $_SESSION['cart']->add_cart($_POST['products_id'], $_SESSION['cart']->get_quantity(zen_get_uprid($_POST['products_id'], $real_ids))+($new_qty), $real_ids);
@@ -919,7 +933,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
           // Want to bypass this entire section if not done with addressing all of the products, though also may need to pull out some of
           //  the actions so that all products are addressed, but basically do not want to redirect away from this operation until the
           //  last object has been addressed.  Maybe just need to if around the redirects and leave the add_session information
-          if ($the_list == '') {
+          if (empty($the_list)) {
             // no errors
   // display message if all is good and not on shopping_cart page
             if (DISPLAY_CART == 'false' && $_GET['main_page'] != FILENAME_SHOPPING_CART && $messageStack->size('shopping_cart') == 0) {
