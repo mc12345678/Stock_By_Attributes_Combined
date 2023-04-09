@@ -523,9 +523,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
       $_POST['cart_quantity'] = 0;
     } else {
       // Product does not have grid, could be SBA, doesn't have to be.
-      $grid_prod_id[] = $_POST['products_id'];
+      $grid_prod_id[] = isset($_POST['products_id']) ? $_POST['products_id'] : '0';
       $grid_id[] = isset($_POST['id']) ? $_POST['id'] : 0;
-      $prod_qty[] = $_POST['cart_quantity'];
+      $prod_qty[] = isset($_POST['cart_quantity']) ? $_POST['cart_quantity'] : '0';
       $grid_add_number = 1;
     }
   }
