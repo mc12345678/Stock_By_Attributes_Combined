@@ -14,7 +14,7 @@ if (!defined('IS_ADMIN_FLAG')) {
     die('Illegal Access');
 }
 
-class products_with_attributes_stock extends base
+class products_with_attributes_stock extends queryFactory
   {  
   private $stringTypeToIgnoreNull;
   
