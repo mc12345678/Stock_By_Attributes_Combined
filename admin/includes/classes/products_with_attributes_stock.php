@@ -589,6 +589,50 @@ class products_with_attributes_stock extends queryFactory
       return $html;
     }
 
+    // Modify the Limit parameter based on known ZC Version differences.
+    //  Became needed starting in Zen Cart 1.5.8
+    function searchRangeReview($limitRange) {
+      // Do nothing with the limit range because it can not
+      //  cause the problem that is being resolved.
+      if (is_null($limitRange)) {
+        return $limitRange;
+      }
+
+      // If the ReflectionClass doesn't exist, then no reason
+      //  to try to further evaluate even though a problem may
+      //  exist as described below.
+      if (!class_exists('ReflectionClass')) {
+        return $limitRange;
+      }
+
+      static $numConstParameters = null;
+
+      // Evaluate the number of parameters only once.
+      if (is_null($numConstParameters)) {
+        $class_reflection = new ReflectionClass('splitPageResults');
+        $constructor = $class_reflection->getConstructor();
+        // If there is no constructor, then return the Limited range
+        if ($constructor === null) {
+          return $limitRange;
+        }
+
+        // Evaluate the call to creating the splitPageResults variable
+        $numConstParameters = $constructor->getNumberOfParameters();
+      }
+
+      // ZC 1.5.8 changed the number of parameters where
+      // SplitPageResults 1) accepts 6 parameters
+      // 2) adds its own LIMIT parameter to the SQL regardless
+      //   the presence of an existing limit.
+      //   This was a functional change from previous versions where
+      //   effectively everything at and beyond the ORDER BY statement was removed.
+      if ($numConstParameters >= 6) {
+        return null;
+      }
+
+      return $limitRange;
+    }
+
     // Display information about product items in PWAS table that do not appear to have attributes in the main database.
     function displayExcessRows($ReturnedProductID = null, $NumberRecordsShown = null) {
 
