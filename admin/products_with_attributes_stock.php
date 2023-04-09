@@ -866,7 +866,7 @@ switch ($action) {
             $sql = "SELECT quantity FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . "
                     WHERE stock_id = " . $products_answer->fields['stock_id'];
 
-            if (method_exists('ExecuteNoCache', $db)) {
+            if (method_exists($db, 'ExecuteNoCache')) {
               $result = $db->ExecuteNoCache($sql);
             } else {
               $result = $db->Execute($sql, false, false, 0, true);
