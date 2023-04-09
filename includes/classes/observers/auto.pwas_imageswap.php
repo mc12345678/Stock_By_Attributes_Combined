@@ -13,6 +13,9 @@
  */
 
 class zcObserverPwasImageswap extends base {
+
+  private $MainImage;
+
   function __construct() {
     
     $attachNotifier = array();

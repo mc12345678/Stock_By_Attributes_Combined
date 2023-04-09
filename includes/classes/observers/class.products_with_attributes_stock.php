@@ -63,6 +63,10 @@ class products_with_attributes_stock extends base {
   
   private $field_disabled;
   
+  private $for_attributes;
+  
+  
+  
   /*
    * This is the observer for the includes/classes/order.php file to support Stock By Attributes when the order is being processed at the end of the purchase.
    */
