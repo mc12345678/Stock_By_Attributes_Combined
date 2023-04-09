@@ -79,7 +79,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 
   $sba_single_as_multiple = (PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_dropdown' || PRODINFO_ATTRIBUTE_PLUGIN_MULTI == 'single_radioset') && (PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '1' || PRODINFO_ATTRIBUTE_DYNAMIC_STATUS == '2');
   
-  for ($i=0, $n=count($_POST['products_id']); $i<$n; $i++) {
+  for ($i = 0, $n = count($_POST['products_id']); $i < $n; $i++) {
     $posted = array();
 
     // Account for missing posted products_id.
@@ -123,7 +123,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
     }
   }
 
-  for ($i=0, $n=count($_POST['products_id']); $i<$n; $i++) {
+  for ($i = 0, $n = count($_POST['products_id']); $i < $n; $i++) {
 /*    if (!zen_product_is_sba($posted['products_id_i'])) {
       // If the product is not SBA tracked then allow the cart's actions to
       // handle the remaining items and not be bothered by this code. :)
@@ -143,7 +143,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
       $_POST['cart_quantity'][$i] = 0;
       continue;
     }
-    if ( in_array($posted['products_id_i'], (isset($_POST['cart_delete']) && is_array($_POST['cart_delete']) ? $_POST['cart_delete'] : array())) or $_POST['cart_quantity'][$i]==0) {
+    if ( in_array($posted['products_id_i'], (isset($_POST['cart_delete']) && is_array($_POST['cart_delete']) ? $_POST['cart_delete'] : array())) || $_POST['cart_quantity'][$i] == 0) {
       $_SESSION['cart']->remove($posted['products_id_i']);
     } else {
       $sba_add_prods['old_id_set'] = (isset($sba_add_prods['old'][$_POST['products_id'][$i]]) || array_key_exists($_POST['products_id'][$i], $sba_add_prods['old']));
@@ -240,7 +240,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
       if ($productIsSBA[$i] && $sba_add_prods['old_id_set']) {
         $temp_new_qty = $new_qty;
         $new_qty = $sba_add_prods['quantity'][$pos];
-        for ($j=0, $m=$i; $j < $m; $j++) {
+        for ($j = 0, $m = $i; $j < $m; $j++) {
           if (isset($sba_add_prods['old'][$_POST['products_id'][$j]]) || array_key_exists($_POST['products_id'][$j], $sba_add_prods['old'])) {
             if ($sba_add_prods['old'][$_POST['products_id'][$i]] != $sba_add_prods['old'][$_POST['products_id'][$j]]) {
               continue;
