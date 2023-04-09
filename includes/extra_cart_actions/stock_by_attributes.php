@@ -777,7 +777,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
           }
           
   // eof: adjust new quantity to be same as current in stock
-          if (($add_max == 1 and $cart_qty == 1)) {
+          if ($add_max == 1 && $cart_qty == 1) {
             // do not add
             $new_qty = 0;
             $adjust_max= 'true';
@@ -793,13 +793,13 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
             }
 // eof: adjust new quantity to be same as current in stock
         // adjust quantity if needed
-            if (($new_qty + $cart_qty > $add_max) and $add_max != 0) {
+            if (($new_qty + $cart_qty > $add_max) && $add_max != 0) {
               $adjust_max= 'true';
               $new_qty = $add_max - $cart_qty;
             }
           }
           
-          if ((zen_get_products_quantity_order_max($_POST['products_id']) == 1 and $_SESSION['cart']->in_cart_mixed($_POST['products_id']) == 1)) {
+          if (zen_get_products_quantity_order_max($_POST['products_id']) == 1 && $_SESSION['cart']->in_cart_mixed($_POST['products_id']) == 1) {
 
             // do not add
           } else {
