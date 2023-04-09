@@ -81,6 +81,12 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
   
   for ($i=0, $n=count($_POST['products_id']); $i<$n; $i++) {
     $posted = array();
+
+    // Account for missing posted products_id.
+    if (empty($_POST['products_id'][$i])) {
+      continue;
+    }
+
     $posted['products_id_i'] = (string)$_POST['products_id'][$i];
     
     $productIsSBA[$i] = $_SESSION['pwas_class2']->zen_product_is_sba(zen_get_prid($posted['products_id_i']), true);
@@ -99,7 +105,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
 
     $attributes2 = $_SESSION['pwas_class2']->zen_sba_attribs_no_text($posted['products_id_i'], $_POST['id'][$posted['products_id_i']], 'products', 'update');
       
-    $product_id = zen_get_uprid((int)$_POST['products_id'][$i], $attributes2);
+    $product_id = zen_get_uprid((int)$posted['products_id_i'], $attributes2);
     
     if (!in_array($product_id, $sba_add_prods['products_id'])) {
       $sba_add_prods['products_id'][] = $product_id;
@@ -107,13 +113,13 @@ if (isset($_GET['action']) && $_GET['action'] == 'update_product') {
       $sba_add_prods['attribs'][$product_id] = $attributes2;
     } else {
       $pos = array_search($product_id, $sba_add_prods['products_id']);
-      $sba_add_prods['cart_quantity'][$pos] = $sba_add_prods['cart_quantity'][$pos] + $_SESSION['cart']->contents[$_POST['products_id'][$i]]['qty'];
+      $sba_add_prods['cart_quantity'][$pos] = $sba_add_prods['cart_quantity'][$pos] + $_SESSION['cart']->contents[$posted['products_id_i']]['qty'];
     }
 
     // Capture only those prids that have been modified to support this functionality.
     //   Can be used later to test if the key exists, then to use/modify the above data.
-    if ($_POST['products_id'][$i] != $product_id) {
-      $sba_add_prods['old'][$_POST['products_id'][$i]] = $product_id;
+    if ($posted['products_id_i'] != $product_id) {
+      $sba_add_prods['old'][$posted['products_id_i']] = $product_id;
     }
   }
 
