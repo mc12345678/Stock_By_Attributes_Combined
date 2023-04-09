@@ -829,9 +829,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'add_product') {
                       $products_image_extension = substr($products_options_file->filename, strrpos($products_options_file->filename, '.'));
                       if ($grid_loop == 1 || $renumber) {
                         if (function_exists('zen_is_logged_in') ? zen_is_logged_in() : !empty($_SESSION['customer_id'])) {
-                          $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, customers_id, files_uploaded_name) values('" . zen_session_id() . "', '" . $_SESSION['customer_id'] . "', '" . zen_db_input($products_options_file->filename) . "')");
+                          $db->Execute("INSERT INTO " . TABLE_FILES_UPLOADED . " (sesskey, customers_id, files_uploaded_name) VALUES ('" . zen_session_id() . "', " . (int)$_SESSION['customer_id'] . ", '" . zen_db_input($products_options_file->filename) . "')");
                         } else {
-                          $db->Execute("insert into " . TABLE_FILES_UPLOADED . " (sesskey, files_uploaded_name) values('" . zen_session_id() . "', '" . zen_db_input($products_options_file->filename) . "')");
+                          $db->Execute("INSERT INTO " . TABLE_FILES_UPLOADED . " (sesskey, files_uploaded_name) VALUES ('" . zen_session_id() . "', '" . zen_db_input($products_options_file->filename) . "')");
                         }
                         $insert_id = $db->Insert_ID();
                       }
