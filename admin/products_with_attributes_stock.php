@@ -1343,7 +1343,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
     $check_type = ($result->EOF) ? 1 : $result->fields['products_type'];
     if (!function_exists('zen_define_default')) {
       if (!defined('PRODUCT_INFO_PREVIOUS_NEXT_SORT')) {
-    define('PRODUCT_INFO_PREVIOUS_NEXT_SORT', zen_get_configuration_key_value_layout('PRODUCT_INFO_PREVIOUS_NEXT_SORT', $check_type));
+        define('PRODUCT_INFO_PREVIOUS_NEXT_SORT', zen_get_configuration_key_value_layout('PRODUCT_INFO_PREVIOUS_NEXT_SORT', $check_type));
       }
     } else {
       /* Introduced in Zen Cart 1.5.8 */
