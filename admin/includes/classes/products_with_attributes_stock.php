@@ -276,14 +276,14 @@ class products_with_attributes_stock extends base
         $w = '';
         if (isset($_GET['search']) && $_GET['search']) { // mc12345678 Why was $_GET['search'] omitted?
             $s = zen_db_input($_GET['search']);
-           //$w = "(p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '%$s%') AND  " ;//original version of search
-            //$w = "( p.products_id = '$s' OR d.products_name LIKE '%$s%' OR p.products_model LIKE '$s%' ) AND  " ;//changed search to products_model 'startes with'.
-           //$w = "( p.products_id = '$s' OR d.products_name LIKE '%$s%' ) AND  " ;//removed products_model from search
+           //$w = "(p.products_id = '$s' OR pd.products_name LIKE '%$s%' OR p.products_model LIKE '%$s%') AND  " ;//original version of search
+            //$w = "( p.products_id = '$s' OR pd.products_name LIKE '%$s%' OR p.products_model LIKE '$s%' ) AND  " ;//changed search to products_model 'startes with'.
+           //$w = "( p.products_id = '$s' OR pd.products_name LIKE '%$s%' ) AND  " ;//removed products_model from search
             $w = " AND ( p.products_id = '$s' 
-                        OR d.products_name LIKE '%$s%' 
-                        OR p.products_model LIKE '%$s%' 
-                        OR p.products_id 
-                IN (SELECT products_id 
+                        OR pd.products_name LIKE '%$s%'
+                        OR p.products_model LIKE '%$s%'
+                        OR p.products_id
+                IN (SELECT products_id
                       FROM " . TABLE_PRODUCTS_WITH_ATTRIBUTES_STOCK . " pwas
                       WHERE pwas.customid
                         LIKE '%$s%')
