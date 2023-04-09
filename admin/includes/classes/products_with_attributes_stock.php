@@ -398,7 +398,7 @@ class products_with_attributes_stock extends queryFactory
           $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS) . "\n";
           $html .= '    </td>' . "\n";
           $html .= '    <td class="smallText" align="right">' . "\n";
-          $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']) . "\n";
+          $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page'], zen_get_all_get_params(array('page'))) . "\n";
           $html .= '    </td>' . "\n";
           $html .= '  </tr>' . "\n";
           $html .= '</table>' . "\n";
@@ -582,7 +582,7 @@ class products_with_attributes_stock extends queryFactory
       $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS) . "\n";
       $html .= '    </td>' . "\n";
       $html .= '    <td class="smallText" align="right">' . "\n";
-      $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']) . "\n";
+      $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page'], zen_get_all_get_params(array('page'))) . "\n";
       $html .= '    </td>' . "\n";
       $html .= '  </tr>' . "\n";
       $html .= '</table>' . "\n";
@@ -765,7 +765,7 @@ class products_with_attributes_stock extends queryFactory
           $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS) . "\n";
           $html .= '    </td>' . "\n";
           $html .= '    <td class="smallText" align="right">' . "\n";
-          $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']) . "\n";
+          $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page'], zen_get_all_get_params(array('page'))) . "\n";
           $html .= '    </td>' . "\n";
           $html .= '  </tr>' . "\n";
           $html .= '</table>' . "\n";
@@ -936,7 +936,7 @@ class products_with_attributes_stock extends queryFactory
       $html .= $products_split->display_count($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, $_GET['page'], TEXT_DISPLAY_NUMBER_OF_PRODUCTS) . "\n";
       $html .= '    </td>' . "\n";
       $html .= '    <td class="smallText" align="right">' . "\n";
-      $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page']);
+      $html .= $products_split->display_links($products_query_numrows, STOCK_SET_SBA_NUMRECORDS, MAX_DISPLAY_PAGE_LINKS, $_GET['page'], zen_get_all_get_params(array('page')));
       $html .= '    </td>' . "\n";
       $html .= '  </tr>' . "\n";
       $html .= '</table>' . "\n";
