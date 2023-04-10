@@ -381,7 +381,9 @@ class products_with_attributes_stock extends queryFactory
           pd.language_id=" . (int)$language_id . "
           " . $w . "
           ORDER BY " . $search_order_by . "
-          " . $SearchRange;
+          " . $this->searchRangeReview($SearchRange);
+        // Modified the Limit parameter based on known ZC Version differences.
+        //  Became needed starting in Zen Cart 1.5.8
 
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
           $products_split = new splitPageResults($_GET['page'], STOCK_SET_SBA_NUMRECORDS, $query_products, $products_query_numrows);
@@ -742,7 +744,9 @@ class products_with_attributes_stock extends queryFactory
           pd.language_id=" . (int)$language_id . "
           " . $w . " 
           ORDER BY " . $search_order_by . "
-          " . $SearchRange;
+          " . $this->searchRangeReview($SearchRange);
+        // Modified the Limit parameter based on known ZC Version differences.
+        //  Became needed starting in Zen Cart 1.5.8
 
         if (!isset($_GET['seachPID']) && !isset($_GET['pwas-search-button']) && !isset($_GET['updateReturnedPID'])) {
           $products_split = new splitPageResults($_GET['page'], STOCK_SET_SBA_NUMRECORDS, $query_products, $products_query_numrows);
