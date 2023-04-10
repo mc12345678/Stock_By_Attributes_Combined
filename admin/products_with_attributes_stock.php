@@ -1205,6 +1205,7 @@ If <strong>"ALL"</strong> is selected, the <?php echo PWA_SKU_TITLE; ?> will not
       }
       if (isset($_POST['search'])) {
         $seachBox = trim($_POST['search']);
+        $_GET['search'] = $_POST['search'];
       }
       $s = zen_db_input($seachBox);
       $w = " AND ( p.products_id = '$s'
